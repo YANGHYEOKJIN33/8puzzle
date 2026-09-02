@@ -66,13 +66,13 @@ export const ALGORITHMS = [
     id: 'bfs', name: '너비 우선 탐색', en: 'Breadth-First Search',
     family: 'blind', structure: 'queue',
     point: '가장 얕은 것부터 본다 · 최단 경로를 보장한다',
-    ready: false,
+    ready: true,
   },
   {
     id: 'dfs', name: '깊이 우선 탐색', en: 'Depth-First Search',
     family: 'blind', structure: 'stack',
     point: '끝까지 파고든다 · 메모리는 적게, 대신 최적해는 보장 못 한다',
-    ready: false,
+    ready: true,
   },
   {
     id: 'dls', name: '깊이 제한 탐색', en: 'Depth-Limited Search',
