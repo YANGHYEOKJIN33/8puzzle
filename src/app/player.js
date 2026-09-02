@@ -8,7 +8,7 @@
  * 화면 부품은 player.subscribe(fn)로 장면 바뀜을 구독하고,
  * fn(view)에서 자기 패널만 다시 그린다.
  */
-import { SPEEDS, MAX_EXPANSIONS, PRESETS } from './config.js';
+import { SPEEDS, MAX_EXPANSIONS, PRESETS, ALGORITHMS } from './config.js';
 import { runAlgorithm } from '../core/algorithms/index.js';
 import { getHeuristic } from '../core/heuristics.js';
 import { findById } from './state.js';
@@ -122,8 +122,11 @@ export function createPlayer(store) {
       pause();
       const state = store.get();
       const preset = findById(PRESETS, state.presetId);
+      const algo = findById(ALGORITHMS, state.algorithmId);
       return this.loadWith(state.algorithmId, preset ? preset.state : null, {
         heuristic: getHeuristic(state.heuristicId),
+        // 폭주하는 알고리즘(스택 탐색)은 주 화면에서 짧게 보여 준다
+        limit: algo.demoLimit ?? MAX_EXPANSIONS,
       });
     },
 

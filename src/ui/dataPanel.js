@@ -7,7 +7,7 @@
  * 방금 넣은 항목은 초록으로 강조하고(요구사항 4.2.2), 카운터 4종을 항상 보여 준다.
  */
 import { el, fill } from './dom.js';
-import { ALGORITHMS, STRUCTURE_LABEL } from '../app/config.js';
+import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { miniBoard } from './miniBoard.js';
 
@@ -102,9 +102,8 @@ export function mountDataPanel(root, store, player) {
 
     if (viewData.empty) {
       fill(body,
+        structurePicker(),
         legend(),
-        el('div.field', {}, el('span', {}, 'OPEN을 다루는 방식'), el('strong', {}, structure.name)),
-        el('p.panel__hint', { style: 'margin:4px 0 12px' }, structure.hint),
         el('div.placeholder', {},
           el('strong', {}, '아직 실행 전입니다'),
           '아래 ', el('strong', { style: 'color:var(--current)' }, '▶ 재생'),
@@ -128,6 +127,7 @@ export function mountDataPanel(root, store, player) {
     const endLabel = endLabelFor(algo.structure, algo.evalTag);
 
     fill(body,
+      structurePicker(),
       legend(),
       // OPEN 헤더 한 줄에 자료구조·개수·CLOSED 크기를 모아 세로 공간을 아낀다
       el('div.inspect', {},
@@ -142,6 +142,23 @@ export function mountDataPanel(root, store, player) {
       el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
     );
   });
+
+  // OPEN 자료구조 바꾸기 — 학습자가 직접 골라 다른 결과를 본다 (핵심 실험)
+  function structurePicker() {
+    const activeId = STRUCTURE_OF_ALGO[store.get().algorithmId] ?? null;
+    const active = STRUCTURE_CHOICES.find((c) => c.id === activeId) ?? null;
+    const chips = el('div.ds-picker', { role: 'group', 'aria-label': 'OPEN 자료구조 선택' },
+      STRUCTURE_CHOICES.map((c) => el('button.pill.ds-chip', {
+        type: 'button', 'aria-pressed': String(c.id === activeId), title: c.tip,
+        onclick: () => store.set({ algorithmId: c.algo }),
+      }, el('strong', {}, c.name), el('span.ds-chip__sub', {}, c.sub))));
+    // 한 줄로 압축: 라벨 + 칩들 + 무엇이 되는지. 자세한 설명은 칩 툴팁(title)에.
+    return el('div.ds-pick', {},
+      el('span.ds-pick__label', {}, 'OPEN =', el('span.sr-only', {}, ' 자료구조 바꾸기')),
+      chips,
+      active ? el('span.ds-pick__becomes', {}, `→ ${active.becomes}`) : null,
+    );
+  }
 
   function legend() {
     return el('div.ds-legend', {},

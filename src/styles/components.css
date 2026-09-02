@@ -623,7 +623,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
    ============================================================ */
 .board--anim {
   position: relative;
-  width: min(220px, 24vh, 62vw);
+  width: min(176px, 19vh, 54vw);
   aspect-ratio: 1;
   margin-inline: 0;
 }
@@ -712,3 +712,30 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .guide__title { font-size: var(--fs-lg); margin: var(--sp-2) 0; }
 .guide__body { font-size: var(--fs-md); color: var(--text); line-height: 1.6; margin: 0 0 var(--sp-4); }
 .guide__actions { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* ============================================================
+   OPEN 자료구조 바꾸기 (핵심 실험)
+   ============================================================ */
+.ds-pick {
+  display: flex; align-items: center; gap: var(--sp-1) var(--sp-2); flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+.ds-pick__label { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 700; }
+.ds-pick__becomes { font-size: var(--fs-xs); color: var(--current); font-weight: 700; }
+.ds-picker { display: contents; }
+.ds-chip {
+  display: inline-flex; align-items: baseline; gap: 4px;
+  padding: 3px var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.ds-chip__sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-family: var(--font-code);
+}
+.ds-chip[aria-pressed="true"] {
+  background: var(--current-bg);
+  border-color: var(--current);
+  color: var(--current);
+}
+.ds-chip[aria-pressed="true"] .ds-chip__sub { color: var(--current); }

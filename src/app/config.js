@@ -77,6 +77,9 @@ export const ALGORITHMS = [
     family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '끝까지 파고든다 · 메모리는 적게, 대신 최적해는 보장 못 한다',
     ready: true,
+    // 8-퍼즐에서 스택 탐색은 어떤 입력이든 한 갈래로 끝없이 파고든다.
+    // 주 화면에서는 그 "파고드는" 모습만 짧게 보여 주고 멈춘다(비교 화면은 전체 사용).
+    demoLimit: 60,
   },
   {
     id: 'dls', name: '깊이 제한 탐색', en: 'Depth-Limited Search',
@@ -117,6 +120,25 @@ export const STRUCTURE_LABEL = {
   priority: { name: '우선순위 큐',       hint: '평가값이 작은 것부터 꺼낸다' },
   single:   { name: '현재 상태 하나',    hint: 'OPEN을 두지 않고 지금 상태만 본다' },
 };
+
+/**
+ * OPEN 자료구조 바꾸기 (핵심 실험 · 요구사항 3.2 · 3.2.3)
+ * 학습자가 OPEN을 무엇으로 관리할지 직접 골라 같은 퍼즐이 어떻게 달리 풀리는지 본다.
+ * 자료구조 하나가 곧 알고리즘이 된다.
+ */
+export const STRUCTURE_CHOICES = [
+  { id: 'queue',    algo: 'bfs',   name: '큐',        sub: 'FIFO',    becomes: '너비 우선 탐색',
+    tip: '먼저 넣은 것을 먼저 꺼낸다 → 얕은 곳부터 훑어 최단 경로를 찾는다' },
+  { id: 'stack',    algo: 'dfs',   name: '스택',      sub: 'LIFO',    becomes: '깊이 우선 탐색',
+    tip: '마지막에 넣은 것을 먼저 꺼낸다 → 한 갈래를 끝까지 파고든다' },
+  { id: 'pq-h',     algo: 'best',  name: '우선순위 큐', sub: 'h',       becomes: '최상 우선 탐색',
+    tip: '남은 거리 어림값(h)이 작은 것부터 → 목표로 빠르게 돌진한다' },
+  { id: 'pq-f',     algo: 'astar', name: '우선순위 큐', sub: 'f=g+h',   becomes: 'A* 알고리즘',
+    tip: '비용+어림값(g+h)이 작은 것부터 → 빠르면서 최단 경로도 보장' },
+];
+
+/** 알고리즘 id → 어떤 자료구조 선택으로 만들어지는가 (동기화용) */
+export const STRUCTURE_OF_ALGO = Object.fromEntries(STRUCTURE_CHOICES.map((c) => [c.algo, c.id]));
 
 /** 실행 속도 (요구사항 4.3.2) — 한 단계 사이의 밀리초 */
 export const SPEEDS = [
