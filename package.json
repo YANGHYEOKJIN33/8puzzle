@@ -1,0 +1,11 @@
+{
+  "name": "puzzle8-search-lab",
+  "version": "0.3.0",
+  "private": true,
+  "description": "8-퍼즐로 배우는 인공지능 탐색 알고리즘 학습 사이트",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "python3 -m http.server 8000"
+  }
+}
