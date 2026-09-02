@@ -12,6 +12,7 @@ body {
   font-size: var(--fs-md);
   line-height: 1.55;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;   /* 넘치는 넓은 내용은 각자의 스크롤러 안에서만 (요구사항 6.2.1) */
 }
 
 h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.3; }
