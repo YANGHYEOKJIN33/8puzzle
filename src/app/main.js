@@ -13,6 +13,7 @@ import { mountBoardPanel } from '../ui/boardPanel.js';
 import { mountCodePanel } from '../ui/codePanel.js';
 import { mountDataPanel } from '../ui/dataPanel.js';
 import { mountControls } from '../ui/controls.js';
+import { createCoach } from '../ui/coach.js';
 
 const store = createStore();
 const player = createPlayer(store);
@@ -23,6 +24,11 @@ mountCodePanel(qs('#panel-code'), store, player);
 mountBoardPanel(qs('#panel-board'), store, player);
 mountDataPanel(qs('#panel-data'), store, player);
 mountControls(qs('#controlbar'), store, player);
+
+// 예측 퀴즈(학습 1단계 전용) — 코드 패널의 탭과 코드 사이에 끼워 둔다.
+// 코드 패널은 다시 그릴 때 body만 갈아 끼우므로 이 요소는 지워지지 않는다.
+const codeRoot = qs('#panel-code');
+codeRoot.insertBefore(createCoach(store, player), codeRoot.querySelector('.panel__body'));
 
 // 보기 설정을 문서 뿌리에 반영한다 (요구사항 6.2.2 · 6.3.3)
 store.subscribe((state) => {
