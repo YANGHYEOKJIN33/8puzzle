@@ -263,3 +263,130 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   .counters { grid-template-columns: repeat(2, 1fr); }
   .counter__label { white-space: nowrap; }
 }
+
+/* ============================================================
+   시각화 (5단계) — 작은 판, OPEN/CLOSED, 탐색 진행
+   ============================================================ */
+
+/* --- 작은 미리보기 판 --- */
+.mini {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  width: 42px;
+  height: 42px;
+  padding: 2px;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: var(--border);
+  flex: 0 0 auto;
+}
+.mini__cell {
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border-radius: 1px;
+  font-size: calc(0.6rem * var(--scale));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.mini__cell--blank { background: var(--surface); }
+.mini__cell--moved { background: var(--current); color: #fff; }
+/* 항목 성격에 따른 테두리색 (색 + 라벨 병기 원칙: 라벨은 항목 옆에 따로 붙인다) */
+.mini--current { outline: 2px solid var(--current); }
+.mini--path    { outline: 2px solid var(--path); }
+
+/* --- OPEN 그리기: 큐(가로) / 스택(세로) / 우선순위(목록) --- */
+.open-wrap { margin-top: var(--sp-2); }
+.open-flow {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  min-height: 66px;
+  align-items: center;
+}
+.open-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+.open-item__tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* 방금 넣은 항목 초록, 방금 꺼낸 항목 회색 (요구사항 4.2.2) */
+.open-item--pushed .mini { outline: 2px solid var(--open); }
+.open-item--pushed .open-item__tag { color: var(--open); font-weight: 700; }
+
+.open-ellipsis { color: var(--text-muted); font-size: var(--fs-sm); padding: 0 var(--sp-1); align-self: center; }
+
+.open-empty {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  padding: var(--sp-3);
+  text-align: center;
+}
+.open-end-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* 꺼내어 검사 중인 노드(왼쪽) + CLOSED 수 */
+.inspect {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-2);
+}
+.inspect__label { font-size: var(--fs-xs); color: var(--text-muted); }
+.closed-chip {
+  border: 1px solid var(--closed);
+  background: var(--closed-bg);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 2px var(--sp-2);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 결과 배너 */
+.result {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-2);
+  border: 1px solid var(--border);
+}
+.result--found { background: var(--path-bg); border-color: var(--path); }
+.result--fail  { background: var(--closed-bg); border-color: var(--closed); }
+
+/* 진행 막대 */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.progress__bar {
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress__fill { height: 100%; background: var(--current); width: 0%; }

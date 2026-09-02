@@ -1,10 +1,11 @@
 /**
- * 진입점 — 화면 부품을 붙이고, 보기 설정(테마·글자 크기)을 화면에 반영한다.
+ * 진입점 — 화면 부품을 붙이고, 재생기를 만들어 탐색을 화면에 연결한다.
  *
- * 개발 2단계 범위: 뼈대와 배치까지.
- * 탐색 엔진(src/core/)과 실행 제어 연결은 3~5단계에서 이 파일에 이어 붙인다.
+ * 개발 5단계: 단계 기록(trace)을 실제로 보이게 한다.
+ * 학습 2·3단계(빈칸 채우기·직접 작성)는 이후 단계에서 이 위에 얹는다.
  */
 import { createStore } from './state.js';
+import { createPlayer } from './player.js';
 import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
 import { mountStagebar } from '../ui/stagebar.js';
@@ -14,13 +15,14 @@ import { mountDataPanel } from '../ui/dataPanel.js';
 import { mountControls } from '../ui/controls.js';
 
 const store = createStore();
+const player = createPlayer(store);
 
 mountTopbar(qs('#topbar'), store);
 mountStagebar(qs('#stagebar'), store);
-mountCodePanel(qs('#panel-code'), store);
-mountBoardPanel(qs('#panel-board'), store);
-mountDataPanel(qs('#panel-data'), store);
-mountControls(qs('#controlbar'), store);
+mountCodePanel(qs('#panel-code'), store, player);
+mountBoardPanel(qs('#panel-board'), store, player);
+mountDataPanel(qs('#panel-data'), store, player);
+mountControls(qs('#controlbar'), store, player);
 
 // 보기 설정을 문서 뿌리에 반영한다 (요구사항 6.2.2 · 6.3.3)
 store.subscribe((state) => {
@@ -30,5 +32,20 @@ store.subscribe((state) => {
   root.style.setProperty('--scale', String(state.scale));
 });
 
-// 개발 중 확인용 — 콘솔에서 상태를 들여다볼 수 있게 한다
-globalThis.__puzzle8 = { store };
+// 탐색에 영향을 주는 값(알고리즘·초기 상태·휴리스틱)이 바뀌면 다시 싣는다.
+// 그 밖의 값(테마·속도·탭·학습 단계)이 바뀔 때는 진행 위치를 지키려 다시 싣지 않는다.
+// (요구사항 5.4.2 — 단계를 바꿔도 알고리즘과 초기 상태는 유지된다)
+let lastKey = '';
+store.subscribe((state) => {
+  const key = `${state.algorithmId}|${state.presetId}|${state.heuristicId}`;
+  if (key !== lastKey) {
+    lastKey = key;
+    player.load();
+  }
+});
+
+// 첫 화면에서 바로 탐색을 실어 둔다 — ▶ 재생을 누르면 곧장 움직인다.
+player.load();
+
+// 개발 중 확인용
+globalThis.__puzzle8 = { store, player };

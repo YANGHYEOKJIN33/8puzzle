@@ -1,7 +1,6 @@
 /**
- * 실행 제어 (요구사항 4.3).
- * 되감기는 필수 기능이므로 버튼과 단축키를 2단계에서 미리 자리 잡아 둔다.
- * 실제 동작은 탐색 엔진이 붙는 4~5단계에서 연결한다.
+ * 실행 제어 (요구사항 4.3) — 재생기를 조종한다.
+ * 되감기는 필수(요구사항 4.3.1). 키보드만으로도 조작된다(요구사항 6.3.1).
  */
 import { el, fill } from './dom.js';
 import { SPEEDS } from '../app/config.js';
@@ -14,16 +13,23 @@ const BUTTONS = [
   { id: 'skip',  label: '⏩ 해까지',   key: 'End' },
 ];
 
-export function mountControls(root, store) {
+export function mountControls(root, store, player) {
   const buttons = new Map();
 
+  const handlers = {
+    reset: () => player.reset(),
+    back:  () => player.step(-1),
+    play:  () => player.toggle(),
+    step:  () => player.step(1),
+    skip:  () => player.skipToEnd(),
+  };
+
   for (const spec of BUTTONS) {
-    buttons.set(spec.id, el(`button.ctrl${spec.primary ? '.ctrl--primary' : ''}`, {
-      type: 'button',
-      disabled: true,
-      title: `${spec.label} (${spec.key})`,
-      'data-action': spec.id,
-    }, spec.label));
+    const button = el(`button.ctrl${spec.primary ? '.ctrl--primary' : ''}`, {
+      type: 'button', title: `${spec.label} (${spec.key})`, 'data-action': spec.id,
+      onclick: handlers[spec.id],
+    }, spec.label);
+    buttons.set(spec.id, button);
   }
 
   const speedSelect = el('select', {
@@ -36,21 +42,16 @@ export function mountControls(root, store) {
     el('div.speed', {}, el('label', { for: 'speed-select' }, '속도'), speedSelect),
     el('span.topbar__spacer'),
     el('span.panel__hint', {},
-      '단축키 ', el('kbd', {}, 'Space'), ' 재생 · ',
-      el('kbd', {}, '→'), ' 한 단계 · ', el('kbd', {}, '←'), ' 뒤로',
-    ),
+      '단축키 ', el('kbd', {}, 'Space'), ' 재생 · ', el('kbd', {}, '→'), ' 한 단계 · ', el('kbd', {}, '←'), ' 뒤로'),
   );
 
-  // 요구사항 6.3.1: 키보드만으로 실행 제어가 가능해야 한다
+  // 키보드 조작 (요구사항 6.3.1)
   document.addEventListener('keydown', (event) => {
     const tag = event.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || event.target?.isContentEditable) return;
-
     const map = { ' ': 'play', ArrowRight: 'step', ArrowLeft: 'back', Home: 'reset', End: 'skip' };
     const action = map[event.key];
-    if (!action) return;
-
-    const button = buttons.get(action);
+    const button = action && buttons.get(action);
     if (!button || button.disabled) return;
     event.preventDefault();
     button.click();
@@ -58,9 +59,13 @@ export function mountControls(root, store) {
 
   store.subscribe((state) => { speedSelect.value = state.speedId; });
 
-  // 탐색 엔진이 붙으면 main.js가 이 함수로 버튼을 살린다
-  return {
-    on(action, handler) { buttons.get(action)?.addEventListener('click', handler); },
-    setEnabled(enabled) { for (const button of buttons.values()) button.disabled = !enabled; },
-  };
+  player.subscribe((v) => {
+    const ready = !v.empty;
+    buttons.get('reset').disabled = !ready || v.atStart;
+    buttons.get('back').disabled = !ready || v.atStart;
+    buttons.get('step').disabled = !ready || v.atEnd;
+    buttons.get('skip').disabled = !ready || v.atEnd;
+    buttons.get('play').disabled = false;   // 재생은 언제나 눌러 시작할 수 있다
+    buttons.get('play').textContent = v.playing ? '⏸ 일시정지' : (v.atEnd && ready ? '↻ 다시 재생' : '▶ 재생');
+  });
 }
