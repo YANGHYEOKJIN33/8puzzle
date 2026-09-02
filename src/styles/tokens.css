@@ -1,0 +1,108 @@
+/* ============================================================
+   디자인 토큰 — 색·간격·글꼴을 여기 한 곳에서만 정의한다.
+   요구사항 6.1.4: 의미를 가진 4색 이내
+     파랑 = 현재 노드 / 초록 = OPEN 삽입 / 회색 = CLOSED / 주황 = 해 경로
+   요구사항 6.3.2: 명암비 WCAG AA(4.5:1) 이상
+   요구사항 6.3.3: 다크 모드 지원
+   ============================================================ */
+
+:root {
+  color-scheme: light dark;
+
+  /* --- 바탕과 글자 --- */
+  --bg:            #f7f8fa;
+  --surface:       #ffffff;
+  --surface-2:     #eef0f4;
+  --border:        #d3d8e0;
+  --border-strong: #aeb6c2;
+  --text:          #14181f;
+  --text-muted:    #5a6472;
+
+  /* --- 의미를 가진 4색 --- */
+  --current:       #1857c4;  /* 파랑 : 지금 검사 중인 노드 */
+  --current-bg:    #e3ecfd;
+  --open:          #17724a;  /* 초록 : OPEN에 새로 들어온 것 */
+  --open-bg:       #e0f3e9;
+  --closed:        #5a6472;  /* 회색 : 이미 펼친 것(CLOSED) */
+  --closed-bg:     #e7e9ee;
+  --path:          #a75300;  /* 주황 : 찾아낸 해 경로 */
+  --path-bg:       #fdeddb;
+
+  --danger:        #b3261e;
+
+  /* --- 글꼴 --- */
+  --font-ui:   "Pretendard", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code: "D2Coding", "JetBrains Mono", ui-monospace, "Consolas", monospace;
+
+  /* 요구사항 6.2.2: 글자 크기 조절 버튼 — 이 배율만 바꾸면 전체가 커진다 */
+  --scale: 1;
+  --fs-xs: calc(0.75rem * var(--scale));
+  --fs-sm: calc(0.85rem * var(--scale));
+  --fs-md: calc(0.95rem * var(--scale));
+  --fs-lg: calc(1.15rem * var(--scale));
+  --fs-xl: calc(1.5rem  * var(--scale));
+
+  /* --- 간격 · 모서리 --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --radius:    10px;
+  --radius-sm: 6px;
+
+  --shadow: 0 1px 2px rgba(16, 22, 32, .06), 0 4px 12px rgba(16, 22, 32, .06);
+  --focus:  0 0 0 3px rgba(24, 87, 196, .35);
+}
+
+/* 다크 모드 — 같은 의미, 다른 밝기 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #12151b;
+    --surface:       #1a1e26;
+    --surface-2:     #232833;
+    --border:        #333b48;
+    --border-strong: #4a5364;
+    --text:          #e8ecf2;
+    --text-muted:    #a3adbb;
+
+    --current:       #7aa9ff;
+    --current-bg:    #1c2b47;
+    --open:          #5fd3a0;
+    --open-bg:       #17342a;
+    --closed:        #a3adbb;
+    --closed-bg:     #272c36;
+    --path:          #ffb066;
+    --path-bg:       #3a2716;
+
+    --danger:        #ff8a80;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .35);
+    --focus:  0 0 0 3px rgba(122, 169, 255, .4);
+  }
+}
+
+/* 사용자가 직접 고른 테마가 자동 설정을 이긴다 */
+:root[data-theme="dark"] {
+  --bg:            #12151b;
+  --surface:       #1a1e26;
+  --surface-2:     #232833;
+  --border:        #333b48;
+  --border-strong: #4a5364;
+  --text:          #e8ecf2;
+  --text-muted:    #a3adbb;
+
+  --current:       #7aa9ff;
+  --current-bg:    #1c2b47;
+  --open:          #5fd3a0;
+  --open-bg:       #17342a;
+  --closed:        #a3adbb;
+  --closed-bg:     #272c36;
+  --path:          #ffb066;
+  --path-bg:       #3a2716;
+
+  --danger:        #ff8a80;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .35);
+  --focus:  0 0 0 3px rgba(122, 169, 255, .4);
+}
