@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko" data-theme-default="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8-퍼즐로 배우는 인공지능 탐색 알고리즘</title>
+  <meta name="description" content="8-퍼즐을 소재로 너비 우선, 깊이 우선, 최상 우선, 언덕 등반, A* 탐색을 순서도·의사코드·파이썬으로 배우는 고등학생용 학습 사이트">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+
+  <link rel="stylesheet" href="./src/styles/tokens.css">
+  <link rel="stylesheet" href="./src/styles/base.css">
+  <link rel="stylesheet" href="./src/styles/layout.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 상단: 알고리즘 선택 + 보기 설정 -->
+    <header class="topbar" id="topbar"></header>
+
+    <!-- 학습 단계 1 / 2 / 3 -->
+    <nav class="stagebar" id="stagebar" aria-label="학습 단계"></nav>
+
+    <!-- 본문: 코드 · 퍼즐 판 · 자료구조 -->
+    <main class="workspace">
+      <section class="panel panel--code"  id="panel-code"  aria-label="코드"></section>
+      <section class="panel panel--board" id="panel-board" aria-label="퍼즐 판"></section>
+      <section class="panel panel--data"  id="panel-data"  aria-label="자료구조"></section>
+    </main>
+
+    <!-- 하단: 실행 제어 -->
+    <div class="controlbar" id="controlbar" role="group" aria-label="실행 제어"></div>
+
+    <footer class="sitefoot">
+      8-퍼즐 인공지능 탐색 학습 사이트 · 개발 2단계(뼈대) ·
+      <a href="https://github.com/YANGHYEOKJIN33/Alg/blob/main/REQUIREMENTS.md">요구사항 정의서</a>
+    </footer>
+  </div>
+
+
+  <noscript>
+    <p style="padding:16px">
+      이 사이트는 자바스크립트로 동작합니다. 브라우저에서 자바스크립트를 켜 주세요.
+    </p>
+  </noscript>
+
+  <script type="module" src="./src/app/main.js"></script>
+</body>
+</html>

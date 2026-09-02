@@ -1,0 +1,265 @@
+/* ============================================================
+   화면 부품
+   ============================================================ */
+
+/* --- 패널 (공통 카드) --- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.panel__title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.panel__hint {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+.panel__body { padding: var(--sp-3); min-width: 0; min-height: 0; overflow: auto; flex: 1 1 auto; }
+
+/* 패널 아래에 고정되는 띠 — 스크롤해도 사라지지 않는다 (요구사항 4.2.5) */
+.panel__foot {
+  flex: 0 0 auto;
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+/* --- 알약 버튼 (학습 단계 / 표현 방식 전환) --- */
+.pill {
+  border-radius: 999px;
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.pill[aria-pressed="true"],
+.pill[aria-selected="true"] {
+  background: var(--current-bg);
+  border-color: var(--current);
+  color: var(--current);
+  font-weight: 700;
+}
+
+/* --- 단계 선택 칩: 번호 + 이름 --- */
+.stagechip { display: flex; align-items: baseline; gap: var(--sp-2); }
+.stagechip__no {
+  font-weight: 700;
+  font-size: var(--fs-xs);
+  border-radius: 999px;
+  padding: 0 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.stagechip[aria-pressed="true"] .stagechip__no {
+  background: var(--current);
+  border-color: var(--current);
+  color: #fff;
+}
+.stagechip__desc { font-size: var(--fs-xs); color: var(--text-muted); }
+
+/* 퍼즐 판 + 설명을 나란히 두어 세로 높이를 아낀다 */
+.board-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.board-row > .board { margin-inline: 0; }
+.board-row__info { flex: 1 1 160px; min-width: 0; }
+
+/* --- 8-퍼즐 판 (요구사항 4.1 ①) --- */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+  width: min(180px, 21vh, 55vw);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+.tile {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  font-size: calc(1.6rem * var(--scale));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+.tile--blank {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--border);
+}
+/* 직전 상태에서 움직인 타일 강조 (요구사항 4.1 ①) */
+.tile--moved {
+  background: var(--current-bg);
+  border-color: var(--current);
+  color: var(--current);
+}
+
+.board-caption {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* --- 코드 / 의사코드 표시 (요구사항 3.3) --- */
+.codeview {
+  margin: 0;
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+  line-height: 1.65;
+  overflow: auto;
+}
+.codeline {
+  display: grid;
+  grid-template-columns: 2.4em 1fr;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
+  border-left: 3px solid transparent;
+  white-space: pre-wrap;
+}
+.codeline__no {
+  color: var(--text-muted);
+  text-align: right;
+  user-select: none;
+}
+/* 지금 실행 중인 줄 (요구사항 3.3.2 / 3.3.3) */
+.codeline--active {
+  background: var(--current-bg);
+  border-left-color: var(--current);
+}
+
+/* --- 자료구조 패널 (요구사항 4.2) --- */
+.ds-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-bottom: var(--sp-3);
+}
+.ds-legend span { display: inline-flex; align-items: center; gap: var(--sp-1); }
+/* 요구사항 6.1.5: 색만으로 구분하지 않는다 — 모양(아이콘)도 함께 쓴다 */
+.swatch {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  display: inline-block;
+}
+.swatch--current { background: var(--current-bg); border-color: var(--current); }
+.swatch--open    { background: var(--open-bg);    border-color: var(--open);    }
+.swatch--closed  { background: var(--closed-bg);  border-color: var(--closed);  }
+.swatch--path    { background: var(--path-bg);    border-color: var(--path);    }
+
+/* 카운터 (요구사항 4.2.5) */
+.counters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+}
+.counter {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--surface);
+  text-align: center;
+}
+.counter__label { display: block; font-size: var(--fs-xs); color: var(--text-muted); }
+.counter__value {
+  display: block;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- 아직 만들지 않은 부분을 정직하게 알리는 자리표시 --- */
+.placeholder {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+.placeholder strong { color: var(--text); display: block; margin-bottom: var(--sp-1); }
+
+/* --- 상태 표시줄 한 줄 해설 (요구사항 5.1.1) --- */
+.narration {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  background: var(--current-bg);
+  border: 1px solid var(--current);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--sp-3);
+}
+
+/* --- 실행 제어 버튼 --- */
+.ctrl { min-width: 44px; }             /* 손가락으로 눌러도 되는 크기 */
+.ctrl--primary {
+  background: var(--current);
+  border-color: var(--current);
+  color: #fff;
+  font-weight: 700;
+}
+.ctrl--primary:hover:not(:disabled) {
+  background: var(--current);
+  filter: brightness(1.08);
+}
+.speed { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); }
+
+/* --- 접기식 고급 설정 (요구사항 6.1.2) --- */
+details.advanced { margin-top: var(--sp-3); }
+details.advanced > summary {
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  padding: var(--sp-1) 0;
+}
+details.advanced[open] > summary { color: var(--text); font-weight: 600; }
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--border);
+}
+.field:last-child { border-bottom: 0; }
+
+/* --- 하단 저작 정보 --- */
+.sitefoot {
+  padding: var(--sp-1) var(--sp-4) var(--sp-2);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* 좁은 화면에서는 카운터를 2줄로 — 글자가 쪼개지지 않게 (요구사항 4.2.5) */
+@media (max-width: 600px) {
+  .counters { grid-template-columns: repeat(2, 1fr); }
+  .counter__label { white-space: nowrap; }
+}
