@@ -10,6 +10,7 @@ import { el, fill } from './dom.js';
 import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { miniBoard } from './miniBoard.js';
+import { renderTree } from './treeView.js';
 
 const COUNTERS = [
   { id: 'generated', label: '생성한 노드' },
@@ -39,10 +40,16 @@ export function mountDataPanel(root, store, player) {
     ),
   );
 
+  const tabs = ['open', 'tree'].map((id) =>
+    el('button.pill', {
+      type: 'button', role: 'tab', 'data-dview': id,
+      onclick: () => store.set({ dataView: id }),
+    }, id === 'open' ? 'OPEN·CLOSED' : '탐색 트리'));
+
   fill(root,
     el('div.panel__head', {},
       el('span.panel__title', {}, '자료구조'),
-      el('span.panel__hint', {}, 'OPEN · CLOSED'),
+      el('div', { role: 'tablist', style: 'display:flex;gap:6px' }, tabs),
     ),
     body,
     foot,
@@ -94,10 +101,18 @@ export function mountDataPanel(root, store, player) {
     const algo = findById(ALGORITHMS, state.algorithmId);
     const structure = STRUCTURE_LABEL[algo.structure];
 
+    for (const t of tabs) t.setAttribute('aria-selected', String(t.dataset.dview === state.dataView));
+
     // 카운터 갱신
     for (const counter of COUNTERS) {
       const v = viewData.empty ? '–' : String(viewData.counters[counter.id]);
       counterValues.get(counter.id).textContent = v;
+    }
+
+    // 탐색 트리 보기 (학습 3단계 제외 — 그때는 학생 코드가 관리)
+    if (state.dataView === 'tree' && state.stageId !== 'write') {
+      fill(body, renderTree(viewData, algo.evalTag));
+      return;
     }
 
     if (viewData.empty) {

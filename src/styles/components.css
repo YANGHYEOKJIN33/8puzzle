@@ -739,3 +739,44 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   color: var(--current);
 }
 .ds-chip[aria-pressed="true"] .ds-chip__sub { color: var(--current); }
+
+/* ============================================================
+   탐색 트리 (요구사항 4.1 ④)
+   ============================================================ */
+.tree-wrap {
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  overflow: auto;
+}
+.tree-svg { display: block; }
+.tree-edge { stroke: var(--border-strong); stroke-width: 1.4; }
+.tree-box {
+  fill: var(--surface-2);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  transition: fill .2s ease, stroke .2s ease;
+}
+.tree-cell {
+  fill: var(--text);
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.tree-eval circle { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1; }
+.tree-eval-text {
+  fill: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+/* 지금 검사 중인 노드 */
+.tree-node--current .tree-box { fill: var(--current-bg); stroke: var(--current); stroke-width: 2.4; }
+.tree-node--current .tree-eval circle { stroke: var(--current); }
+.tree-node--current .tree-eval-text { fill: var(--current); }
+/* 해 경로 위의 노드 */
+.tree-node--path .tree-box { fill: var(--path-bg); stroke: var(--path); stroke-width: 2; }
+.tree-node--path .tree-eval circle { stroke: var(--path); }
