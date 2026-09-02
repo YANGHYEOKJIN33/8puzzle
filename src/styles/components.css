@@ -390,3 +390,71 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   border: 1px solid var(--border);
 }
 .progress__fill { height: 100%; background: var(--current); width: 0%; }
+
+/* ============================================================
+   순서도 (6단계)
+   ============================================================ */
+.flowchart {
+  display: block;
+  max-width: 340px;
+  margin: 0 auto;
+  max-height: 46vh;
+}
+.flow-shape {
+  fill: var(--surface-2);
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+.flow-text {
+  fill: var(--text);
+  font-size: 11px;
+  font-family: var(--font-ui);
+}
+.flow-edge {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+.flow-edge--loop { stroke-dasharray: 4 3; }
+.flow-arrow-head { fill: var(--border-strong); }
+.flow-edge-label {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-family: var(--font-ui);
+}
+/* 지금 실행 중인 도형 강조 (요구사항 3.3.1) */
+.flow-box--active .flow-shape {
+  fill: var(--current-bg);
+  stroke: var(--current);
+  stroke-width: 2.5;
+}
+.flow-box--active .flow-text { fill: var(--current); font-weight: 700; }
+
+/* ============================================================
+   예측 퀴즈 코치 (6단계 · 학습 1단계 전용)
+   ============================================================ */
+.coach {
+  margin: var(--sp-2) var(--sp-3) 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--open);
+  background: var(--open-bg);
+  border-radius: var(--radius-sm);
+}
+.coach__q { font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-2); }
+.coach__opts { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.coach__opt {
+  flex: 1 1 auto;
+  font-size: var(--fs-sm);
+  border-color: var(--open);
+}
+.coach__opt:hover:not(:disabled) { background: var(--open-bg); }
+.coach__again { flex: 0 0 auto; margin-top: var(--sp-2); }
+.coach__result {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.coach__result--ok { color: var(--open); }
+.coach__result--no { color: var(--danger); }
+.coach__why { font-weight: 400; color: var(--text); font-size: var(--fs-xs); }

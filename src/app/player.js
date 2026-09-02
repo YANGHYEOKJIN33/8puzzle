@@ -73,6 +73,7 @@ export function createPlayer(store) {
       highlight: frame.highlight,
       atStart: index === 0,
       atEnd: index === frames.length - 1,
+      nextAction: index + 1 < frames.length ? frames[index + 1].action : null,
       playing: timer !== null,
       solution: result.solution,
       pathIds,
