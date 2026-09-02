@@ -510,3 +510,50 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .fill-feedback__head { font-weight: 700; margin-bottom: 2px; }
 .fill-feedback__note { color: var(--text); margin-bottom: var(--sp-1); }
 .fill-feedback__detail { font-size: var(--fs-xs); color: var(--text-muted); }
+
+/* ============================================================
+   학습 3단계 · 직접 작성 (9단계)
+   ============================================================ */
+.write-panel { display: flex; flex-direction: column; gap: var(--sp-2); }
+.write-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; }
+
+.code-editor {
+  width: 100%;
+  min-height: 34vh;
+  resize: vertical;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  padding: var(--sp-2) var(--sp-3);
+  tab-size: 4;
+  white-space: pre;
+  overflow: auto;
+}
+
+.write-status {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+.write-status--busy { background: var(--current-bg); border-color: var(--current); }
+.write-status--ok   { background: var(--path-bg);   border-color: var(--path); }
+.write-status--error { background: var(--closed-bg); border-color: var(--danger); }
+.write-status--info { background: var(--surface-2); }
+.write-status__head { font-weight: 700; margin-bottom: 2px; }
+.write-status__body { font-size: var(--fs-xs); color: var(--text-muted); }
+.write-status__raw {
+  margin: var(--sp-1) 0 0;
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+  overflow-x: auto;
+  white-space: pre-wrap;
+}

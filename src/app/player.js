@@ -140,6 +140,21 @@ export function createPlayer(store) {
       return result;
     },
 
+    /** 미리 만들어 둔 결과(trace)를 직접 싣는다 — 학습 3단계의 경로 애니메이션에 쓴다 */
+    loadResult(prebuilt) {
+      pause();
+      if (!prebuilt) { result = null; frames = []; index = 0; emit(); return null; }
+      result = prebuilt;
+      frames = result.frames;
+      pathIds = pathIdSet(result);
+      index = 0;
+      emit();
+      return result;
+    },
+
+    /** 실은 것을 비운다 (학습 3단계 진입 시 초기 상태만 보이도록) */
+    clear() { pause(); result = null; frames = []; index = 0; pathIds = new Set(); emit(); },
+
     step(dir) { pause(); goTo(index + (dir < 0 ? -1 : 1)); },
     reset() { pause(); goTo(0); },
     skipToEnd() { pause(); goTo(frames.length - 1); },

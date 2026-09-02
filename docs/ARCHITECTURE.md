@@ -19,6 +19,9 @@ src/
     config.js           알고리즘 목록, 학습 단계, 휴리스틱, 예제 상태
     state.js            앱 상태 저장소 (구독 방식 + 로컬 저장)
     player.js           재생기 — 단계 기록을 한 컷씩 넘겨 주고 되감는다
+    exercises.js        학습 2단계(빈칸 채우기) 문제 데이터
+    pyCode.js           학습 3단계 파이썬 프리앰블·시작 코드·정답
+    pyRunner.js         Pyodide 실행기 (3단계 진입 시에만 지연 로딩)
     main.js             진입점 — 부품을 붙이고 재생기를 연결한다
   ui/
     dom.js              el() / fill() / qs() 만 있는 작은 도우미
