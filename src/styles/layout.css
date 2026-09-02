@@ -24,7 +24,9 @@
 }
 .topbar__title {
   font-size: var(--fs-lg);
-  white-space: nowrap;
+  line-height: 1.2;
+  min-width: 0;
+  flex-shrink: 1;
 }
 .topbar__title small {
   display: block;
@@ -43,7 +45,9 @@
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
+  min-width: 0;
 }
+.topbar { min-width: 0; }
 
 /* --- 본문 3분할 --- */
 .workspace {
@@ -100,6 +104,7 @@
 
   /* "학습 단계" 글자가 세로로 쪼개지지 않게 한다 */
   .stagebar > .panel__title { flex: 0 0 auto; white-space: nowrap; }
+  .topbar__title { font-size: var(--fs-md); }
 }
 
 /* 휴리스틱 선택기 (7단계) */

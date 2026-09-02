@@ -6,7 +6,7 @@ import { el, fill } from './dom.js';
 import { ALGORITHMS, HEURISTICS } from '../app/config.js';
 import { findById } from '../app/state.js';
 
-export function mountTopbar(root, store, onCompare = () => {}) {
+export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}) {
   const select = el('select', {
     id: 'algo-select',
     onchange: (e) => store.set({ algorithmId: e.target.value }),
@@ -33,6 +33,11 @@ export function mountTopbar(root, store, onCompare = () => {}) {
     type: 'button', title: '같은 초기 상태로 여러 알고리즘 성능을 나란히 비교',
     onclick: () => onCompare(),
   }, '⚖ 비교');
+
+  const helpBtn = el('button.pill', {
+    type: 'button', title: '사용 안내 다시 보기',
+    onclick: () => onHelp(),
+  }, '? 도움말');
 
   const themeBtn = el('button.pill', {
     type: 'button',
@@ -63,7 +68,7 @@ export function mountTopbar(root, store, onCompare = () => {}) {
     select,
     heuristicWrap,
     el('span.topbar__spacer'),
-    el('div.topbar__tools', {}, compareBtn, smaller, bigger, themeBtn),
+    el('div.topbar__tools', {}, helpBtn, compareBtn, smaller, bigger, themeBtn),
   );
 
   store.subscribe((state) => {

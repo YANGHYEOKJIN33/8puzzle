@@ -7,6 +7,7 @@
 import { createStore } from './state.js';
 import { createPlayer } from './player.js';
 import { createComparePanel } from '../ui/comparePanel.js';
+import { createOnboarding } from '../ui/onboarding.js';
 import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
 import { mountStagebar } from '../ui/stagebar.js';
@@ -19,8 +20,9 @@ import { createCoach } from '../ui/coach.js';
 const store = createStore();
 const player = createPlayer(store);
 const compare = createComparePanel(store, player);
+const onboarding = createOnboarding(store);
 
-mountTopbar(qs('#topbar'), store, compare.open);
+mountTopbar(qs('#topbar'), store, compare.open, onboarding.open);
 mountStagebar(qs('#stagebar'), store);
 mountCodePanel(qs('#panel-code'), store, player);
 mountBoardPanel(qs('#panel-board'), store, player);
@@ -62,6 +64,9 @@ store.subscribe((state) => {
 
 // 첫 화면에서 바로 탐색을 실어 둔다 — ▶ 재생을 누르면 곧장 움직인다.
 player.load();
+
+// 처음 방문한 학습자에게 3단계 안내를 보여 준다 (요구사항 6.1.6)
+onboarding.maybeShow();
 
 // 개발 중 확인용
 globalThis.__puzzle8 = { store, player };
