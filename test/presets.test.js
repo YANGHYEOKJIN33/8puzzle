@@ -23,8 +23,8 @@ for (const preset of PRESETS) {
     assert.equal(optimalDepth(preset.state), preset.minMoves);
   });
 
-  test(`예제 "${preset.name}"의 안내 문구가 실제 난이도와 맞는다`, () => {
-    assert.equal(preset.note, `${preset.minMoves}수`);
+  test(`예제 "${preset.name}"의 안내 문구가 실제 최소 이동 횟수로 시작한다`, () => {
+    assert.ok(preset.note.startsWith(`${preset.minMoves}수`), `note="${preset.note}"`);
   });
 }
 

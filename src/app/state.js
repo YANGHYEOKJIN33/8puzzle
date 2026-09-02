@@ -18,7 +18,7 @@ const initial = {
 
   // 기본값으로 동작하는 것
   heuristicId: 'h2',
-  presetId: 'normal',
+  presetId: 'intro',
   speedId: 'normal',
 
   // 보기 설정

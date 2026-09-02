@@ -15,9 +15,13 @@ export { GOAL } from '../core/puzzle.js';
  * test/presets.test.js가 너비 우선 탐색으로 이 값을 매번 다시 확인한다.
  */
 export const PRESETS = [
-  { id: 'easy',   name: '쉬움',   note: '4수',  minMoves: 4,  state: [1, 5, 2, 4, 0, 3, 7, 8, 6] },
-  { id: 'normal', name: '보통',   note: '11수', minMoves: 11, state: [5, 8, 2, 1, 7, 3, 4, 0, 6] },
-  { id: 'hard',   name: '어려움', note: '31수', minMoves: 31, state: [8, 6, 7, 2, 5, 4, 3, 0, 1] },
+  // 탐색 횟수(= 펼친 노드 수, 기본 알고리즘 BFS 기준)를 기준으로 사다리를 짠다.
+  // 학습자가 탐색 과정을 처음부터 끝까지 따라갈 수 있도록 짧은 것부터 둔다.
+  { id: 'intro',     name: '맛보기', note: '2수 · 탐색 3회',   minMoves: 2,  state: [1, 2, 0, 4, 5, 3, 7, 8, 6] },
+  { id: 'easy',      name: '쉬움',   note: '3수 · 탐색 10회',  minMoves: 3,  state: [1, 0, 3, 4, 2, 6, 7, 5, 8] },
+  { id: 'normal',    name: '보통',   note: '5수 · 탐색 34회',  minMoves: 5,  state: [4, 1, 3, 0, 2, 6, 7, 5, 8] },
+  { id: 'hard',      name: '어려움', note: '8수 · 탐색 154회', minMoves: 8,  state: [0, 5, 2, 1, 8, 3, 4, 7, 6] },
+  { id: 'challenge', name: '도전',   note: '31수 · BFS는 포기', minMoves: 31, state: [8, 6, 7, 2, 5, 4, 3, 0, 1] },
 ];
 
 /** 휴리스틱 (요구사항 3.2.2) */
