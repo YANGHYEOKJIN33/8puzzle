@@ -31,6 +31,10 @@ jobs:
 
       - name: Pages 설정
         uses: actions/configure-pages@v5
+        with:
+          # 저장소에 Pages가 아직 켜져 있지 않으면 이 워크플로가 직접 켠다.
+          # (없으면 "Get Pages site failed ... Not Found" 로 실패한다)
+          enablement: true
 
       - name: 사이트 파일 올리기
         uses: actions/upload-pages-artifact@v3
