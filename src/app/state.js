@@ -25,6 +25,7 @@ const initial = {
   theme: 'auto',        // auto | light | dark
   scale: 1,             // 글자 크기 배율 (요구사항 6.2.2)
   codeView: 'pseudo',   // 코드 패널에 무엇을 보일지: flow | pseudo | python
+  dataView: 'open',     // 자료구조 패널에 무엇을 보일지: open | tree
 
   // 실행 상태 (탐색 엔진은 3·4단계에서 붙인다)
   running: false,
