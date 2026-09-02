@@ -6,14 +6,18 @@
  * (실제 탐색 로직은 3~4단계에서 src/core/ 아래에 알고리즘마다 한 파일씩 추가한다.)
  */
 
-/** 목표 상태 — 0은 빈칸 (요구사항 3.1) */
-export const GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+// 목표 상태는 규칙의 일부이므로 코어가 갖고 있다. 화면 쪽은 여기서 가져다 쓴다.
+export { GOAL } from '../core/puzzle.js';
 
-/** 난이도별 예제 초기 상태 (요구사항 3.1.1) */
+/**
+ * 난이도별 예제 초기 상태 (요구사항 3.1.1)
+ * minMoves는 "최소 몇 번 밀어야 풀리는가"의 참값이다.
+ * test/presets.test.js가 너비 우선 탐색으로 이 값을 매번 다시 확인한다.
+ */
 export const PRESETS = [
-  { id: 'easy',   name: '쉬움',   note: '5수 이내',  state: [1, 2, 3, 4, 5, 6, 0, 7, 8] },
-  { id: 'normal', name: '보통',   note: '10수 내외', state: [1, 2, 3, 0, 5, 6, 4, 7, 8] },
-  { id: 'hard',   name: '어려움', note: '20수 이상', state: [8, 6, 7, 2, 5, 4, 3, 0, 1] },
+  { id: 'easy',   name: '쉬움',   note: '4수',  minMoves: 4,  state: [1, 5, 2, 4, 0, 3, 7, 8, 6] },
+  { id: 'normal', name: '보통',   note: '11수', minMoves: 11, state: [5, 8, 2, 1, 7, 3, 4, 0, 6] },
+  { id: 'hard',   name: '어려움', note: '31수', minMoves: 31, state: [8, 6, 7, 2, 5, 4, 3, 0, 1] },
 ];
 
 /** 휴리스틱 (요구사항 3.2.2) */

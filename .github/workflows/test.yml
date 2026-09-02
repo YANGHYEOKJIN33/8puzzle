@@ -1,0 +1,27 @@
+# 코어 엔진 테스트 (요구사항 7.5.2)
+# 의존성이 없으므로 내려받고 바로 실행한다.
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 내려받기
+        uses: actions/checkout@v4
+
+      - name: Node 준비
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 테스트 실행
+        run: npm test

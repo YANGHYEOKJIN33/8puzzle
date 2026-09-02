@@ -27,7 +27,11 @@ src/
     codePanel.js        순서도 / 의사코드 / 파이썬 탭
     dataPanel.js        OPEN·CLOSED·카운터
     controls.js         재생·한 단계·되감기 + 키보드 단축키
-  core/                 탐색 엔진 (3~4단계에서 채움, README.md 참고)
+  core/                 탐색 엔진 — 화면을 전혀 모르는 순수 로직
+    puzzle.js           8-퍼즐 규칙: 상태·이동·해 존재 판정
+    heuristics.js       h0 / h1 / h2
+test/                   node:test 테스트 (의존성 없음)
+  helpers/optimalDepth.js  참값 계산기 — 최소 이동 횟수를 BFS로 구한다
 docs/                   개발 문서
 ```
 
@@ -74,6 +78,26 @@ store.subscribe((state) => { ... }); // 구독 즉시 한 번 호출된다
 3. 의사코드·파이썬·순서도 원문을 콘텐츠 파일에 추가한다.
 
 화면 코드는 고치지 않는다.
+
+## 테스트 (요구사항 7.5.2)
+
+외부 라이브러리 없이 Node에 들어 있는 테스트 도구만 쓴다.
+
+```bash
+npm test        # node --test test/*.test.js
+```
+
+무엇을 확인하는가
+
+| 파일 | 확인하는 것 |
+|---|---|
+| `test/puzzle.test.js` | 이동 규칙, 원본 불변, 이동 순서 고정, 해 존재 판정 |
+| `test/heuristics.test.js` | h1·h2 값, h2 ≥ h1, 셋 다 실제 거리를 넘겨 잡지 않음(허용적) |
+| `test/presets.test.js` | 화면에 내놓는 예제가 실제로 광고한 수만큼 걸리는지 |
+
+`test/helpers/optimalDepth.js`는 **사이트가 쓰는 알고리즘과 별개의 코드**로 짠
+너비 우선 탐색이다. 4단계 이후 만들 알고리즘이 내놓은 답을 이 참값과 대조해
+검증할 수 있도록 일부러 따로 두었다.
 
 ## 개발 중 미리 보기
 
