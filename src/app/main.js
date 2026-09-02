@@ -42,12 +42,20 @@ store.subscribe((state) => {
 // 그 밖의 값(테마·속도·탭·학습 단계)이 바뀔 때는 진행 위치를 지키려 다시 싣지 않는다.
 // (요구사항 5.4.2 — 단계를 바꿔도 알고리즘과 초기 상태는 유지된다)
 let lastKey = '';
+let lastStage = '';
 store.subscribe((state) => {
+  // 학습 3단계(직접 작성)에서는 학생 코드의 결과를 writePanel이 직접 싣는다.
+  // 알고리즘 선택은 이 단계와 무관하므로 자동 리로드하지 않는다.
+  if (state.stageId === 'write') {
+    if (lastStage !== 'write') { lastStage = 'write'; player.clear(); }
+    return;
+  }
   const key = `${state.algorithmId}|${state.presetId}|${state.heuristicId}`;
-  if (key !== lastKey) {
+  if (key !== lastKey || lastStage === 'write') {
     lastKey = key;
     player.load();
   }
+  lastStage = state.stageId;
 });
 
 // 첫 화면에서 바로 탐색을 실어 둔다 — ▶ 재생을 누르면 곧장 움직인다.

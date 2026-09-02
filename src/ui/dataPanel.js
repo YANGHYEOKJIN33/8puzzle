@@ -113,6 +113,18 @@ export function mountDataPanel(root, store, player) {
       return;
     }
 
+    // 학습 3단계: 학생 코드의 OPEN/CLOSED는 파이썬 안에 있어 여기 그리지 않는다
+    if (state.stageId === 'write') {
+      fill(body,
+        legend(),
+        el('div.placeholder', {},
+          el('strong', {}, '직접 작성한 코드의 해 경로'),
+          '이 단계에서는 OPEN·CLOSED가 여러분의 파이썬 코드 안에서 관리됩니다. ' +
+          '오른쪽 퍼즐 판과 아래 진행 막대로 찾은 경로를 재생해 보세요.'),
+      );
+      return;
+    }
+
     const endLabel = endLabelFor(algo.structure, algo.evalTag);
 
     fill(body,
