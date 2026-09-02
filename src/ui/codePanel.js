@@ -61,7 +61,7 @@ export function mountCodePanel(root, store, player) {
         flow = buildFlowchart(algo.structure);
         flowStructure = algo.structure;
       }
-      flow.setActive(boxForAction(activeAction()));
+      flow.setActive(boxForAction(activeAction(), algo.structure));
       fill(body, narration(), el('div', { style: 'overflow:auto' }, flow.svg));
       return;
     }

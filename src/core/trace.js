@@ -11,7 +11,7 @@
  * 이것만으로 브라우저가 몇 초씩 멈춘다.
  *
  * 그래서 프레임에는 "이번에 OPEN이 어떻게 바뀌었는지"(delta)만 담는다.
- *   delta = { op: 'push' | 'pop' | 'none', id, end: 'front' | 'back' | null }
+ *   delta = { op: 'push'|'insert'|'pop'|'clear'|'none', id, end, index }
  * 화면은 OPEN 배열 하나를 들고 있다가, 한 걸음 나아갈 때 delta를 적용하고
  * 한 걸음 되돌아갈 때 delta를 거꾸로 적용한다 (openSequence 참고).
  *
@@ -150,13 +150,17 @@ export function openSequence(frames) {
   const sequence = [];
   const open = [];
   for (const frame of frames) {
-    const { op, id, end } = frame.delta;
+    const { op, id, end, index } = frame.delta;
     if (op === 'push') {
       if (end === 'front') open.unshift(id);
       else open.push(id);
+    } else if (op === 'insert') {          // 우선순위 큐: 정렬된 자리에 끼워 넣기
+      open.splice(index, 0, id);
     } else if (op === 'pop') {
       if (end === 'front') open.shift();
       else open.pop();
+    } else if (op === 'clear') {           // 반복적 깊이 심화: 한 회가 끝나 OPEN 비우기
+      open.length = 0;
     }
     sequence.push(open.slice());
   }

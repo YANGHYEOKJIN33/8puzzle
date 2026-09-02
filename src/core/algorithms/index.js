@@ -6,11 +6,21 @@
  */
 import * as bfs from './bfs.js';
 import * as dfs from './dfs.js';
+import * as best from './best.js';
+import * as astar from './astar.js';
+import * as hill from './hill.js';
+import * as dls from './dls.js';
+import * as ids from './ids.js';
 
 /** id → 알고리즘 모듈 (meta, pseudo, run) */
 export const ALGORITHMS = Object.freeze({
   [bfs.meta.id]: bfs,
   [dfs.meta.id]: dfs,
+  [best.meta.id]: best,
+  [astar.meta.id]: astar,
+  [hill.meta.id]: hill,
+  [dls.meta.id]: dls,
+  [ids.meta.id]: ids,
 });
 
 /** 지금 탐색 엔진이 준비된 알고리즘의 id 목록 */

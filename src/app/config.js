@@ -64,45 +64,45 @@ export const STAGES = [
 export const ALGORITHMS = [
   {
     id: 'bfs', name: '너비 우선 탐색', en: 'Breadth-First Search',
-    family: 'blind', structure: 'queue',
+    family: 'blind', structure: 'queue', evalTag: 'depth',
     point: '가장 얕은 것부터 본다 · 최단 경로를 보장한다',
     ready: true,
   },
   {
     id: 'dfs', name: '깊이 우선 탐색', en: 'Depth-First Search',
-    family: 'blind', structure: 'stack',
+    family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '끝까지 파고든다 · 메모리는 적게, 대신 최적해는 보장 못 한다',
     ready: true,
   },
   {
     id: 'dls', name: '깊이 제한 탐색', en: 'Depth-Limited Search',
-    family: 'blind', structure: 'stack',
+    family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '깊이에 한계를 두어 무한히 내려가는 것을 막는다',
-    ready: false,
+    ready: true,
   },
   {
     id: 'ids', name: '반복적 깊이 심화 탐색', en: 'Iterative Deepening Search',
-    family: 'blind', structure: 'stack',
+    family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '한계를 1씩 늘려가며 반복한다 · BFS의 최단성 + DFS의 적은 메모리',
-    ready: false,
+    ready: true,
   },
   {
     id: 'hill', name: '언덕 등반', en: 'Hill Climbing',
-    family: 'heuristic', structure: 'single',
+    family: 'heuristic', structure: 'single', evalTag: 'h',
     point: '지금보다 나은 이웃으로만 간다 · 지역 최적에 갇힐 수 있다',
-    ready: false,
+    ready: true,
   },
   {
     id: 'best', name: '최상 우선 탐색', en: 'Best-First Search',
-    family: 'heuristic', structure: 'priority',
+    family: 'heuristic', structure: 'priority', evalTag: 'h',
     point: 'h(n)이 가장 작은 것부터 본다 · 빠르지만 최적은 아니다',
-    ready: false,
+    ready: true,
   },
   {
     id: 'astar', name: 'A* 알고리즘', en: 'A* Search',
-    family: 'heuristic', structure: 'priority',
+    family: 'heuristic', structure: 'priority', evalTag: 'f',
     point: 'f(n)=g(n)+h(n) · 조건을 갖추면 최적해를 보장한다',
-    ready: false,
+    ready: true,
   },
 ];
 
@@ -122,4 +122,4 @@ export const SPEEDS = [
 ];
 
 /** 안전 장치 (요구사항 4.3.5) */
-export const MAX_EXPANSIONS = 20000;
+export const MAX_EXPANSIONS = 25000;

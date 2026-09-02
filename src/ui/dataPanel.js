@@ -48,10 +48,12 @@ export function mountDataPanel(root, store, player) {
     foot,
   );
 
-  /** 한 노드를 OPEN 항목으로 그린다. useF면 f=g+h를, 아니면 깊이를 꼬리표로 단다. */
-  function openItem(nodes, id, { pushed = false, useF = false } = {}) {
+  /** 한 노드를 OPEN 항목으로 그린다. 알고리즘에 맞는 평가값을 꼬리표로 단다. */
+  function openItem(nodes, id, { pushed = false, evalTag = 'depth' } = {}) {
     const node = nodes[id];
-    const tag = useF ? `f=${node.f}` : `깊이 ${node.depth}`;
+    const tag = evalTag === 'f' ? `f=${node.f}`
+      : evalTag === 'h' ? `h=${node.h}`
+      : `깊이 ${node.depth}`;
     return el(`div.open-item${pushed ? '.open-item--pushed' : ''}`, {
       title: `깊이 ${node.depth}, g=${node.g}, h=${node.h}, f=${node.f}`,   // 마우스 올림 미리보기 (요구사항 4.2.4)
     },
@@ -60,7 +62,7 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
-  function renderOpen(viewData, structureKey, useF) {
+  function renderOpen(viewData, structureKey, evalTag) {
     const { openIds, nodes, highlight, action } = viewData;
     if (openIds.length === 0) {
       return el('div.open-flow', {}, el('div.open-empty', {}, 'OPEN이 비어 있습니다'));
@@ -75,7 +77,7 @@ export function mountDataPanel(root, store, player) {
 
     // 방금 넣은 항목만 초록으로 (pop/skip 장면에서는 강조 없음)
     const pushedId = action === 'push' || action === 'init' ? highlight : null;
-    const render = (id) => flow.append(openItem(nodes, id, { pushed: id === pushedId, useF }));
+    const render = (id) => flow.append(openItem(nodes, id, { pushed: id === pushedId, evalTag }));
 
     if (display.length <= HEAD + TAIL + 1) {
       display.forEach(render);
@@ -111,19 +113,21 @@ export function mountDataPanel(root, store, player) {
       return;
     }
 
-    const endLabel = algo.structure === 'stack'
-      ? el('div.open-end-label', {}, el('span', {}, '← 맨 위 = 다음에 나감'), el('span', {}, '먼저 들어온 것 →'))
-      : el('div.open-end-label', {}, el('span', {}, '← 다음에 나감'), el('span', {}, '나중에 들어옴 →'));
+    const endLabel = endLabelFor(algo.structure, algo.evalTag);
 
     fill(body,
       legend(),
       // OPEN 헤더 한 줄에 자료구조·개수·CLOSED 크기를 모아 세로 공간을 아낀다
       el('div.inspect', {},
-        el('span', {}, el('strong', {}, `OPEN · ${structure.name}`), ` · ${viewData.openIds.length}개`),
+        algo.structure === 'single'
+          ? el('span', {}, el('strong', {}, '이웃 후보'), ` · ${viewData.openIds.length}개`)
+          : el('span', {}, el('strong', {}, `OPEN · ${structure.name}`), ` · ${viewData.openIds.length}개`),
         el('span.topbar__spacer'),
-        el('span.closed-chip', {}, `CLOSED ${viewData.closedSize}개`),
+        algo.structure === 'single'
+          ? null
+          : el('span.closed-chip', {}, `CLOSED ${viewData.closedSize}개`),
       ),
-      el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.family === 'heuristic'), endLabel),
+      el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
     );
   });
 
@@ -135,6 +139,21 @@ export function mountDataPanel(root, store, player) {
       el('span', {}, el('i.swatch.swatch--path'), '해 경로'),
     );
   }
+}
+
+/** 구조에 맞는 양 끝 안내 문구 */
+function endLabelFor(structure, evalTag) {
+  const evalName = evalTag === 'f' ? 'f' : evalTag === 'h' ? 'h' : '평가값';
+  if (structure === 'stack') {
+    return el('div.open-end-label', {}, el('span', {}, '← 맨 위 = 다음에 나감'), el('span', {}, '먼저 들어온 것 →'));
+  }
+  if (structure === 'priority') {
+    return el('div.open-end-label', {}, el('span', {}, `← ${evalName} 작음 = 다음에 나감`), el('span', {}, `${evalName} 큼 →`));
+  }
+  if (structure === 'single') {
+    return el('div.open-end-label', {}, el('span', {}, '이 중 h가 가장 작은 이웃으로 옮깁니다'), el('span', {}, ''));
+  }
+  return el('div.open-end-label', {}, el('span', {}, '← 다음에 나감'), el('span', {}, '나중에 들어옴 →'));
 }
 
 /** 부모와 견주어 이번에 움직인 칸(강조용)을 찾는다 */

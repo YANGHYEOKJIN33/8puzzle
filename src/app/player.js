@@ -17,13 +17,17 @@ import { findById } from './state.js';
 function openAt(frames, index) {
   const open = [];
   for (let i = 0; i <= index; i += 1) {
-    const { op, id, end } = frames[i].delta;
+    const { op, id, end, index } = frames[i].delta;
     if (op === 'push') {
       if (end === 'front') open.unshift(id);
       else open.push(id);
+    } else if (op === 'insert') {
+      open.splice(index, 0, id);
     } else if (op === 'pop') {
       if (end === 'front') open.shift();
       else open.pop();
+    } else if (op === 'clear') {
+      open.length = 0;
     }
   }
   return open;

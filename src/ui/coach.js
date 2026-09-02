@@ -21,8 +21,11 @@ export function createCoach(store, player) {
     const v = player.view();
     const inStage1 = store.get().stageId === 'pseudo';
 
-    // 1단계가 아니거나, 다음이 pop이 아니거나, OPEN이 하나뿐이면 숨긴다
-    if (v.empty || !inStage1 || v.nextAction !== 'pop' || v.openIds.length < 2) {
+    // 예측 퀴즈는 FIFO/LIFO가 뚜렷한 큐·스택에서만 낸다
+    const structure = currentStructure();
+    const quizable = structure === 'queue' || structure === 'stack';
+    // 1단계가 아니거나, 큐/스택이 아니거나, 다음이 pop이 아니거나, OPEN이 하나뿐이면 숨긴다
+    if (v.empty || !inStage1 || !quizable || v.nextAction !== 'pop' || v.openIds.length < 2) {
       root.hidden = true;
       return;
     }
@@ -32,7 +35,6 @@ export function createCoach(store, player) {
     if (answeredAtIndex !== v.index) { answeredAtIndex = -1; choice = null; }
 
     // 이 알고리즘이 실제로 꺼내는 쪽: 큐면 먼저 들어온 것(front=first), 스택이면 마지막(last)
-    const structure = currentStructure();
     const correct = structure === 'stack' ? 'last' : 'first';
 
     if (answeredAtIndex !== v.index) {
