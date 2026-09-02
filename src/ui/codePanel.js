@@ -10,6 +10,7 @@ import { ALGORITHMS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { getAlgorithm } from '../core/algorithms/index.js';
 import { buildFlowchart, boxForAction } from './flowchart.js';
+import { renderFill } from './fillPanel.js';
 
 const VIEWS = [
   { id: 'flow',   name: '순서도',   hint: '전체 흐름을 도형으로' },
@@ -38,6 +39,9 @@ export function mountCodePanel(root, store, player) {
   let flow = null;
   let flowStructure = null;
 
+  // 학습 2단계(빈칸 채우기)가 기억할 값
+  const fillLocal = { exerciseId: 'blind-pop', choices: {}, feedback: null, render: () => draw() };
+
   function activeLine() {
     const v = player.view();
     return v.empty ? 0 : v.line;
@@ -49,6 +53,15 @@ export function mountCodePanel(root, store, player) {
 
   function draw() {
     const state = store.get();
+
+    // 학습 2단계: 빈칸 채우기 화면으로 갈아 끼운다. 표현 탭은 숨긴다.
+    if (state.stageId === 'fill') {
+      tabs.hidden = true;
+      renderFill(body, store, player, fillLocal);
+      return;
+    }
+    tabs.hidden = false;
+
     for (const b of tabButtons) b.setAttribute('aria-selected', String(b.dataset.view === state.codeView));
 
     const algo = findById(ALGORITHMS, state.algorithmId);
@@ -102,5 +115,7 @@ export function mountCodePanel(root, store, player) {
   }
 
   store.subscribe(draw);
-  player.subscribe(draw);
+  // 재생 중에는 매 프레임 다시 그린다(줄·도형 강조, 해설). 단 빈칸 채우기 화면은
+  // 프레임마다 다시 그리면 드롭다운이 초기화되므로, 그때는 건너뛴다.
+  player.subscribe(() => { if (store.get().stageId !== 'fill') draw(); });
 }

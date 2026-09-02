@@ -458,3 +458,55 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .coach__result--ok { color: var(--open); }
 .coach__result--no { color: var(--danger); }
 .coach__why { font-weight: 400; color: var(--text); font-size: var(--fs-xs); }
+
+/* ============================================================
+   학습 2단계 · 빈칸 채우기 (8단계)
+   ============================================================ */
+.fill-intro { margin: 0 0 var(--sp-2); font-size: var(--fs-sm); color: var(--text-muted); }
+.fill-picker { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-3); }
+
+.fill-code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+}
+.fill-line {
+  white-space: pre-wrap;
+  line-height: 2.1;
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+}
+/* 빈칸 드롭다운 — 코드 속에서 눈에 띄게 */
+.fill-blank {
+  padding: 1px var(--sp-2);
+  border: 2px solid var(--current);
+  border-radius: var(--radius-sm);
+  background: var(--current-bg);
+  color: var(--current);
+  font-family: var(--font-code);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  vertical-align: baseline;
+}
+
+.fill-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+}
+
+.fill-feedback {
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+.fill-feedback--ok { background: var(--path-bg); border-color: var(--path); }
+.fill-feedback--info { background: var(--closed-bg); border-color: var(--closed); }
+.fill-feedback__head { font-weight: 700; margin-bottom: 2px; }
+.fill-feedback__note { color: var(--text); margin-bottom: var(--sp-1); }
+.fill-feedback__detail { font-size: var(--fs-xs); color: var(--text-muted); }
