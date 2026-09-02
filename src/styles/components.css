@@ -557,3 +557,63 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   overflow-x: auto;
   white-space: pre-wrap;
 }
+
+/* ============================================================
+   알고리즘 비교 모달 (10단계)
+   ============================================================ */
+.compare__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 22, 32, .5);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  z-index: 100;
+}
+/* display를 지정하면 [hidden]의 기본 display:none이 무시되므로 명시적으로 숨긴다 */
+.compare__backdrop[hidden] { display: none; }
+.compare__dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: min(680px, 96vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.compare__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.compare__caption { margin: 0; padding: var(--sp-2) var(--sp-3); font-size: var(--fs-sm); color: var(--text-muted); }
+.compare__scroll { overflow: auto; padding: 0 var(--sp-3); }
+
+.compare__table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.compare__table th, .compare__table td {
+  padding: var(--sp-2);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.compare__table th:first-child, .compare__table td:first-child { text-align: left; }
+.compare__table th { color: var(--text-muted); font-weight: 600; position: sticky; top: 0; background: var(--surface); }
+
+.compare__row { cursor: pointer; }
+.compare__row:hover td { background: var(--surface-2); }
+.compare__ok { color: var(--open); font-weight: 700; }
+.compare__fail { color: var(--text-muted); }
+.compare__cell--best {
+  background: var(--open-bg);
+  color: var(--open);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+}
+.compare__note { margin: 0; padding: var(--sp-3); font-size: var(--fs-xs); color: var(--text-muted); border-top: 1px solid var(--border); }
+.compare__best-key { color: var(--open); font-weight: 700; }

@@ -6,6 +6,7 @@
  */
 import { createStore } from './state.js';
 import { createPlayer } from './player.js';
+import { createComparePanel } from '../ui/comparePanel.js';
 import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
 import { mountStagebar } from '../ui/stagebar.js';
@@ -17,8 +18,9 @@ import { createCoach } from '../ui/coach.js';
 
 const store = createStore();
 const player = createPlayer(store);
+const compare = createComparePanel(store, player);
 
-mountTopbar(qs('#topbar'), store);
+mountTopbar(qs('#topbar'), store, compare.open);
 mountStagebar(qs('#stagebar'), store);
 mountCodePanel(qs('#panel-code'), store, player);
 mountBoardPanel(qs('#panel-board'), store, player);
