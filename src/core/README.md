@@ -13,7 +13,9 @@
 | `algorithms/_graphSearch.js` | BFS·DFS가 함께 쓰는 그래프 탐색 뼈대 | ✅ 4단계 완료 |
 | `algorithms/bfs.js` / `dfs.js` | 너비 우선 / 깊이 우선 (한 파일씩) | ✅ 4단계 완료 |
 | `algorithms/index.js` | 알고리즘 등록소 — 새 알고리즘은 여기 한 줄 추가 | ✅ 4단계 완료 |
-| `algorithms/hill.js`, `best.js`, `astar.js`, `dls.js`, `ids.js` | 나머지 알고리즘 | 7단계 |
+| `algorithms/best.js`, `astar.js` | 우선순위 큐 탐색(공용 `_priority.js`) | ✅ 7단계 완료 |
+| `algorithms/hill.js` | 언덕 등반(국소 탐색) | ✅ 7단계 완료 |
+| `algorithms/dls.js`, `ids.js` | 깊이 제한·반복적 깊이 심화(공용 `_depthLimited.js`) | ✅ 7단계 완료 |
 
 ### `puzzle.js`가 내놓는 것
 

@@ -36,8 +36,8 @@ function assertValidPath(path, start, goal) {
   }
 }
 
-test('등록소에 BFS와 DFS가 준비되어 있다', () => {
-  assert.deepEqual([...READY_IDS].sort(), ['bfs', 'dfs']);
+test('등록소에 7가지 알고리즘이 준비되어 있다', () => {
+  assert.deepEqual([...READY_IDS].sort(), ['astar', 'best', 'bfs', 'dfs', 'dls', 'hill', 'ids']);
 });
 
 test('BFS 의사코드와 DFS 의사코드는 줄 수가 같다 (같은 뼈대)', () => {

@@ -59,8 +59,13 @@ function edge(points, { label = null, dashed = false } = {}) {
  * @returns {{ svg: SVGElement, setActive(boxId: string|null): void }}
  */
 export function buildFlowchart(structure) {
-  const take = structure === 'stack' ? '맨 위' : '맨 앞';
-  const put = structure === 'stack' ? '위' : '뒤';
+  if (structure === 'single') return buildHillFlowchart();
+  const take = structure === 'stack' ? '맨 위'
+    : structure === 'priority' ? '평가값이 가장 작은 것'
+    : '맨 앞';
+  const put = structure === 'stack' ? '위'
+    : structure === 'priority' ? '평가값 자리'
+    : '뒤';
 
   const W = 320;
   const H = 430;
@@ -88,10 +93,12 @@ export function buildFlowchart(structure) {
   const boxes = [
     box('start',      'terminal', cx, rows[0], bw, bh, '시작 · OPEN에 시작 노드'),
     box('checkEmpty', 'diamond',  cx, rows[1], bw, bh + 8, 'OPEN이 비었는가?'),
-    box('pop',        'process',  cx, rows[2], bw, bh, `OPEN의 ${take}에서 n을 꺼낸다`),
+    box('pop',        'process',  cx, rows[2], bw, bh,
+      structure === 'priority' ? 'OPEN에서 평가값이 가장 작은 n을 꺼낸다' : `OPEN의 ${take}에서 n을 꺼낸다`),
     box('checkGoal',  'diamond',  cx, rows[3], bw, bh + 8, 'n이 목표인가?'),
     box('expand',     'process',  cx, rows[4], bw, bh, ['n을 CLOSED에 넣고', '자식들을 만든다']),
-    box('push',       'process',  cx, rows[5], bw, bh, [`새 자식을 OPEN의 ${put}에 넣는다`]),
+    box('push',       'process',  cx, rows[5], bw, bh,
+      structure === 'priority' ? ['자식을 평가값 순서 자리에', 'OPEN에 끼워 넣는다'] : [`새 자식을 OPEN의 ${put}에 넣는다`]),
     box('fail',       'terminal', 262, rows[1], 96, bh, '실패 · 해 없음'),
     box('success',    'terminal', 262, rows[3], 96, bh, '성공 · 경로 반환'),
   ];
@@ -125,8 +132,76 @@ export function buildFlowchart(structure) {
   };
 }
 
+/** 언덕 등반 전용 순서도 (OPEN이 없다) */
+function buildHillFlowchart() {
+  const W = 320;
+  const H = 430;
+  const cx = 120;
+  const bw = 176;
+  const bh = 40;
+  const rows = [26, 100, 174, 248, 322, 388];
+
+  const svg = svgEl('svg', {
+    class: 'flowchart', viewBox: `0 0 ${W} ${H}`, width: '100%',
+    role: 'img', 'aria-label': '언덕 등반 순서도',
+  });
+  const defs = svgEl('defs');
+  const marker = svgEl('marker', {
+    id: 'flow-arrow', viewBox: '0 0 10 10', refX: 9, refY: 5,
+    markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse',
+  });
+  marker.append(svgEl('path', { d: 'M0,0 L10,5 L0,10 z', class: 'flow-arrow-head' }));
+  defs.append(marker);
+  svg.append(defs);
+
+  const boxes = [
+    box('start',    'terminal', cx, rows[0], bw, bh, '시작 노드를 현재로'),
+    box('checkGoal', 'diamond', cx, rows[1], bw, bh + 8, '현재가 목표인가?'),
+    box('evaluate', 'process',  cx, rows[2], bw, bh, ['이웃들을 만들어', '각자의 h를 잰다']),
+    box('choose',   'process',  cx, rows[3], bw, bh, 'h가 가장 작은 이웃을 고른다'),
+    box('checkBetter', 'diamond', cx, rows[4], bw, bh + 8, '현재보다 나은가?'),
+    box('move',     'process',  cx, rows[5], bw, bh, '현재 ← 그 이웃'),
+    box('success',  'terminal', 262, rows[1], 96, bh, '성공'),
+    box('stuck',    'terminal', 262, rows[4], 96, bh, '멈춤 · 지역 최적'),
+  ];
+  const edges = [
+    edge([[cx, rows[0] + bh / 2], [cx, rows[1] - (bh + 8) / 2]]),
+    edge([[cx, rows[1] + (bh + 8) / 2], [cx, rows[2] - bh / 2]], { label: '아니오' }),
+    edge([[cx + bw / 2, rows[1]], [262, rows[1]]], { label: '예' }),
+    edge([[cx, rows[2] + bh / 2], [cx, rows[3] - bh / 2]]),
+    edge([[cx, rows[3] + bh / 2], [cx, rows[4] - (bh + 8) / 2]]),
+    edge([[cx, rows[4] + (bh + 8) / 2], [cx, rows[5] - bh / 2]], { label: '예' }),
+    edge([[cx + bw / 2, rows[4]], [262, rows[4]]], { label: '아니오' }),
+    edge([[cx - bw / 2, rows[5]], [20, rows[5]], [20, rows[1]], [cx - bw / 2, rows[1]]], { dashed: true }),
+  ];
+  edges.forEach((e) => svg.append(e));
+  boxes.forEach((b) => svg.append(b));
+
+  let activeId = null;
+  return {
+    svg,
+    setActive(boxId) {
+      if (activeId === boxId) return;
+      activeId = boxId;
+      for (const b of svg.querySelectorAll('.flow-box')) b.classList.toggle('flow-box--active', b.dataset.box === boxId);
+    },
+  };
+}
+
 /** 재생기의 동작(action)을 순서도 도형 id로 옮긴다 */
-export function boxForAction(action) {
+export function boxForAction(action, structure) {
+  if (structure === 'single') {
+    switch (action) {
+      case 'init': return 'start';
+      case 'push': return 'evaluate';
+      case 'pop': return 'choose';
+      case 'make': return 'move';
+      case 'goal': return 'success';
+      case 'exhausted':
+      case 'limit': return 'stuck';
+      default: return null;
+    }
+  }
   switch (action) {
     case 'init': return 'start';
     case 'pop': return 'pop';
@@ -136,6 +211,6 @@ export function boxForAction(action) {
     case 'skip': return 'push';
     case 'exhausted': return 'fail';
     case 'limit': return 'expand';
-    default: return null;
+    default: return null;   // restart 등은 강조 없음
   }
 }

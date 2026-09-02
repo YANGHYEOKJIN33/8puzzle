@@ -101,3 +101,6 @@
   /* "학습 단계" 글자가 세로로 쪼개지지 않게 한다 */
   .stagebar > .panel__title { flex: 0 0 auto; white-space: nowrap; }
 }
+
+/* 휴리스틱 선택기 (7단계) */
+.heuristic-pick { display: inline-flex; align-items: center; gap: var(--sp-2); }

@@ -3,7 +3,8 @@
  * 요구사항 6.1.1 : 첫 화면에서 학생이 내리는 결정은 "알고리즘"과 "학습 단계" 둘뿐이다.
  */
 import { el, fill } from './dom.js';
-import { ALGORITHMS } from '../app/config.js';
+import { ALGORITHMS, HEURISTICS } from '../app/config.js';
+import { findById } from '../app/state.js';
 
 export function mountTopbar(root, store) {
   const select = el('select', {
@@ -19,6 +20,14 @@ export function mountTopbar(root, store) {
     }
     select.append(group);
   }
+
+  // 휴리스틱 선택기 — 경험적 탐색을 고를 때만 보인다 (요구사항 3.2.2)
+  const heuristicWrap = el('span.heuristic-pick', { hidden: true });
+  const heuristicSelect = el('select', {
+    id: 'heuristic-select',
+    onchange: (e) => store.set({ heuristicId: e.target.value }),
+  }, HEURISTICS.map((h) => el('option', { value: h.id, title: h.note }, h.name)));
+  fill(heuristicWrap, el('label', { for: 'heuristic-select', class: 'panel__title' }, '휴리스틱'), heuristicSelect);
 
   const themeBtn = el('button.pill', {
     type: 'button',
@@ -47,12 +56,16 @@ export function mountTopbar(root, store) {
     ),
     el('label', { for: 'algo-select', class: 'panel__title' }, '알고리즘'),
     select,
+    heuristicWrap,
     el('span.topbar__spacer'),
     el('div.topbar__tools', {}, smaller, bigger, themeBtn),
   );
 
   store.subscribe((state) => {
     select.value = state.algorithmId;
+    heuristicSelect.value = state.heuristicId;
+    const algo = findById(ALGORITHMS, state.algorithmId);
+    heuristicWrap.hidden = algo.family !== 'heuristic';
     themeBtn.textContent =
       state.theme === 'auto' ? '화면 · 자동'
       : state.theme === 'light' ? '화면 · 밝게'
