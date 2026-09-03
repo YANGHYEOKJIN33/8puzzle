@@ -9,16 +9,27 @@
 import { el } from './dom.js';
 import { SIZE } from '../core/puzzle.js';
 
-export function createAnimatedBoard() {
+/**
+ * @param {object}   [opt]
+ * @param {function} [opt.onTile]  타일을 눌렀을 때 부를 함수(숫자를 넘겨준다).
+ *                                 주면 타일이 단추가 되어 학생이 직접 밀어 볼 수 있다.
+ */
+export function createAnimatedBoard({ onTile = null } = {}) {
   const board = el('div.board.board--anim', { role: 'img', 'aria-label': '퍼즐 판' });
   const tiles = new Map();   // 숫자 → 타일 요소
 
   for (let v = 1; v < SIZE * SIZE; v += 1) {
-    const tile = el('div.atile', { 'data-v': v, 'aria-hidden': 'true' },
-      el('div.atile__face', {}, String(v)));
+    const tile = onTile
+      ? el('button.atile.atile--btn', {
+          type: 'button', 'data-v': v, 'aria-label': `${v}번 타일 밀기`,
+          onclick: () => onTile(v),
+        }, el('div.atile__face', {}, String(v)))
+      : el('div.atile', { 'data-v': v, 'aria-hidden': 'true' },
+          el('div.atile__face', {}, String(v)));
     tiles.set(v, tile);
     board.append(tile);
   }
+  if (onTile) board.setAttribute('role', 'group');
 
   /**
    * 상태에 맞게 타일 자리를 옮긴다.
@@ -36,6 +47,15 @@ export function createAnimatedBoard() {
     }
   }
 
+  /** 지금 밀 수 있는 타일만 눌리게 한다 (직접 해 보는 모드) */
+  function setMovable(values) {
+    const can = new Set(values);
+    for (const [v, tile] of tiles) {
+      if (typeof tile.disabled === 'boolean') tile.disabled = !can.has(v);
+      tile.classList.toggle('atile--movable', can.has(v));
+    }
+  }
+
   /** 강조 없이 처음 상태를 세팅(전환 애니메이션 없이 바로 자리 잡기) */
   function reset(state) {
     board.classList.add('board--noanim');
@@ -44,7 +64,7 @@ export function createAnimatedBoard() {
     requestAnimationFrame(() => requestAnimationFrame(() => board.classList.remove('board--noanim')));
   }
 
-  return { el: board, update, reset };
+  return { el: board, update, reset, setMovable };
 }
 
 function describe(state) {

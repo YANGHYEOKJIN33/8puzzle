@@ -43,6 +43,8 @@
 .topbar__tools { display: flex; gap: var(--sp-1); flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
 /* 상단 막대가 한 줄에 들어가도록 — 두 줄이 되면 본문 높이를 그만큼 잃는다 */
 .topbar__field { display: inline-flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+/* display를 지정하면 [hidden]의 기본 display:none이 무시된다 — 명시적으로 숨긴다 */
+.topbar__field[hidden] { display: none; }
 .topbar__field select { max-width: 172px; }
 
 /* --- 학습 단계 선택 (요구사항 5장) --- */
@@ -232,13 +234,21 @@ body:not(.show-controls) .controlbar { display: none; }
 /* 퍼즐만 보는 페이지에서는 판을 크게 */
 .workspace[data-layout="board"] .board--anim { width: min(240px, 32vh, 40vw); }
 .workspace[data-layout="board"] .board--mini { width: min(150px, 20vh, 30vw); }
+/* 자식 노드 띠가 함께 보이는 쪽은 판을 조금 줄여 자리를 나눈다 */
+body.show-children .workspace[data-layout="board"] .board--anim { width: min(184px, 24vh, 32vw); }
+body.show-children .workspace[data-layout="board"] .board--mini { width: min(120px, 16vh, 24vw); }
 
-/* 퍼즐만 보는 페이지: 판을 가운데로 */
+/* 퍼즐만 보는 페이지: 판을 가운데로, 자식 노드 띠는 그 아래로 */
 .workspace[data-layout="board"] .panel--board .panel__body {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--sp-3);
 }
+.workspace[data-layout="board"] .panel--board .board-duo { justify-content: center; }
+.workspace[data-layout="board"] .kids { margin-top: 0; }
+.workspace[data-layout="board"] .kids__cap { justify-content: center; }
 
 /* 동작 카드 자리 — 이 페이지에서 쓸 때만 보인다 */
 .actionbar { padding: var(--sp-2) var(--sp-4) 0; }

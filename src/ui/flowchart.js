@@ -73,12 +73,13 @@ export function buildFlowchart(structure) {
     : structure === 'priority' ? '평가값 자리'
     : '뒤';
 
+  // 세로로 길면 좁은 칸에서 크게 줄어들어 글자가 안 읽힌다 — 행 간격을 좁혀 둔다.
   const W = 320;
-  const H = 430;
+  const H = 364;
   const cx = 120;          // 본 흐름의 가운데 x
   const bw = 176;
   const bh = 40;
-  const rows = [26, 100, 174, 248, 322, 388];   // 각 행의 중심 y
+  const rows = [24, 86, 148, 210, 272, 334];    // 각 행의 중심 y
 
   const svg = svgEl('svg', {
     class: 'flowchart', viewBox: `0 0 ${W} ${H}`, width: '100%',
@@ -141,11 +142,11 @@ export function buildFlowchart(structure) {
 /** 언덕 등반 전용 순서도 (OPEN이 없다) */
 function buildHillFlowchart() {
   const W = 320;
-  const H = 430;
+  const H = 364;
   const cx = 120;
   const bw = 176;
   const bh = 40;
-  const rows = [26, 100, 174, 248, 322, 388];
+  const rows = [24, 86, 148, 210, 272, 334];
 
   const svg = svgEl('svg', {
     class: 'flowchart', viewBox: `0 0 ${W} ${H}`, width: '100%',

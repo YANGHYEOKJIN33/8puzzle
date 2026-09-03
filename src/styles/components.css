@@ -949,7 +949,10 @@ body.show-slim .action-card__detail { display: none; }
   background: var(--surface-2);
   padding: var(--sp-2);
 }
-.codeduo .flowchart { max-height: none; max-width: 320px; }
+/* 순서도는 잘리지 않고 칸에 꼭 맞게 줄어든다 — 전체 흐름을 한눈에 봐야 하는 그림이라
+   스크롤로 반만 보이면 뜻이 없다 (viewBox + meet 로 비율을 지키며 축소) */
+.codeduo__scroll--flow { overflow: hidden; display: grid; place-items: center; }
+.codeduo .flowchart { width: 100%; height: 100%; max-width: none; max-height: none; }
 .codeduo .codeview { max-height: none; }
 
 /* 좁은 화면에서는 위아래로 */
@@ -1247,3 +1250,45 @@ body.show-slim .action-card__detail { display: none; }
 .compare__props .compare__table { font-size: var(--fs-xs); }
 .compare__props .compare__table td,
 .compare__props .compare__table th { padding: var(--sp-1) var(--sp-2); }
+
+/* ============================================================
+   직접 밀어 보기 · 자식 노드 미리보기
+   ============================================================ */
+/* 손으로 미는 모드: 밀 수 있는 타일만 눌리게 보인다 */
+.atile--btn { padding: 0; border: 0; background: transparent; cursor: default; color: var(--text); }
+/* 손으로 미는 모드가 아닐 때는 단추가 꺼져 있다 — 그래도 보통 타일처럼 보여야 한다 */
+.atile--btn:disabled { cursor: default; color: var(--text); opacity: 1; }
+.atile--moved .atile__face { color: var(--current); }
+.atile--movable { cursor: pointer; }
+.atile--movable .atile__face {
+  border-color: var(--current);
+  box-shadow: 0 0 0 2px var(--current-bg);
+}
+.atile--movable:hover .atile__face { background: var(--current-bg); color: var(--current); }
+.atile--btn:focus-visible .atile__face { box-shadow: var(--focus); }
+
+/* 자식 노드 띠 */
+.kids { margin-top: var(--sp-3); }
+.kids__cap {
+  display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap;
+  font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted);
+  margin-bottom: var(--sp-2);
+}
+.kids__term { font-family: var(--font-code); font-weight: 400; }
+.kids__list { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.kids__item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.kids__label { font-size: var(--fs-xs); color: var(--text-muted); }
+
+/* ============================================================
+   마무리 정리 쪽
+   ============================================================ */
+.wrap { display: grid; gap: var(--sp-1); }
+.wrap__title { font-size: var(--fs-sm); margin: var(--sp-2) 0 0; }
+.wrap__title:first-child { margin-top: 0; }
+.wrap__scroll .compare__table td,
+.wrap__scroll .compare__table th { padding: var(--sp-1) var(--sp-2); }
+.wrap__list { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px var(--sp-3); align-items: baseline; }
+.wrap__term { font-weight: 700; font-size: var(--fs-sm); white-space: nowrap; }
+.wrap__desc { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+.wrap__scroll { overflow-x: auto; }
+.wrap__actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-1); }
