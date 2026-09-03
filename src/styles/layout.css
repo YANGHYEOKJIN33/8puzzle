@@ -6,7 +6,7 @@
 
 .app {
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-rows: auto auto auto 1fr auto auto;
   height: 100dvh;
   overflow: hidden;   /* 요구사항 6.2.1: 페이지가 통째로 스크롤되지 않는다.
                          내용이 넘치면 각 패널 안에서만 스크롤한다. */
@@ -109,3 +109,68 @@
 
 /* 휴리스틱 선택기 (7단계) */
 .heuristic-pick { display: inline-flex; align-items: center; gap: var(--sp-2); }
+
+/* ============================================================
+   레슨(단계별 페이지) — 한 화면에 필요한 것만
+   ============================================================ */
+.lesson {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.lesson__top { flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-2); }
+.lesson__text { flex: 1 1 340px; min-width: 0; }
+.lesson__navs { flex: 0 0 auto; display: flex; gap: var(--sp-2); }
+
+/* 페이지별 배치 — 안 쓰는 패널은 감춘다 */
+.workspace[data-layout="board"] {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "board";
+}
+.workspace[data-layout="board"] .panel--code,
+.workspace[data-layout="board"] .panel--data { display: none; }
+
+.workspace[data-layout="board-data"] {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(150px, auto) minmax(200px, 1.7fr);
+  grid-template-areas: "board" "data";
+}
+.workspace[data-layout="board-data"] .panel--code { display: none; }
+
+.workspace[data-layout="code"] {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "code";
+}
+.workspace[data-layout="code"] .panel--board,
+.workspace[data-layout="code"] .panel--data { display: none; }
+
+.workspace[data-layout="code-board"] {
+  grid-template-columns: minmax(380px, 1.25fr) minmax(300px, 1fr);
+  grid-template-rows: 1fr;
+  grid-template-areas: "code board";
+}
+.workspace[data-layout="code-board"] .panel--data { display: none; }
+
+/* 실행 제어는 필요한 페이지에서만 */
+body:not(.show-controls) .controlbar { display: none; }
+
+/* 퍼즐만 보는 페이지에서는 판을 크게 */
+.workspace[data-layout="board"] .board--anim { width: min(240px, 32vh, 40vw); }
+.workspace[data-layout="board"] .board--mini { width: min(150px, 20vh, 30vw); }
+
+/* 퍼즐만 보는 페이지: 판을 가운데로 */
+.workspace[data-layout="board"] .panel--board .panel__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 동작 카드 자리 — 이 페이지에서 쓸 때만 보인다 */
+.actionbar { padding: var(--sp-2) var(--sp-4) 0; }
+body:not(.show-action) .actionbar { display: none; }

@@ -48,8 +48,14 @@ function edge(points, { label = null, dashed = false } = {}) {
     fill: 'none', 'marker-end': 'url(#flow-arrow)',
   }));
   if (label) {
+    // 라벨을 선 시작점에 그대로 두면 도형(마름모) 뒤에 가려진다.
+    // 선이 나아가는 방향으로 조금 밀어 도형 바깥에 놓는다.
     const [lx, ly] = points[0];
-    g.append(svgEl('text', { class: 'flow-edge-label', x: lx + 6, y: ly - 4 }, label));
+    const [nx, ny] = points[1] ?? points[0];
+    const goingDown = ny > ly;
+    const x = goingDown ? lx + 8 : lx + 10;
+    const y = goingDown ? ly + 15 : ly - 6;
+    g.append(svgEl('text', { class: 'flow-edge-label', x, y }, label));
   }
   return g;
 }

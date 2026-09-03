@@ -19,10 +19,12 @@
     <header class="topbar" id="topbar"></header>
 
     <!-- 학습 단계 1 / 2 / 3 -->
-    <nav class="stagebar" id="stagebar" aria-label="학습 단계"></nav>
+    <nav class="lesson" id="lessonbar" aria-label="학습 순서"></nav>
 
     <!-- 본문: 코드 · 퍼즐 판 · 자료구조 -->
-    <main class="workspace">
+    <div class="actionbar" id="actionbar" aria-live="polite"></div>
+
+    <main class="workspace" id="workspace" data-layout="board">
       <section class="panel panel--code"  id="panel-code"  aria-label="코드"></section>
       <section class="panel panel--board" id="panel-board" aria-label="퍼즐 판"></section>
       <section class="panel panel--data"  id="panel-data"  aria-label="자료구조"></section>
@@ -32,7 +34,7 @@
     <div class="controlbar" id="controlbar" role="group" aria-label="실행 제어"></div>
 
     <footer class="sitefoot">
-      8-퍼즐 인공지능 탐색 학습 사이트 · 목표 상시 표시 · OPEN+트리 동시 · 동작 아이콘 ·
+      8-퍼즐 인공지능 탐색 학습 사이트 · 8단계 레슨 · 쉬운 말 ·
       <a href="https://github.com/YANGHYEOKJIN33/Alg/blob/main/REQUIREMENTS.md">요구사항 정의서</a>
     </footer>
   </div>

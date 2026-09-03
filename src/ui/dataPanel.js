@@ -11,12 +11,13 @@ import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO } fro
 import { findById } from '../app/state.js';
 import { miniBoard } from './miniBoard.js';
 import { renderTree } from './treeView.js';
+import { lessonAt } from '../app/lesson.js';
 
 const COUNTERS = [
-  { id: 'generated', label: '생성한 노드' },
-  { id: 'expanded',  label: '펼친 노드' },
-  { id: 'maxOpen',   label: 'OPEN 최대' },
-  { id: 'depth',     label: '현재 깊이' },
+  { id: 'generated', label: '만든 모양' },
+  { id: 'expanded',  label: '살펴본 모양' },
+  { id: 'maxOpen',   label: '줄 최대 길이' },
+  { id: 'depth',     label: '지금 깊이' },
 ];
 
 /** OPEN이 아주 길 때 화면이 느려지지 않도록 양 끝만 보여 준다 (요구사항 7.3.2) */
@@ -42,8 +43,8 @@ export function mountDataPanel(root, store, player) {
 
   fill(root,
     el('div.panel__head', {},
-      el('span.panel__title', {}, '자료구조'),
-      el('span.panel__hint', {}, 'OPEN·CLOSED + 탐색 트리'),
+      el('span.panel__title', {}, '대기 목록'),
+      el('span.panel__hint', {}, '대기 목록과 지나온 길'),
     ),
     body,
     foot,
@@ -66,7 +67,7 @@ export function mountDataPanel(root, store, player) {
   function renderOpen(viewData, structureKey, evalTag) {
     const { openIds, nodes, highlight, action } = viewData;
     if (openIds.length === 0) {
-      return el('div.open-flow', {}, el('div.open-empty', {}, 'OPEN이 비어 있습니다'));
+      return el('div.open-flow', {}, el('div.open-empty', {}, '대기 목록이 비었어요'));
     }
     const flow = el('div.open-flow');
 
@@ -125,26 +126,27 @@ export function mountDataPanel(root, store, player) {
     }
 
     const endLabel = endLabelFor(algo.structure, algo.evalTag);
+    const show = lessonAt(state.lessonStep).show;
 
     fill(body,
-      structurePicker(),
+      show.picker ? structurePicker() : null,
       // 위: OPEN(대기 목록)
-      el('div.ds-section', {},
+      show.open ? el('div.ds-section', {},
         el('div.inspect', {},
           algo.structure === 'single'
             ? el('span', {}, el('strong', {}, '이웃 후보'), ` · ${viewData.openIds.length}개`)
-            : el('span', {}, el('strong', {}, `OPEN · ${structure.name}`), ` · ${viewData.openIds.length}개`),
+            : el('span', {}, el('strong', {}, '대기 목록'), ` · ${structure.name} · ${viewData.openIds.length}개`),
           el('span.topbar__spacer'),
           legendInline(),
-          algo.structure === 'single' ? null : el('span.closed-chip', {}, `CLOSED ${viewData.closedSize}개`),
+          algo.structure === 'single' ? null : el('span.closed-chip', {}, `이미 본 것 ${viewData.closedSize}개`),
         ),
         el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
-      ),
-      // 아래: 탐색 트리 (함께 본다)
-      el('div.ds-section.ds-section--tree', {},
-        el('div.inspect', {}, el('span', {}, el('strong', {}, '탐색 트리'), ' · 펼쳐진 노드들')),
+      ) : null,
+      // 아래: 탐색 트리
+      show.tree ? el('div.ds-section.ds-section--tree', {},
+        el('div.inspect', {}, el('span', {}, el('strong', {}, '지나온 길 (나무 모양)'))),
         renderTree(viewData, algo.evalTag),
-      ),
+      ) : null,
     );
   }
 
@@ -163,7 +165,7 @@ export function mountDataPanel(root, store, player) {
       }, el('strong', {}, c.name), el('span.ds-chip__sub', {}, c.sub))));
     // 한 줄로 압축: 라벨 + 칩들 + 무엇이 되는지. 자세한 설명은 칩 툴팁(title)에.
     return el('div.ds-pick', {},
-      el('span.ds-pick__label', {}, 'OPEN =', el('span.sr-only', {}, ' 자료구조 바꾸기')),
+      el('span.ds-pick__label', {}, '줄 세우는 방법 =', el('span.sr-only', {}, ' 바꾸기')),
       chips,
       active ? el('span.ds-pick__becomes', {}, `→ ${active.becomes}`) : null,
     );

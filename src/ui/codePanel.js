@@ -1,9 +1,7 @@
 /**
  * 코드 패널 (요구사항 3.3 · 4.1 ②).
- * 순서도 / 의사코드 / 파이썬 탭을 전환하고, 실행 중인 위치를 강조한다.
- *   순서도   : 지금 실행 중인 도형 강조 (요구사항 3.3.1)
- *   의사코드 : 지금 실행 중인 줄 강조 (요구사항 3.3.2)
- *   파이썬   : 7단계에서 같은 줄 번호로 채운다
+ * 순서도와 의사코드를 한 화면에 나란히 두고, 실행 중인 도형과 줄을 함께 강조한다.
+ * 학습 2·3단계에서는 빈칸 채우기 / 직접 작성 화면으로 바뀐다.
  */
 import { el, fill } from './dom.js';
 import { ALGORITHMS } from '../app/config.js';
@@ -14,26 +12,13 @@ import { renderFill } from './fillPanel.js';
 import { buildWritePanel } from './writePanel.js';
 import { createPyRunner } from '../app/pyRunner.js';
 
-const VIEWS = [
-  { id: 'flow',   name: '순서도',   hint: '전체 흐름을 도형으로' },
-  { id: 'pseudo', name: '의사코드', hint: '교과서 표기에 가깝게' },
-  { id: 'python', name: '파이썬',   hint: '의사코드와 줄이 대응된다' },
-];
 
 export function mountCodePanel(root, store, player) {
-  const tabs = el('div', { role: 'tablist', style: 'display:flex;gap:8px' });
   const body = el('div.panel__body');
-
-  const tabButtons = VIEWS.map((v) =>
-    el('button.pill', {
-      type: 'button', role: 'tab', 'data-view': v.id, title: v.hint,
-      onclick: () => store.set({ codeView: v.id }),
-    }, v.name),
-  );
-  tabs.append(...tabButtons);
+  const headHint = el('span.panel__hint', {}, '순서도와 코드를 같이 봐요');
 
   fill(root,
-    el('div.panel__head', {}, el('span.panel__title', {}, '코드'), tabs),
+    el('div.panel__head', {}, el('span.panel__title', {}, '순서도 · 코드'), headHint),
     body,
   );
 
@@ -61,64 +46,49 @@ export function mountCodePanel(root, store, player) {
   function draw() {
     const state = store.get();
 
-    // 학습 2단계: 빈칸 채우기 화면으로 갈아 끼운다. 표현 탭은 숨긴다.
+    // 학습 2단계: 빈칸 채우기 화면
     if (state.stageId === 'fill') {
-      tabs.hidden = true;
+      headHint.textContent = '빈칸을 채우고 실행해 봐요';
       renderFill(body, store, player, fillLocal);
       return;
     }
 
-    // 학습 3단계: 직접 작성 편집기. 텍스트영역 유지를 위해 같은 노드를 다시 붙인다.
+    // 학습 3단계: 직접 작성 편집기 (텍스트영역 유지를 위해 한 번만 만든다)
     if (state.stageId === 'write') {
-      tabs.hidden = true;
+      headHint.textContent = '파이썬으로 직접 만들어요';
       if (!writeEl) writeEl = buildWritePanel(store, player, getRunner());
       if (body.firstChild !== writeEl) body.replaceChildren(writeEl);
       return;
     }
-    tabs.hidden = false;
 
-    for (const b of tabButtons) b.setAttribute('aria-selected', String(b.dataset.view === state.codeView));
-
+    // 기본: 순서도와 의사코드를 한 화면에 나란히 (요청 1.5)
+    headHint.textContent = '순서도와 코드를 같이 봐요';
     const algo = findById(ALGORITHMS, state.algorithmId);
     const module = getAlgorithm(algo.id);
-    const viewId = state.codeView;
 
-    // --- 순서도 ---
-    if (viewId === 'flow') {
-      if (!flow || flowStructure !== algo.structure) {
-        flow = buildFlowchart(algo.structure);
-        flowStructure = algo.structure;
-      }
-      flow.setActive(boxForAction(activeAction(), algo.structure));
-      fill(body, narration(), el('div', { style: 'overflow:auto' }, flow.svg));
-      return;
+    if (!flow || flowStructure !== algo.structure) {
+      flow = buildFlowchart(algo.structure);
+      flowStructure = algo.structure;
     }
+    flow.setActive(boxForAction(activeAction(), algo.structure));
 
-    // --- 의사코드 ---
-    if (viewId === 'pseudo' && module && module.pseudo) {
-      const line = activeLine();
-      fill(body,
-        narration(),
-        el('pre.codeview', {},
-          module.pseudo.map((text, i) =>
-            el(`div.codeline${i + 1 === line ? '.codeline--active' : ''}`, {},
-              el('span.codeline__no', {}, String(i + 1)),
-              el('span', {}, text),
-            ),
-          ),
-        ),
-      );
-      return;
-    }
+    const line = activeLine();
+    const codeLines = module && module.pseudo
+      ? el('pre.codeview', {}, module.pseudo.map((text, i) =>
+          el(`div.codeline${i + 1 === line ? '.codeline--active' : ''}`, {},
+            el('span.codeline__no', {}, String(i + 1)),
+            el('span', {}, text))))
+      : el('div.placeholder', {}, '코드를 준비 중입니다.');
 
-    // --- 파이썬 (준비 중) ---
-    const v = VIEWS.find((x) => x.id === viewId) ?? VIEWS[1];
     fill(body,
-      narration(),
-      el('div.placeholder', {},
-        el('strong', {}, `${v.name} 준비 중`),
-        `${algo.name}의 파이썬 코드는 개발 다음 단계에서 채웁니다. ` +
-        '의사코드·순서도 탭에서는 지금도 실행 위치가 강조됩니다.'),
+      el('div.codeduo', {},
+        el('div.codeduo__col', {},
+          el('div.codeduo__cap', {}, '순서도 — 지금 여기'),
+          el('div.codeduo__scroll', {}, flow.svg)),
+        el('div.codeduo__col', {},
+          el('div.codeduo__cap', {}, '코드 — 지금 이 줄'),
+          el('div.codeduo__scroll', {}, codeLines)),
+      ),
     );
   }
 

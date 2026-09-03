@@ -3,8 +3,7 @@
  * 요구사항 6.1.1 : 첫 화면에서 학생이 내리는 결정은 "알고리즘"과 "학습 단계" 둘뿐이다.
  */
 import { el, fill } from './dom.js';
-import { ALGORITHMS, HEURISTICS } from '../app/config.js';
-import { findById } from '../app/state.js';
+import { ALGORITHMS } from '../app/config.js';
 
 export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}) {
   const select = el('select', {
@@ -21,16 +20,8 @@ export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}
     select.append(group);
   }
 
-  // 휴리스틱 선택기 — 경험적 탐색을 고를 때만 보인다 (요구사항 3.2.2)
-  const heuristicWrap = el('span.heuristic-pick', { hidden: true });
-  const heuristicSelect = el('select', {
-    id: 'heuristic-select',
-    onchange: (e) => store.set({ heuristicId: e.target.value }),
-  }, HEURISTICS.map((h) => el('option', { value: h.id, title: h.note }, h.name)));
-  fill(heuristicWrap, el('label', { for: 'heuristic-select', class: 'panel__title' }, '휴리스틱'), heuristicSelect);
-
   const compareBtn = el('button.pill', {
-    type: 'button', title: '같은 초기 상태로 여러 알고리즘 성능을 나란히 비교',
+    type: 'button', title: '같은 문제를 여러 방법으로 풀어 결과를 나란히 비교',
     onclick: () => onCompare(),
   }, '⚖ 비교');
 
@@ -64,18 +55,14 @@ export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}
       '8-퍼즐로 배우는 탐색 알고리즘',
       el('small', {}, '순서도 → 의사코드 → 파이썬'),
     ),
-    el('label', { for: 'algo-select', class: 'panel__title' }, '알고리즘'),
+    el('label', { for: 'algo-select', class: 'panel__title' }, '찾는 방법'),
     select,
-    heuristicWrap,
     el('span.topbar__spacer'),
     el('div.topbar__tools', {}, helpBtn, compareBtn, smaller, bigger, themeBtn),
   );
 
   store.subscribe((state) => {
     select.value = state.algorithmId;
-    heuristicSelect.value = state.heuristicId;
-    const algo = findById(ALGORITHMS, state.algorithmId);
-    heuristicWrap.hidden = algo.family !== 'heuristic';
     themeBtn.textContent =
       state.theme === 'auto' ? '화면 · 자동'
       : state.theme === 'light' ? '화면 · 밝게'

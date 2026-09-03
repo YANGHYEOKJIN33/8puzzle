@@ -840,7 +840,6 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
-  margin-bottom: var(--sp-3);
   border: 1px solid var(--current);
   background: var(--current-bg);
   border-radius: var(--radius);
@@ -862,3 +861,63 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .action-card--intro .action-card__word { color: var(--text); }
 .action-card__plain { font-size: var(--fs-md); color: var(--text); }
 .action-card__detail { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+
+/* ============================================================
+   레슨 막대 부품
+   ============================================================ */
+.lesson__dots { display: flex; gap: 4px; }
+.lesson__dot {
+  width: 24px; height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 0;
+  display: grid; place-items: center;
+}
+.lesson__dot--done { background: var(--open-bg); border-color: var(--open); color: var(--open); }
+.lesson__dot[aria-selected="true"] { background: var(--current); border-color: var(--current); color: #fff; }
+.lesson__count { font-size: var(--fs-xs); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.lesson__title { font-size: var(--fs-lg); margin: 0; line-height: 1.25; }
+.lesson__goal { margin: 3px 0 0; font-size: var(--fs-md); color: var(--text); }
+.lesson__todo { margin: 2px 0 0; font-size: var(--fs-sm); color: var(--text-muted); }
+.lesson__nav { min-width: 76px; }
+
+/* ============================================================
+   순서도 + 코드 나란히 보기 (요청 1.5)
+   ============================================================ */
+.codeduo {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(260px, 1.1fr);
+  gap: var(--sp-3);
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.codeduo__col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.codeduo__cap {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.codeduo__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  padding: var(--sp-2);
+}
+.codeduo .flowchart { max-height: none; max-width: 320px; }
+.codeduo .codeview { max-height: none; }
+
+/* 좁은 화면에서는 위아래로 */
+@media (max-width: 900px) {
+  .codeduo { grid-template-columns: 1fr; }
+}
+
+/* 코드 패널 본문을 세로 flex로 (동작카드 + 나란히 영역) */
+.panel--code .panel__body { display: flex; flex-direction: column; overflow: hidden; }
