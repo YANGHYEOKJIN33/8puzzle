@@ -40,16 +40,10 @@ export function mountDataPanel(root, store, player) {
     ),
   );
 
-  const tabs = ['open', 'tree'].map((id) =>
-    el('button.pill', {
-      type: 'button', role: 'tab', 'data-dview': id,
-      onclick: () => store.set({ dataView: id }),
-    }, id === 'open' ? 'OPEN·CLOSED' : '탐색 트리'));
-
   fill(root,
     el('div.panel__head', {},
       el('span.panel__title', {}, '자료구조'),
-      el('div', { role: 'tablist', style: 'display:flex;gap:6px' }, tabs),
+      el('span.panel__hint', {}, 'OPEN·CLOSED + 탐색 트리'),
     ),
     body,
     foot,
@@ -101,24 +95,15 @@ export function mountDataPanel(root, store, player) {
     const algo = findById(ALGORITHMS, state.algorithmId);
     const structure = STRUCTURE_LABEL[algo.structure];
 
-    for (const t of tabs) t.setAttribute('aria-selected', String(t.dataset.dview === state.dataView));
-
     // 카운터 갱신
     for (const counter of COUNTERS) {
       const v = viewData.empty ? '–' : String(viewData.counters[counter.id]);
       counterValues.get(counter.id).textContent = v;
     }
 
-    // 탐색 트리 보기 (학습 3단계 제외 — 그때는 학생 코드가 관리)
-    if (state.dataView === 'tree' && state.stageId !== 'write') {
-      fill(body, renderTree(viewData, algo.evalTag));
-      return;
-    }
-
     if (viewData.empty) {
       fill(body,
         structurePicker(),
-        legend(),
         el('div.placeholder', {},
           el('strong', {}, '아직 실행 전입니다'),
           '아래 ', el('strong', { style: 'color:var(--current)' }, '▶ 재생'),
@@ -143,18 +128,23 @@ export function mountDataPanel(root, store, player) {
 
     fill(body,
       structurePicker(),
-      legend(),
-      // OPEN 헤더 한 줄에 자료구조·개수·CLOSED 크기를 모아 세로 공간을 아낀다
-      el('div.inspect', {},
-        algo.structure === 'single'
-          ? el('span', {}, el('strong', {}, '이웃 후보'), ` · ${viewData.openIds.length}개`)
-          : el('span', {}, el('strong', {}, `OPEN · ${structure.name}`), ` · ${viewData.openIds.length}개`),
-        el('span.topbar__spacer'),
-        algo.structure === 'single'
-          ? null
-          : el('span.closed-chip', {}, `CLOSED ${viewData.closedSize}개`),
+      // 위: OPEN(대기 목록)
+      el('div.ds-section', {},
+        el('div.inspect', {},
+          algo.structure === 'single'
+            ? el('span', {}, el('strong', {}, '이웃 후보'), ` · ${viewData.openIds.length}개`)
+            : el('span', {}, el('strong', {}, `OPEN · ${structure.name}`), ` · ${viewData.openIds.length}개`),
+          el('span.topbar__spacer'),
+          legendInline(),
+          algo.structure === 'single' ? null : el('span.closed-chip', {}, `CLOSED ${viewData.closedSize}개`),
+        ),
+        el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
       ),
-      el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
+      // 아래: 탐색 트리 (함께 본다)
+      el('div.ds-section.ds-section--tree', {},
+        el('div.inspect', {}, el('span', {}, el('strong', {}, '탐색 트리'), ' · 펼쳐진 노드들')),
+        renderTree(viewData, algo.evalTag),
+      ),
     );
   }
 
@@ -176,6 +166,14 @@ export function mountDataPanel(root, store, player) {
       el('span.ds-pick__label', {}, 'OPEN =', el('span.sr-only', {}, ' 자료구조 바꾸기')),
       chips,
       active ? el('span.ds-pick__becomes', {}, `→ ${active.becomes}`) : null,
+    );
+  }
+
+  function legendInline() {
+    return el('span.ds-legend ds-legend--inline', {},
+      el('span', {}, el('i.swatch.swatch--current'), '검사'),
+      el('span', {}, el('i.swatch.swatch--open'), '삽입'),
+      el('span', {}, el('i.swatch.swatch--path'), '해'),
     );
   }
 

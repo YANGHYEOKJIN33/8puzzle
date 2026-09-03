@@ -95,19 +95,19 @@ export const ALGORITHMS = [
   },
   {
     id: 'hill', name: '언덕 등반', en: 'Hill Climbing',
-    family: 'heuristic', structure: 'single', evalTag: 'h',
+    family: 'heuristic', structure: 'single', evalTag: 'h', defaultHeuristic: 'h2',
     point: '지금보다 나은 이웃으로만 간다 · 지역 최적에 갇힐 수 있다',
     ready: true,
   },
   {
     id: 'best', name: '최상 우선 탐색', en: 'Best-First Search',
-    family: 'heuristic', structure: 'priority', evalTag: 'h',
+    family: 'heuristic', structure: 'priority', evalTag: 'h', defaultHeuristic: 'h2',
     point: 'h(n)이 가장 작은 것부터 본다 · 빠르지만 최적은 아니다',
     ready: true,
   },
   {
     id: 'astar', name: 'A* 알고리즘', en: 'A* Search',
-    family: 'heuristic', structure: 'priority', evalTag: 'f',
+    family: 'heuristic', structure: 'priority', evalTag: 'f', defaultHeuristic: 'h2',
     point: 'f(n)=g(n)+h(n) · 조건을 갖추면 최적해를 보장한다',
     ready: true,
   },

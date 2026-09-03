@@ -4,7 +4,8 @@
  * 개발 5단계: 단계 기록(trace)을 실제로 보이게 한다.
  * 학습 2·3단계(빈칸 채우기·직접 작성)는 이후 단계에서 이 위에 얹는다.
  */
-import { createStore } from './state.js';
+import { createStore, findById } from './state.js';
+import { ALGORITHMS } from './config.js';
 import { createPlayer } from './player.js';
 import { createComparePanel } from '../ui/comparePanel.js';
 import { createOnboarding } from '../ui/onboarding.js';
@@ -47,9 +48,20 @@ store.subscribe((state) => {
 // (요구사항 5.4.2 — 단계를 바꿔도 알고리즘과 초기 상태는 유지된다)
 let lastKey = '';
 let lastStage = '';
+let lastAlgo = '';
 store.subscribe((state) => {
+  // 알고리즘을 바꾸면 그 알고리즘이 흔히 쓰는 기본 휴리스틱을 자동으로 고른다.
+  // (요청 ③ — 학생이 매번 휴리스틱을 고르지 않아도 되게)
+  if (state.algorithmId !== lastAlgo) {
+    lastAlgo = state.algorithmId;
+    const algo = findById(ALGORITHMS, state.algorithmId);
+    if (algo.defaultHeuristic && state.heuristicId !== algo.defaultHeuristic) {
+      store.set({ heuristicId: algo.defaultHeuristic });   // 다시 이 구독자를 부르며 새 휴리스틱으로 리로드
+      return;
+    }
+  }
+
   // 학습 3단계(직접 작성)에서는 학생 코드의 결과를 writePanel이 직접 싣는다.
-  // 알고리즘 선택은 이 단계와 무관하므로 자동 리로드하지 않는다.
   if (state.stageId === 'write') {
     if (lastStage !== 'write') { lastStage = 'write'; player.clear(); }
     return;
