@@ -55,10 +55,10 @@ export const LESSON = [
     id: 'code',
     title: '순서도와 의사코드',
     goal: '알고리즘을 그림으로 적은 것이 순서도, 말과 코드 중간쯤으로 적은 것이 의사코드예요. 둘은 같은 절차를 가리켜요.',
-    todo: '한 단계씩 누르면서, 순서도 도형·의사코드 줄·오른쪽 퍼즐 상태가 같이 바뀌는 걸 보세요.',
-    layout: 'code-board',
+    todo: '한 단계씩 누르면서, 순서도 도형·의사코드 줄·퍼즐 상태·OPEN 리스트가 한꺼번에 바뀌는 걸 보세요.',
+    layout: 'code-board-data',
     stage: 'pseudo',
-    show: { action: true, controls: true, code: true, board: true, slim: true },
+    show: { action: true, controls: true, code: true, board: true, open: true, slim: true },
   },
   {
     id: 'fill',
@@ -67,7 +67,7 @@ export const LESSON = [
     todo: '빈칸을 골라 "이 코드로 실행"을 눌러 보세요. 확장 노드 수와 해의 길이가 어떻게 달라지나요?',
     layout: 'code-board',
     stage: 'fill',
-    show: { board: true, code: true, controls: true },
+    show: { board: true, code: true, controls: true, codemap: true },
   },
   {
     id: 'write',

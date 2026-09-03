@@ -49,6 +49,7 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
 
     // 마지막 쪽: 오늘 배운 것 정리
     if (lessonAt(state.lessonStep).show.summary) {
+      body.dataset.mode = 'flow';
       headHint.textContent = '오늘 배운 것을 한 장으로';
       fill(body, summaryView());
       return;
@@ -56,6 +57,7 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
 
     // 학습 2단계: 빈칸 채우기 화면
     if (state.stageId === 'fill') {
+      body.dataset.mode = 'flow';
       headHint.textContent = '빈칸을 채우고 실행해 봐요';
       renderFill(body, store, player, fillLocal);
       return;
@@ -63,6 +65,7 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
 
     // 학습 3단계: 직접 작성 편집기 (텍스트영역 유지를 위해 한 번만 만든다)
     if (state.stageId === 'write') {
+      body.dataset.mode = 'duo';
       headHint.textContent = '파이썬으로 직접 만들어요';
       if (!writeEl) writeEl = buildWritePanel(store, player, getRunner());
       if (body.firstChild !== writeEl) body.replaceChildren(writeEl);
@@ -70,6 +73,7 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
     }
 
     // 기본: 순서도와 의사코드를 한 화면에 나란히 (요청 1.5)
+    body.dataset.mode = 'duo';
     headHint.textContent = '순서도와 코드를 같이 봐요';
     const algo = findById(ALGORITHMS, state.algorithmId);
     const module = getAlgorithm(algo.id);

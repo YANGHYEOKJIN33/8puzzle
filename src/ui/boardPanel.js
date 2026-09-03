@@ -9,6 +9,7 @@ import { findById } from '../app/state.js';
 import { createAnimatedBoard } from './animatedBoard.js';
 import { lessonAt } from '../app/lesson.js';
 import { expand, isGoal } from '../core/puzzle.js';
+import { findExercise } from '../app/exercises.js';
 import { miniBoard } from './miniBoard.js';
 
 /** 작은 정적 판 하나 (목표 미리보기용) */
@@ -126,8 +127,25 @@ export function mountBoardPanel(root, store, player) {
       : started ? progress(v)
       : el('p.panel__hint', {}, '위쪽 ⏭ 한 단계를 눌러 보세요.'));
 
-    // 자식 노드 미리보기 — "확장"이 무슨 뜻인지 그림으로 (2쪽)
-    fill(extra, lessonAt(state.lessonStep).show.children ? childrenStrip(showState) : null);
+    // 판 아래 보조 그림 — 쪽마다 다르다
+    const show = lessonAt(state.lessonStep).show;
+    fill(extra,
+      show.children ? childrenStrip(showState)          // 2쪽: 확장이 무슨 뜻인지
+      : show.codemap ? codeMap(state.exerciseId)        // 6쪽: 코드가 퍼즐의 어디인지
+      : null);
+  }
+
+  /** 코드 한 줄 ↔ 8-퍼즐에서 하는 일 (빈칸 채우기 쪽) */
+  function codeMap(exerciseId) {
+    const exercise = findExercise(exerciseId);
+    if (!exercise.map) return null;
+    return el('div.fillmap', {},
+      el('div.fillmap__cap', {}, '🔎 이 코드가 8-퍼즐에서 하는 일'),
+      el('dl.fillmap__list', {}, exercise.map.flatMap(([code, means]) => [
+        el('dt.fillmap__code', {}, code),
+        el('dd.fillmap__means', {}, means),
+      ])),
+    );
   }
 
   /** 직접 밀어 보는 모드의 라벨·안내·되돌리기 */

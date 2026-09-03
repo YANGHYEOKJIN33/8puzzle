@@ -163,8 +163,8 @@
 .workspace[data-layout="board-data"] .board--anim { width: min(80px, 11vh, 26vw); }
 .workspace[data-layout="board-data"] .board--mini { width: min(62px, 9vh, 18vw); }
 
-/* 대기 목록 + 나무를 함께 비교하는 페이지 (요청 ①)
-   퍼즐은 왼쪽에 좁게 두고, 대기 목록과 나무가 한 화면에 같이 들어오도록 높이를 몰아 준다. */
+/* OPEN 리스트 + 탐색 트리를 함께 비교하는 페이지 (요청 ①)
+   퍼즐은 왼쪽에 좁게 두고, OPEN 리스트와 트리가 한 화면에 같이 들어오도록 높이를 몰아 준다. */
 .workspace[data-layout="board-tree"] {
   grid-template-columns: minmax(250px, 0.55fr) minmax(520px, 2.2fr);
   grid-template-rows: 1fr;
@@ -180,7 +180,6 @@
 .workspace[data-layout="board-tree"] .board-side { flex: 1 1 100%; min-width: 0; }
 .workspace[data-layout="board-tree"] .board--anim { width: min(80px, 12vh, 18vw); }
 .workspace[data-layout="board-tree"] .board--mini { width: min(62px, 9vh, 14vw); }
-.workspace[data-layout="board-tree"] .board--mini .tile { font-size: calc(0.72rem * var(--scale)); }
 .workspace[data-layout="board-tree"] .field {
   flex-direction: column;
   align-items: stretch;
@@ -188,7 +187,7 @@
   padding: var(--sp-1) 0 0;
 }
 
-/* 대기 목록·나무 어느 쪽도 스크롤 밖으로 밀려나지 않게 — 남는 높이는 나무가 가진다 */
+/* OPEN 리스트·트리 어느 쪽도 스크롤 밖으로 밀려나지 않게 — 남는 높이는 트리가 가진다 */
 .workspace[data-layout="board-tree"] .panel--data .panel__body {
   display: flex;
   flex-direction: column;
@@ -228,6 +227,31 @@
 }
 .workspace[data-layout="code-board"] .panel--data { display: none; }
 
+/* 순서도·의사코드 + 퍼즐 + OPEN/CLOSED를 한 화면에 (요청 ②)
+   코드가 왼쪽 전체 높이를 쓰고, 오른쪽은 위에 퍼즐 판, 아래에 자료구조. */
+.workspace[data-layout="code-board-data"] {
+  grid-template-columns: minmax(360px, 1.15fr) minmax(300px, 1fr);
+  grid-template-rows: minmax(150px, auto) minmax(170px, 1fr);
+  grid-template-areas:
+    "code board"
+    "code data";
+}
+/* 판은 작게, 카운터는 한 줄로 — 아낀 높이는 OPEN 리스트에 준다 */
+.workspace[data-layout="code-board-data"] .board--anim { width: min(78px, 11vh, 12vw); }
+.workspace[data-layout="code-board-data"] .board--mini { width: min(62px, 9vh, 10vw); }
+.workspace[data-layout="code-board-data"] .panel--data .counter {
+  display: flex; align-items: baseline; justify-content: center;
+  gap: var(--sp-2); padding: 2px var(--sp-2);
+}
+.workspace[data-layout="code-board-data"] .panel--data .counter__label,
+.workspace[data-layout="code-board-data"] .panel--data .counter__value { display: inline; }
+.workspace[data-layout="code-board-data"] .panel--data .counter__value { font-size: var(--fs-md); }
+.workspace[data-layout="code-board-data"] .panel--data .counter__sub { display: none; }
+/* 좁은 칸이라 범례는 접는다 — 색 뜻은 3·4쪽에서 이미 익혔다 */
+.workspace[data-layout="code-board-data"] .ds-legend--inline { display: none; }
+.workspace[data-layout="code-board-data"] .panel--data .panel__body { padding: var(--sp-2); }
+.workspace[data-layout="code-board-data"] .open-wrap { margin-top: var(--sp-1); }
+
 /* 실행 제어는 필요한 페이지에서만 */
 body:not(.show-controls) .controlbar { display: none; }
 
@@ -257,12 +281,16 @@ body:not(.show-action) .actionbar { display: none; }
 /* 좁은 화면: 두 칸짜리 레슨 페이지도 세로 1열로 내린다 (요구사항 6.2) */
 @media (max-width: 900px) {
   .workspace[data-layout="board-tree"],
-  .workspace[data-layout="code-board"] {
+  .workspace[data-layout="code-board"],
+  .workspace[data-layout="code-board-data"] {
     grid-template-columns: 1fr;
     grid-template-rows: none;
   }
   .workspace[data-layout="board-tree"] { grid-template-areas: "board" "data"; }
   .workspace[data-layout="code-board"] { grid-template-areas: "board" "code"; }
+  .workspace[data-layout="code-board-data"] { grid-template-areas: "board" "data" "code"; }
+  .workspace[data-layout="code-board-data"] .board--anim { width: min(160px, 30vw); }
+  .workspace[data-layout="code-board-data"] .board--mini { width: min(110px, 22vw); }
   /* 세로로 쌓이면 높이 제한이 없으므로 원래대로 흐르게 둔다 */
   .workspace[data-layout="board-tree"] .panel--data .panel__body { overflow: auto; }
   .workspace[data-layout="board-tree"] .board--anim { width: min(160px, 30vw); }

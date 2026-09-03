@@ -24,6 +24,7 @@ const initial = {
   stageId: 'pseudo',
 
   // 기본값으로 동작하는 것
+  exerciseId: 'blind-pop',   // 빈칸 채우기에서 고른 문제 (퍼즐 판 쪽 설명도 이걸 따라간다)
   heuristicId: 'h2',
   presetId: 'intro',
   speedId: 'normal',
