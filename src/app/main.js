@@ -47,7 +47,7 @@ store.subscribe((state) => {
   const step = lessonAt(state.lessonStep);
   qs('#workspace').dataset.layout = step.layout;
   const body = document.body;
-  for (const key of ['board', 'action', 'controls', 'open', 'tree', 'picker', 'code']) {
+  for (const key of ['board', 'action', 'controls', 'open', 'tree', 'picker', 'code', 'slim']) {
     body.classList.toggle(`show-${key}`, Boolean(step.show[key]));
   }
   if (state.stageId !== step.stage) store.set({ stageId: step.stage });

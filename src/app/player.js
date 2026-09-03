@@ -119,7 +119,8 @@ export function createPlayer(store) {
   return {
     /** 지금 store의 알고리즘·초기 상태·휴리스틱으로 탐색을 돌려 기록을 싣는다 */
     load() {
-      pause();
+      // pause()는 loadWith 안에서 부른다 — 여기서 먼저 멈추면
+      // "재생 중이었는지"를 알 수 없어 새 탐색이 멈춘 채로 실린다
       const state = store.get();
       const preset = findById(PRESETS, state.presetId);
       const algo = findById(ALGORITHMS, state.algorithmId);
@@ -132,6 +133,9 @@ export function createPlayer(store) {
 
     /** 알고리즘 id와 시작 상태를 직접 주어 싣는다 (테스트·직접 호출용) */
     loadWith(algorithmId, startState, options = {}) {
+      // 재생 중이었다면 새 탐색으로 바꾼 뒤에도 이어서 재생한다
+      // (알고리즘을 바꿨을 때 화면이 멈춘 것처럼 보이지 않도록)
+      const wasPlaying = timer !== null;
       pause();
       if (!startState) { result = null; frames = []; index = 0; emit(); return null; }
       result = runAlgorithm(algorithmId, startState, { limit: MAX_EXPANSIONS, ...options });
@@ -140,6 +144,7 @@ export function createPlayer(store) {
       pathIds = pathIdSet(result);
       index = 0;
       emit();
+      if (wasPlaying) play();
       return result;
     },
 
