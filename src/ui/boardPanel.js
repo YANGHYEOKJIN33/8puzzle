@@ -1,14 +1,14 @@
 /**
  * 퍼즐 판 패널 (요구사항 4.1 ①).
- * "지금 검사 중인 노드"의 배치를 움직이는 판으로 보여 준다. 타일이 미끄러지며 옮겨져
- * 어떤 이동이 일어났는지 눈으로 따라갈 수 있다. 초기 상태 고르기는 언제나 보인다.
+ * 왼쪽에 "지금 검사 중(또는 초기) 배치"(움직이는 판), 오른쪽에 "목표" 배치를 나란히
+ * 보여 준다. 학생이 "지금 여기 → 목표 저기"를 한눈에 견줄 수 있다.
  */
 import { el, fill } from './dom.js';
 import { GOAL, PRESETS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { createAnimatedBoard } from './animatedBoard.js';
 
-/** 작은 정적 판 하나(목표 상태 미리보기용) */
+/** 작은 정적 판 하나 (목표 미리보기용) */
 export function renderBoard(state, moved = -1) {
   const board = el('div.board', { role: 'img', 'aria-label': describe(state) });
   state.forEach((tile, i) => {
@@ -34,7 +34,7 @@ function movedValueOf(node) {
 }
 
 export function mountBoardPanel(root, store, player) {
-  const hint = el('span.panel__hint', {}, '초기 상태');
+  const hint = el('span.panel__hint', {}, '초기 상태 → 목표');
   const anim = createAnimatedBoard();
 
   const presetSelect = el('select', {
@@ -42,29 +42,24 @@ export function mountBoardPanel(root, store, player) {
     onchange: (e) => store.set({ presetId: e.target.value }),
   }, PRESETS.map((p) => el('option', { value: p.id }, `${p.name} · ${p.note}`)));
 
-  // 캡션·결과·진행 막대는 자주 바뀌므로 참조를 잡아 두고 내용만 갱신한다
-  const caption = el('div.board-caption');
-  const banner = el('div');           // 해 경로 배너 자리
-  const foot = el('div');             // 진행 막대 또는 안내
-  const goalDetails = el('details.advanced', {},
-    el('summary', {}, '설정 더보기 — 목표 상태'),
-    el('div.board-row', { style: 'padding-top:8px' },
-      renderBoard(GOAL),
-      el('div.board-row__info', {},
-        el('div.board-caption', {}, el('strong', {}, '목표 상태'), ' · 기본값'),
-        el('p.panel__hint', {}, '초기 상태 직접 입력과 목표 상태 바꾸기는 다음 개발 단계에서 열립니다.'),
-      ),
-    ),
-  );
+  const nowLabel = el('div.board-cap');   // "지금 배치 / 초기 상태" 라벨
+  const banner = el('div');               // 해 경로 배너
+  const foot = el('div');                 // 진행 막대 또는 안내
+
+  // 목표 판(정적) — 언제나 오른쪽에 보인다
+  const goalCell = el('div.board-cell', {},
+    renderBoardMini(GOAL),
+    el('div.board-cap', {}, el('strong', {}, '목표')));
 
   const body = el('div.panel__body', {},
-    el('div.board-row', {},
-      anim.el,
-      el('div.board-row__info', {}, caption, banner,
+    el('div.board-duo', {},
+      el('div.board-cell', {}, anim.el, nowLabel),
+      el('div.board-arrow', { 'aria-hidden': 'true' }, '→'),
+      goalCell,
+      el('div.board-side', {}, banner,
         el('div.field', {}, el('label', { for: 'preset-select' }, '초기 상태'), presetSelect),
         foot),
     ),
-    goalDetails,
   );
 
   fill(root, el('div.panel__head', {}, el('span.panel__title', {}, '퍼즐 판'), hint), body);
@@ -79,7 +74,6 @@ export function mountBoardPanel(root, store, player) {
     const started = Boolean(v && !v.empty);
     const showState = node ? node.state : preset.state;
 
-    // 프리셋이 바뀌었거나 아직 시작 전이면 전환 없이 새 판을 세팅
     if (!started) {
       if (lastPresetId !== preset.id) { anim.reset(preset.state); lastPresetId = preset.id; }
       else anim.update(preset.state, { movedValue: 0 });
@@ -88,15 +82,13 @@ export function mountBoardPanel(root, store, player) {
       lastPresetId = preset.id;
     }
 
-    hint.textContent = started && node ? '지금 검사 중인 배치' : '초기 상태';
-    fill(caption, node
-      ? [el('strong', {}, `깊이 ${node.depth}`), node.moveLabel ? ` · 직전 이동 ${node.moveLabel}` : '']
-      : [el('strong', {}, '초기 상태'), ` · ${preset.name} (${preset.note})`]);
+    fill(nowLabel, node
+      ? [el('strong', {}, '지금 배치'), ` · 깊이 ${node.depth}`]
+      : [el('strong', {}, '초기 상태'), ` · ${preset.name}`]);
 
     const onPath = node && started && v.pathIds.has(node.id) && v.finished;
     fill(banner, onPath ? el('div.result.result--found', {}, '이 배치는 해 경로 위에 있습니다.') : null);
-
-    fill(foot, started ? progress(v) : el('p.panel__hint', {}, '▶ 재생 또는 ⏭ 한 단계로 탐색을 시작하세요.'));
+    fill(foot, started ? progress(v) : el('p.panel__hint', {}, '▶ 재생 또는 ⏭ 한 단계로 시작하세요.'));
   }
 
   function progress(v) {
@@ -108,4 +100,13 @@ export function mountBoardPanel(root, store, player) {
 
   player.subscribe(draw);
   store.subscribe(() => draw(player.view()));
+}
+
+/** 목표 판처럼 작게 그리는 정적 판 */
+function renderBoardMini(state) {
+  const board = el('div.board.board--mini', { role: 'img', 'aria-label': describe(state) });
+  state.forEach((tile) => {
+    board.append(el(`div.tile${tile === 0 ? '.tile--blank' : ''}`, { 'aria-hidden': 'true' }, tile === 0 ? '' : String(tile)));
+  });
+  return board;
 }
