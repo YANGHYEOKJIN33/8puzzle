@@ -623,7 +623,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
    ============================================================ */
 .board--anim {
   position: relative;
-  width: min(176px, 19vh, 54vw);
+  width: min(118px, 14vh, 42vw);
   aspect-ratio: 1;
   margin-inline: 0;
 }
