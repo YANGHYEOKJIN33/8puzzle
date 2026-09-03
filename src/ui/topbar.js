@@ -5,7 +5,20 @@
 import { el, fill } from './dom.js';
 import { ALGORITHMS } from '../app/config.js';
 
+/** 무엇을 배우는 중인가 — 큰 탭 두 개 (요청: 자료구조도 따로 배울 수 있게) */
+const MODES = [
+  { id: 'search', label: '🧩 8-퍼즐 탐색', tip: '탐색 알고리즘을 순서도·코드로 배웁니다' },
+  { id: 'ds',     label: '📦 자료구조',    tip: '큐·스택·우선순위 큐를 직접 넣고 꺼내 보며 배웁니다' },
+];
+
 export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}) {
+  const modeButtons = MODES.map((mode) => el('button.pill.modetab', {
+    type: 'button', role: 'tab', title: mode.tip,
+    onclick: () => store.set({ mode: mode.id }),
+  }, mode.label));
+
+  const algoField = el('span.topbar__field');
+
   const select = el('select', {
     id: 'algo-select',
     onchange: (e) => store.set({ algorithmId: e.target.value }),
@@ -50,19 +63,29 @@ export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}
     onclick: () => store.set({ scale: Math.min(1.6, +(store.get().scale + 0.15).toFixed(2)) }),
   }, '가＋');
 
+  fill(algoField,
+    el('label', { for: 'algo-select', class: 'panel__title' }, '찾는 방법'),
+    select,
+  );
+
   fill(root,
     el('h1.topbar__title', {},
       '8-퍼즐로 배우는 탐색 알고리즘',
-      el('small', {}, '순서도 → 의사코드 → 파이썬'),
+      el('small', {}, '자료구조 → 순서도 → 의사코드 → 파이썬'),
     ),
-    el('label', { for: 'algo-select', class: 'panel__title' }, '찾는 방법'),
-    select,
+    el('div.modetabs', { role: 'tablist', 'aria-label': '무엇을 배울까요' }, modeButtons),
+    algoField,
     el('span.topbar__spacer'),
     el('div.topbar__tools', {}, helpBtn, compareBtn, smaller, bigger, themeBtn),
   );
 
   store.subscribe((state) => {
     select.value = state.algorithmId;
+    modeButtons.forEach((b, i) => b.setAttribute('aria-selected', String(MODES[i].id === state.mode)));
+    // 자료구조 탭에서는 알고리즘·비교가 쓰이지 않는다 — 화면을 단순하게 둔다
+    const search = state.mode !== 'ds';
+    algoField.hidden = !search;
+    compareBtn.hidden = !search;
     themeBtn.textContent =
       state.theme === 'auto' ? '화면 · 자동'
       : state.theme === 'light' ? '화면 · 밝게'

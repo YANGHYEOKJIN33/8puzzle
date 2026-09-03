@@ -12,6 +12,8 @@
  * stage  : 코드 패널이 어떤 모드로 그려질지 (pseudo | fill | write)
  * show   : 이 페이지에서 보여 줄 조각들
  */
+import { DS_LESSON } from './dsLesson.js';
+
 export const LESSON = [
   {
     id: 'intro',
@@ -81,4 +83,15 @@ export const LESSON = [
 export function lessonAt(index) {
   const i = Math.max(0, Math.min(LESSON.length - 1, index | 0));
   return LESSON[i];
+}
+
+/**
+ * 지금 탭에서 쓸 쪽 묶음을 돌려준다.
+ * 탐색 탭과 자료구조 탭이 같은 진행 막대를 함께 쓰기 위한 다리.
+ */
+export function currentLesson(state) {
+  if (state.mode === 'ds') {
+    return { steps: DS_LESSON, index: Math.max(0, Math.min(DS_LESSON.length - 1, state.dsStep | 0)), key: 'dsStep' };
+  }
+  return { steps: LESSON, index: Math.max(0, Math.min(LESSON.length - 1, state.lessonStep | 0)), key: 'lessonStep' };
 }
