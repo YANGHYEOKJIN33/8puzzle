@@ -7,6 +7,7 @@ import { el, fill } from './dom.js';
 import { GOAL, PRESETS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { createAnimatedBoard } from './animatedBoard.js';
+import { lessonAt } from '../app/lesson.js';
 
 /** 작은 정적 판 하나 (목표 미리보기용) */
 export function renderBoard(state, moved = -1) {
@@ -88,7 +89,10 @@ export function mountBoardPanel(root, store, player) {
 
     const onPath = node && started && v.pathIds.has(node.id) && v.finished;
     fill(banner, onPath ? el('div.result.result--found', {}, '이 배치는 해 경로 위에 있습니다.') : null);
-    fill(foot, started ? progress(v) : el('p.panel__hint', {}, '▶ 재생 또는 ⏭ 한 단계로 시작하세요.'));
+    const showControls = Boolean(lessonAt(store.get().lessonStep).show.controls);
+    fill(foot, !showControls ? null
+      : started ? progress(v)
+      : el('p.panel__hint', {}, '아래 ⏭ 한 단계를 눌러 보세요.'));
   }
 
   function progress(v) {

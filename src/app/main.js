@@ -11,7 +11,9 @@ import { createComparePanel } from '../ui/comparePanel.js';
 import { createOnboarding } from '../ui/onboarding.js';
 import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
-import { mountStagebar } from '../ui/stagebar.js';
+import { mountLessonBar } from '../ui/lessonBar.js';
+import { mountActionCard } from '../ui/actionCard.js';
+import { lessonAt } from './lesson.js';
 import { mountBoardPanel } from '../ui/boardPanel.js';
 import { mountCodePanel } from '../ui/codePanel.js';
 import { mountDataPanel } from '../ui/dataPanel.js';
@@ -24,7 +26,8 @@ const compare = createComparePanel(store, player);
 const onboarding = createOnboarding(store);
 
 mountTopbar(qs('#topbar'), store, compare.open, onboarding.open);
-mountStagebar(qs('#stagebar'), store);
+mountLessonBar(qs('#lessonbar'), store);
+mountActionCard(qs('#actionbar'), store, player);
 mountCodePanel(qs('#panel-code'), store, player);
 mountBoardPanel(qs('#panel-board'), store, player);
 mountDataPanel(qs('#panel-data'), store, player);
@@ -34,6 +37,21 @@ mountControls(qs('#controlbar'), store, player);
 // 코드 패널은 다시 그릴 때 body만 갈아 끼우므로 이 요소는 지워지지 않는다.
 const codeRoot = qs('#panel-code');
 codeRoot.insertBefore(createCoach(store, player), codeRoot.querySelector('.panel__body'));
+
+// 레슨 페이지가 바뀌면 화면 배치와 코드 모드를 그 페이지에 맞춘다.
+// (한 화면에 필요한 것만 보이게 — 학습 집중)
+let lastLesson = -1;
+store.subscribe((state) => {
+  if (state.lessonStep === lastLesson) return;
+  lastLesson = state.lessonStep;
+  const step = lessonAt(state.lessonStep);
+  qs('#workspace').dataset.layout = step.layout;
+  const body = document.body;
+  for (const key of ['board', 'action', 'controls', 'open', 'tree', 'picker', 'code']) {
+    body.classList.toggle(`show-${key}`, Boolean(step.show[key]));
+  }
+  if (state.stageId !== step.stage) store.set({ stageId: step.stage });
+});
 
 // 보기 설정을 문서 뿌리에 반영한다 (요구사항 6.2.2 · 6.3.3)
 store.subscribe((state) => {

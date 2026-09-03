@@ -9,7 +9,7 @@
 const STORAGE_KEY = 'puzzle8-lab:prefs';
 
 /** 저장해 둘 값 — 학습 진도가 아니라 "고른 설정"만 남긴다 */
-const PERSISTED = ['algorithmId', 'stageId', 'heuristicId', 'presetId', 'speedId', 'theme', 'scale'];
+const PERSISTED = ['algorithmId', 'stageId', 'heuristicId', 'presetId', 'speedId', 'theme', 'scale', 'lessonStep'];
 
 const initial = {
   // 학생이 고르는 것 (요구사항 6.1.1 — 첫 화면의 결정은 두 개뿐)
@@ -25,7 +25,8 @@ const initial = {
   theme: 'auto',        // auto | light | dark
   scale: 1,             // 글자 크기 배율 (요구사항 6.2.2)
   codeView: 'pseudo',   // 코드 패널에 무엇을 보일지: flow | pseudo | python
-  dataView: 'open',     // 자료구조 패널에 무엇을 보일지: open | tree
+  dataView: 'open',     // (예전 탭 잔재 — 지금은 OPEN·트리를 함께 보여 준다)
+  lessonStep: 0,        // 레슨 몇 번째 페이지인가 (0부터)
 
   // 실행 상태 (탐색 엔진은 3·4단계에서 붙인다)
   running: false,
