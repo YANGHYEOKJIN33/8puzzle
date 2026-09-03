@@ -91,7 +91,9 @@
   container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-2);
+  /* 칸 사이 틈도 판 크기에 비례해야 한다 — 고정 px이면 작은 판에서 칸이 유독 좁아져
+     숫자와 칸의 비율이 판마다 달라진다 (요청 ①) */
+  gap: 4cqw;
   width: min(180px, 21vh, 55vw);
   aspect-ratio: 1;
   margin-inline: auto;
@@ -482,7 +484,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
    학습 2단계 · 빈칸 채우기 (8단계)
    ============================================================ */
 .fill-intro { margin: 0 0 var(--sp-2); font-size: var(--fs-sm); color: var(--text-muted); }
-.fill-picker { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-3); }
+.fill-picker { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-2); }
 
 .fill-code {
   background: var(--surface-2);
@@ -492,11 +494,13 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 }
 .fill-line {
   white-space: pre-wrap;
-  line-height: 2.1;
+  /* 드롭다운이 든 줄만 넉넉하게 — 모든 줄을 2.1로 두면 코드가 너무 길어진다 */
+  line-height: 1.6;
   font-family: var(--font-code);
   font-size: var(--fs-sm);
 }
 /* 빈칸 드롭다운 — 코드 속에서 눈에 띄게 */
+.fill-line:has(.fill-blank) { line-height: 2.2; }
 .fill-blank {
   padding: 1px var(--sp-2);
   border: 2px solid var(--current);
@@ -514,7 +518,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   align-items: center;
   gap: var(--sp-3);
   flex-wrap: wrap;
-  margin-top: var(--sp-3);
+  margin-top: var(--sp-2);
 }
 
 .fill-feedback {
@@ -659,7 +663,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .board--noanim .atile { transition: none; }
 .atile__face {
   position: absolute;
-  inset: 3px;
+  inset: 1.6cqw;
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
@@ -825,7 +829,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   gap: 2px;
   margin: 0;
 }
-.board--mini .tile { font-size: min(calc(0.9rem * var(--scale)), 20cqw); border-radius: 4px; }
+.board--mini .tile { font-size: min(calc(0.9rem * var(--scale)), 17cqw); border-radius: 4px; }
 
 /* ============================================================
    자료구조 패널: OPEN + 탐색 트리를 한 화면에 (요청 ②)
@@ -961,7 +965,11 @@ body.show-slim .action-card__detail { display: none; }
 }
 
 /* 코드 패널 본문을 세로 flex로 (동작카드 + 나란히 영역) */
-.panel--code .panel__body { display: flex; flex-direction: column; overflow: hidden; }
+/* 순서도·코드를 나란히 두는 모드(그리고 직접 작성 편집기)만 세로 flex로 꽉 채운다.
+   빈칸 채우기·정리 쪽은 내용이 길어 위에서 아래로 흐르며 스크롤해야 한다
+   (flex로 두면 pre가 눌려 코드가 한 줄로 찌그러진다) */
+.panel--code .panel__body[data-mode="duo"] { display: flex; flex-direction: column; overflow: hidden; }
+.panel--code .panel__body[data-mode="flow"] { display: block; overflow: auto; }
 
 /* ============================================================
    자료구조 배우기 탭 — 넣은 순서 → [구조] → 나온 순서
@@ -1292,3 +1300,60 @@ body.show-slim .action-card__detail { display: none; }
 .wrap__desc { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
 .wrap__scroll { overflow-x: auto; }
 .wrap__actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-1); }
+
+/* ============================================================
+   빈칸 채우기 — 이 코드가 8-퍼즐에서 무슨 일인지 (요청 ③)
+   ============================================================ */
+.fillprev {
+  margin-top: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3) var(--sp-2);
+  border: 1px solid var(--current);
+  border-radius: var(--radius-sm);
+  background: var(--current-bg);
+}
+.fillprev__cap { font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1); }
+.fillprev__cap code { font-family: var(--font-code); font-size: var(--fs-xs); }
+.fillprev__row { display: flex; gap: var(--sp-3); flex-wrap: wrap; align-items: flex-start; }
+.fillprev__item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: var(--sp-1);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+}
+.fillprev__item--picked { border-color: var(--open); background: var(--open-bg); }
+.fillprev__tags { display: flex; gap: var(--sp-2); align-items: baseline; flex-wrap: wrap; justify-content: center; }
+.fillprev__tag { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+.fillprev__marks {
+  display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap;
+  margin-top: var(--sp-1); font-size: var(--fs-xs); color: var(--text-muted);
+}
+.fillprev__mark code { font-family: var(--font-code); }
+/* 휴리스틱 값 비교 */
+.fillprev__hrow { display: flex; gap: var(--sp-3); align-items: flex-start; flex-wrap: wrap; }
+.fillprev__hlist { display: grid; gap: 2px; flex: 1 1 240px; min-width: 0; }
+.fillprev__hitem {
+  font-size: var(--fs-sm);
+  padding: 1px var(--sp-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+.fillprev__hitem--picked { border-color: var(--open); background: var(--open-bg); }
+.fillprev__why { display: block; font-size: var(--fs-xs); color: var(--text-muted); }
+
+/* 코드 ↔ 퍼즐 짝지어 보기 */
+.fillmap { margin-top: var(--sp-3); }
+.fillmap__cap { font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-1); }
+.fillmap__list {
+  margin: var(--sp-1) 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--sp-3);
+  align-items: baseline;
+}
+.fillmap__code {
+  font-family: var(--font-code);
+  font-size: var(--fs-xs);
+  color: var(--current);
+  white-space: nowrap;
+}
+.fillmap__means { margin: 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--text); }
