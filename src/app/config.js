@@ -15,7 +15,7 @@ export { GOAL } from '../core/puzzle.js';
  * test/presets.test.js가 너비 우선 탐색으로 이 값을 매번 다시 확인한다.
  */
 export const PRESETS = [
-  // 탐색 횟수(= 펼친 노드 수, 기본 알고리즘 BFS 기준)를 기준으로 사다리를 짠다.
+  // 탐색 횟수(= 확장한 노드 수, 기본 알고리즘 BFS 기준)를 기준으로 사다리를 짠다.
   // 학습자가 탐색 과정을 처음부터 끝까지 따라갈 수 있도록 짧은 것부터 둔다.
   { id: 'intro',     name: '맛보기', note: '2수 · 탐색 3회',   minMoves: 2,  state: [1, 2, 0, 4, 5, 3, 7, 8, 6] },
   { id: 'easy',      name: '쉬움',   note: '3수 · 탐색 10회',  minMoves: 3,  state: [1, 0, 3, 4, 2, 6, 7, 5, 8] },
@@ -71,6 +71,8 @@ export const ALGORITHMS = [
     family: 'blind', structure: 'queue', evalTag: 'depth',
     point: '가장 얕은 것부터 본다 · 최단 경로를 보장한다',
     ready: true,
+    // 교과서 성질 (요구사항 3.2) — b: 분기 계수, d: 해의 깊이, m: 최대 깊이, L: 깊이 한계
+    props: { complete: '완전함', optimal: '최적 (간선 비용이 같을 때)', time: 'O(b^d)', space: 'O(b^d)' },
   },
   {
     id: 'dfs', name: '깊이 우선 탐색', en: 'Depth-First Search',
@@ -80,36 +82,42 @@ export const ALGORITHMS = [
     // 8-퍼즐에서 스택 탐색은 어떤 입력이든 한 갈래로 끝없이 파고든다.
     // 주 화면에서는 그 "파고드는" 모습만 짧게 보여 주고 멈춘다(비교 화면은 전체 사용).
     demoLimit: 60,
+    props: { complete: '아님 (무한히 깊어짐)', optimal: '아님', time: 'O(b^m)', space: 'O(b·m)' },
   },
   {
     id: 'dls', name: '깊이 제한 탐색', en: 'Depth-Limited Search',
     family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '깊이에 한계를 두어 무한히 내려가는 것을 막는다',
     ready: true,
+    props: { complete: '조건부 (해가 L 이내)', optimal: '아님', time: 'O(b^L)', space: 'O(b·L)' },
   },
   {
     id: 'ids', name: '반복적 깊이 심화 탐색', en: 'Iterative Deepening Search',
     family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '한계를 1씩 늘려가며 반복한다 · BFS의 최단성 + DFS의 적은 메모리',
     ready: true,
+    props: { complete: '완전함', optimal: '최적 (간선 비용이 같을 때)', time: 'O(b^d)', space: 'O(b·d)' },
   },
   {
     id: 'hill', name: '언덕 등반', en: 'Hill Climbing',
     family: 'heuristic', structure: 'single', evalTag: 'h', defaultHeuristic: 'h2',
     point: '지금보다 나은 이웃으로만 간다 · 지역 최적에 갇힐 수 있다',
     ready: true,
+    props: { complete: '아님 (지역 최적)', optimal: '아님', time: '지역 최적까지', space: 'O(b)' },
   },
   {
     id: 'best', name: '최상 우선 탐색', en: 'Best-First Search',
     family: 'heuristic', structure: 'priority', evalTag: 'h', defaultHeuristic: 'h2',
     point: 'h(n)이 가장 작은 것부터 본다 · 빠르지만 최적은 아니다',
     ready: true,
+    props: { complete: '완전함 (중복 제거 시)', optimal: '아님', time: 'O(b^m)', space: 'O(b^m)' },
   },
   {
     id: 'astar', name: 'A* 알고리즘', en: 'A* Search',
     family: 'heuristic', structure: 'priority', evalTag: 'f', defaultHeuristic: 'h2',
     point: 'f(n)=g(n)+h(n) · 조건을 갖추면 최적해를 보장한다',
     ready: true,
+    props: { complete: '완전함', optimal: '최적 (허용 가능한 h)', time: 'O(b^d)', space: 'O(b^d)' },
   },
 ];
 
@@ -118,7 +126,7 @@ export const STRUCTURE_LABEL = {
   queue:    { name: '큐 (FIFO)',        hint: '앞에서 꺼내고 뒤로 넣는다' },
   stack:    { name: '스택 (LIFO)',      hint: '넣은 곳에서 바로 꺼낸다' },
   priority: { name: '우선순위 큐',       hint: '평가값이 작은 것부터 꺼낸다' },
-  single:   { name: '현재 상태 하나',    hint: 'OPEN을 두지 않고 지금 상태만 본다' },
+  single:   { name: '현재 노드 하나',    hint: 'OPEN을 두지 않고 지금 노드만 본다' },
 };
 
 /**

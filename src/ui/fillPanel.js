@@ -97,7 +97,7 @@ function feedbackBox(fb) {
   const found = result && result.solution.found;
   const detail = !result ? ''
     : found
-      ? `해를 ${result.solution.moves}수에 찾았습니다. 펼친 노드 ${result.stats.expanded}개, OPEN 최대 ${result.stats.maxOpen}개.`
+      ? `해를 ${result.solution.moves}수에 찾았습니다. 확장한 노드 ${result.stats.expanded}개, OPEN 최대 ${result.stats.maxOpen}개.`
       : (result.solution.reason === 'local-optimum'
           ? '지역 최적에 막혀 멈췄습니다(언덕 등반의 한계).'
           : result.solution.reason === 'depth-limit'

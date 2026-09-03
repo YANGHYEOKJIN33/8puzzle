@@ -7,17 +7,21 @@ import { el, fill } from './dom.js';
 import { ALGORITHMS } from '../app/config.js';
 import { findById } from '../app/state.js';
 
+/**
+ * 지금 하는 일 = 정확한 용어(word) + 영어 용어(term) + 쉬운 한 문장(plain).
+ * 교과서 용어를 그대로 쓰되, 바로 옆에 쉬운 말을 붙여 뜻이 막히지 않게 한다.
+ */
 const ACTION_VIS = {
-  init:      { icon: '🚩', word: '시작',     plain: '첫 모양을 대기 목록에 넣어요.' },
-  pop:       { icon: '👆', word: '꺼내기',   plain: '대기 목록에서 모양 하나를 꺼내 살펴봐요.' },
-  goal:      { icon: '🎉', word: '찾았다!',  plain: '목표에 도착! 여기까지 온 길이 정답이에요.' },
-  make:      { icon: '🌱', word: '펼치기',   plain: '지금 모양에서 갈 수 있는 다음 모양들을 만들어요.' },
-  push:      { icon: '📥', word: '넣기',     plain: '새 모양을 대기 목록에 넣어 나중에 살펴봐요.' },
-  skip:      { icon: '🚪', word: '건너뛰기', plain: '이미 본 모양이라서 넣지 않아요.' },
-  exhausted: { icon: '🔚', word: '끝',       plain: '더 볼 게 없어요. 이 방법으론 못 찾았어요.' },
-  limit:     { icon: '✋', word: '멈춤',     plain: '너무 많이 살펴봐서 여기서 멈춰요.' },
-  restart:   { icon: '🔁', word: '다시',     plain: '더 깊이 볼 수 있게 처음부터 다시 시작해요.' },
-  path:      { icon: '🚶', word: '따라가기', plain: '찾은 정답 길을 따라가요.' },
+  init:      { icon: '🚩', word: '초기화',   term: 'initialize', plain: '시작 노드를 OPEN 리스트에 넣어요.' },
+  pop:       { icon: '👆', word: '꺼내기',   term: 'pop',        plain: 'OPEN에서 노드 하나를 꺼내 살펴봐요.' },
+  goal:      { icon: '🎉', word: '목표 도달', term: 'goal test',  plain: '목표 상태예요! 여기까지 온 길이 해(정답)입니다.' },
+  make:      { icon: '🌱', word: '확장',     term: 'expand',     plain: '지금 노드에서 갈 수 있는 자식 노드들을 만들어요.' },
+  push:      { icon: '📥', word: '삽입',     term: 'push',       plain: '새 노드를 OPEN에 넣어 나중에 살펴봐요.' },
+  skip:      { icon: '🚪', word: '중복 제거', term: 'duplicate',  plain: '이미 본 노드(CLOSED)라서 넣지 않아요.' },
+  exhausted: { icon: '🔚', word: '탐색 실패', term: 'failure',    plain: 'OPEN이 비었어요. 이 방법으론 해를 못 찾았어요.' },
+  limit:     { icon: '✋', word: '탐색 중단', term: 'cutoff',     plain: '정해 둔 한계만큼 살펴봐서 여기서 멈춰요.' },
+  restart:   { icon: '🔁', word: '깊이 증가', term: 'deepening',  plain: '깊이 한계를 1 늘려 처음부터 다시 탐색해요.' },
+  path:      { icon: '🚶', word: '해 경로',  term: 'solution path', plain: '찾은 해 경로를 따라가요.' },
 };
 
 export function mountActionCard(root, store, player) {
@@ -29,14 +33,15 @@ export function mountActionCard(root, store, player) {
         el('div.action-card__icon', { 'aria-hidden': 'true' }, '🔎'),
         el('div.action-card__body', {},
           el('div.action-card__word', {}, algo.name),
-          el('div.action-card__plain', {}, '아래 ⏭ 한 단계를 누르면 무슨 일이 생기는지 여기에 알려 줄게요.'))));
+          el('div.action-card__plain', {}, '위쪽 ⏭ 한 단계를 누르면 무슨 일이 생기는지 여기에 알려 줄게요.'))));
       return;
     }
-    const vis = ACTION_VIS[v.action] ?? { icon: '•', word: '진행 중', plain: v.narration };
+    const vis = ACTION_VIS[v.action] ?? { icon: '•', word: '진행 중', term: '', plain: v.narration };
     fill(root, el('div.action-card', { 'data-action': v.action },
       el('div.action-card__icon', { 'aria-hidden': 'true' }, vis.icon),
       el('div.action-card__body', {},
-        el('div.action-card__word', {}, vis.word),
+        el('div.action-card__word', {}, vis.word,
+          vis.term ? el('span.action-card__term', {}, vis.term) : null),
         el('div.action-card__plain', {}, vis.plain),
         el('div.action-card__detail', {}, v.narration))));
   }

@@ -40,7 +40,10 @@
   color: var(--text-muted);
 }
 .topbar__spacer { flex: 1 1 auto; }
-.topbar__tools { display: flex; gap: var(--sp-2); }
+.topbar__tools { display: flex; gap: var(--sp-1); flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+/* 상단 막대가 한 줄에 들어가도록 — 두 줄이 되면 본문 높이를 그만큼 잃는다 */
+.topbar__field { display: inline-flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.topbar__field select { max-width: 172px; }
 
 /* --- 학습 단계 선택 (요구사항 5장) --- */
 .stagebar {
@@ -85,25 +88,33 @@
   .panel { max-height: none; }
 }
 
-/* --- 하단 실행 제어 (요구사항 4.3) --- */
+/* --- 실행 제어 (요구사항 4.3) — 화면 위쪽에 둔다.
+   아래쪽에 있으면 학생이 찾지 못해 탐색을 시작하지 못한다.
+   위로 올린 만큼 본문 높이를 잃으므로 납작하게 만든다. --- */
 .controlbar {
-  position: sticky;
-  bottom: 0;
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-1);
   flex-wrap: wrap;
-  padding: var(--sp-2) var(--sp-4);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+  padding: var(--sp-1) var(--sp-4);
+  background: var(--current-bg);
+  border-bottom: 1px solid var(--border);
+}
+.controlbar .ctrl { padding: var(--sp-1) var(--sp-3); }
+/* 좁은 화면에서는 단축키 안내를 감춘다 — 키보드가 없고 가로로 넘친다 */
+@media (max-width: 760px) {
+  .controlbar > .topbar__spacer,
+  .controlbar > .panel__hint { display: none; }
+  .controlbar { justify-content: center; }
 }
 
 /* --- 좁은 화면 다듬기 (요구사항 6.2) --- */
 @media (max-width: 600px) {
   .topbar { gap: var(--sp-2); }
   .topbar__title { flex: 1 1 100%; }
-  .topbar > label[for="algo-select"] { flex: 0 0 auto; }
-  .topbar > select { flex: 1 1 200px; }
+  .topbar__field { flex: 1 1 100%; }
+  .topbar__field select { flex: 1 1 auto; max-width: none; min-width: 0; }
+  .modetabs { flex: 1 1 100%; }
   .topbar__spacer { display: none; }
   .topbar__tools { flex: 1 1 100%; justify-content: flex-end; }
 
@@ -142,10 +153,13 @@
 
 .workspace[data-layout="board-data"] {
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(150px, auto) minmax(200px, 1.7fr);
+  grid-template-rows: minmax(170px, auto) minmax(200px, 1fr);
   grid-template-areas: "board" "data";
 }
 .workspace[data-layout="board-data"] .panel--code { display: none; }
+/* 판은 조금 작게, 카운터는 한 줄로 — 아낀 높이는 OPEN 리스트에 준다 */
+.workspace[data-layout="board-data"] .board--anim { width: min(80px, 11vh, 26vw); }
+.workspace[data-layout="board-data"] .board--mini { width: min(62px, 9vh, 18vw); }
 
 /* 대기 목록 + 나무를 함께 비교하는 페이지 (요청 ①)
    퍼즐은 왼쪽에 좁게 두고, 대기 목록과 나무가 한 화면에 같이 들어오도록 높이를 몰아 준다. */
@@ -181,7 +195,8 @@
 .workspace[data-layout="board-tree"] .panel--data .ds-pick,
 .workspace[data-layout="board-tree"] .panel--data .ds-section { flex: 0 0 auto; }
 .workspace[data-layout="board-tree"] .panel--data .ds-section--tree { flex: 1 1 0; min-height: 56px; }
-/* 세는 값은 한 줄로 납작하게 — 아낀 높이는 나무에 준다 */
+/* 세는 값은 한 줄로 납작하게 — 아낀 높이는 자료구조에 준다 */
+.workspace[data-layout="board-data"] .panel--data .counter,
 .workspace[data-layout="board-tree"] .panel--data .counter {
   display: flex;
   align-items: baseline;
@@ -189,8 +204,11 @@
   gap: var(--sp-2);
   padding: 2px var(--sp-2);
 }
+.workspace[data-layout="board-data"] .panel--data .counter__label,
+.workspace[data-layout="board-data"] .panel--data .counter__value,
 .workspace[data-layout="board-tree"] .panel--data .counter__label,
 .workspace[data-layout="board-tree"] .panel--data .counter__value { display: inline; }
+.workspace[data-layout="board-data"] .panel--data .counter__value,
 .workspace[data-layout="board-tree"] .panel--data .counter__value { font-size: var(--fs-md); }
 
 .workspace[data-layout="code"] {

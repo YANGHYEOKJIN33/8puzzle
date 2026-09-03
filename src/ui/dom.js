@@ -20,7 +20,8 @@ export function el(spec, attrs = {}, ...children) {
     }
   }
 
-  for (const child of children.flat()) {
+  // 깊게 편다 — 자식을 map/flatMap으로 만들 때 배열이 겹쳐도 안전하게
+  for (const child of children.flat(Infinity)) {
     if (child === null || child === undefined || child === false) continue;
     node.append(child instanceof Node ? child : document.createTextNode(String(child)));
   }
@@ -29,7 +30,7 @@ export function el(spec, attrs = {}, ...children) {
 
 /** 자식을 모두 지우고 새로 채운다 */
 export function fill(parent, ...children) {
-  parent.replaceChildren(...children.flat().filter(Boolean));
+  parent.replaceChildren(...children.flat(Infinity).filter(Boolean));
   return parent;
 }
 

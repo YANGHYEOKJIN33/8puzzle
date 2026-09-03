@@ -30,7 +30,7 @@ export const LINE = Object.freeze({
  * @param {function} o.heuristic  h(state)
  * @param {function} o.keyOf      노드 → 정렬 기준값 (작을수록 먼저)
  * @param {string}   o.evalLabel  화면·설명에 쓸 평가값 이름 ('f=g+h' 또는 'h')
- * @param {number}   o.limit      펼친 노드 수 상한
+ * @param {number}   o.limit      확장한 노드 수 상한
  */
 export function prioritySearch({ start, goal, heuristic, keyOf, evalLabel, limit }) {
   const rec = new Recorder();
@@ -66,12 +66,12 @@ export function prioritySearch({ start, goal, heuristic, keyOf, evalLabel, limit
       narration: `OPEN에서 ${evalLabel}가 가장 작은 노드(${evalLabel}=${keyOf(n)})를 꺼냅니다.`,
     });
 
-    // 더 좋은 길로 이미 펼친 상태면 건너뛴다 (오래된 중복)
+    // 더 좋은 길로 이미 확장한 상태면 건너뛴다 (오래된 중복)
     if (closed.has(key(n.state))) {
       rec.frame({
         line: LINE.POP, action: 'skip', current: n,
         openSize: open.length, closedSize: closed.size,
-        narration: '이 상태는 더 나은 경로로 이미 펼쳤습니다. 건너뜁니다.',
+        narration: '이 상태는 더 나은 경로로 이미 확장했습니다. 건너뜁니다.',
       });
       continue;
     }
@@ -92,7 +92,7 @@ export function prioritySearch({ start, goal, heuristic, keyOf, evalLabel, limit
       rec.frame({
         line: LINE.CLOSE, action: 'limit', current: n,
         openSize: open.length, closedSize: closed.size,
-        narration: `펼친 노드가 ${limit}개에 이르러 멈춥니다. 탐색 공간이 너무 큽니다.`,
+        narration: `확장한 노드가 ${limit}개에 이르러 멈춥니다. 탐색 공간이 너무 큽니다.`,
       });
       return rec.finish({ reason: 'limit' });
     }

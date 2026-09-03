@@ -84,7 +84,11 @@
 .board-row__info { flex: 1 1 160px; min-width: 0; }
 
 /* --- 8-퍼즐 판 (요구사항 4.1 ①) --- */
+/* 판을 컨테이너로 삼아, 숫자 크기를 "판 크기에 비례"하게 잡는다.
+   글자 크기 버튼(--scale)은 그대로 듣되, 칸을 넘어설 만큼은 커지지 않는다.
+   (판 너비는 쪽마다 다른데 글자만 고정이면 숫자가 칸 밖으로 튀어나온다) */
 .board {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-2);
@@ -95,10 +99,12 @@
 .tile {
   display: grid;
   place-items: center;
+  overflow: hidden;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: var(--surface-2);
-  font-size: calc(1.6rem * var(--scale));
+  font-size: min(calc(1.6rem * var(--scale)), 17cqw);
+  line-height: 1;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   user-select: none;
@@ -184,6 +190,10 @@
   text-align: center;
 }
 .counter__label { display: block; font-size: var(--fs-xs); color: var(--text-muted); }
+/* 정확한 용어 옆에 쉬운 말을 같은 줄로 덧붙인다 (줄 수를 늘리지 않는다) */
+.counter__sub { opacity: .7; }
+/* 자리가 빠듯한 쪽에서는 접는다 */
+.workspace[data-layout="board-tree"] .counter__sub { display: none; }
 .counter__value {
   display: block;
   font-size: var(--fs-lg);
@@ -227,6 +237,13 @@
   filter: brightness(1.08);
 }
 .speed { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); }
+/* 단추에 곁들이는 영어 용어 */
+.ctrl__term {
+  font-family: var(--font-code);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  opacity: .75;
+}
 
 /* --- 접기식 고급 설정 (요구사항 6.1.2) --- */
 details.advanced { margin-top: var(--sp-3); }
@@ -270,6 +287,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 
 /* --- 작은 미리보기 판 --- */
 .mini {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
@@ -284,9 +302,10 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .mini__cell {
   display: grid;
   place-items: center;
+  overflow: hidden;
   background: var(--surface-2);
   border-radius: 1px;
-  font-size: calc(0.6rem * var(--scale));
+  font-size: min(calc(0.6rem * var(--scale)), 24cqw);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -586,6 +605,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .compare__head {
   display: flex;
   align-items: center;
+  gap: var(--sp-2);
   justify-content: space-between;
   padding: var(--sp-3);
   border-bottom: 1px solid var(--border);
@@ -645,7 +665,9 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   border-radius: var(--radius-sm);
   background: var(--surface-2);
   border: 1px solid var(--border-strong);
-  font-size: calc(1.5rem * var(--scale));
+  overflow: hidden;
+  font-size: min(calc(1.5rem * var(--scale)), 17cqw);
+  line-height: 1;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   transition: background .25s ease, border-color .25s ease, color .25s ease;
@@ -803,7 +825,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   gap: 2px;
   margin: 0;
 }
-.board--mini .tile { font-size: calc(0.9rem * var(--scale)); border-radius: 4px; }
+.board--mini .tile { font-size: min(calc(0.9rem * var(--scale)), 20cqw); border-radius: 4px; }
 
 /* ============================================================
    자료구조 패널: OPEN + 탐색 트리를 한 화면에 (요청 ②)
@@ -858,6 +880,14 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 }
 .action-card__body { min-width: 0; }
 .action-card__word { font-size: var(--fs-lg); font-weight: 700; color: var(--current); line-height: 1.2; }
+/* 정확한 영어 용어를 작게 곁들인다 — 교과서와 이어지게 */
+.action-card__term {
+  margin-left: var(--sp-2);
+  font-family: var(--font-code);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
 .action-card--intro .action-card__word { color: var(--text); }
 .action-card__plain { font-size: var(--fs-md); color: var(--text); }
 .action-card__detail { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
@@ -1171,3 +1201,49 @@ body.show-slim .action-card__detail { display: none; }
   .dstrio { grid-template-columns: 1fr; }
   .dstrio__boxes { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   용어 사전 — 정확한 용어와 쉬운 말을 짝지어 보여 준다
+   ============================================================ */
+.gloss__dialog { width: min(760px, 96vw); }
+.gloss__searchbar { padding: var(--sp-2) var(--sp-3) 0; }
+.gloss__search {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+}
+.gloss__list { padding: var(--sp-3); display: grid; gap: var(--sp-4); }
+.gloss__group-title {
+  font-size: var(--fs-sm);
+  color: var(--current);
+  border-bottom: 2px solid var(--current-bg);
+  padding-bottom: 2px;
+  margin-bottom: var(--sp-2);
+}
+.gloss__items { margin: 0; display: grid; gap: var(--sp-2); }
+.gloss__term { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
+.gloss__term strong { font-size: var(--fs-md); }
+.gloss__en { font-family: var(--font-code); font-size: var(--fs-xs); color: var(--text-muted); }
+.gloss__def {
+  margin: 0 0 var(--sp-2);
+  padding-left: var(--sp-3);
+  border-left: 3px solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+.gloss__where { display: block; font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+
+/* 비교 화면의 "교과서 성질" 접이식 표 */
+.compare__props { border-top: 1px solid var(--border); }
+.compare__props > summary {
+  cursor: pointer;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  background: var(--surface-2);
+}
+.compare__props[open] > summary { border-bottom: 1px solid var(--border); }
+.compare__big { font-family: var(--font-code); font-size: var(--fs-xs); white-space: nowrap; }
+.compare__props .compare__table { font-size: var(--fs-xs); }
+.compare__props .compare__table td,
+.compare__props .compare__table th { padding: var(--sp-1) var(--sp-2); }

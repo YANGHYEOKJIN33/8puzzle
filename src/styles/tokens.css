@@ -23,7 +23,7 @@
   --current-bg:    #e3ecfd;
   --open:          #17724a;  /* 초록 : OPEN에 새로 들어온 것 */
   --open-bg:       #e0f3e9;
-  --closed:        #5a6472;  /* 회색 : 이미 펼친 것(CLOSED) */
+  --closed:        #5a6472;  /* 회색 : 이미 확장한 것(CLOSED) */
   --closed-bg:     #e7e9ee;
   --path:          #a75300;  /* 주황 : 찾아낸 해 경로 */
   --path-bg:       #fdeddb;

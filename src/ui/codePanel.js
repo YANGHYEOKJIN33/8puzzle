@@ -92,38 +92,6 @@ export function mountCodePanel(root, store, player) {
     );
   }
 
-  // 동작을 아이콘 + 쉬운 한 문장으로 (요청 ④ — 의사코드를 몰라도 무슨 일인지 알게)
-  const ACTION_VIS = {
-    init:      { icon: '🚩', word: '시작',      plain: '첫 배치를 대기 목록(OPEN)에 넣어요.' },
-    pop:       { icon: '👆', word: '꺼내기',    plain: '대기 목록에서 배치 하나를 꺼내 살펴봐요.' },
-    goal:      { icon: '🎉', word: '찾았다!',   plain: '목표에 도착! 여기까지 온 길이 정답이에요.' },
-    make:      { icon: '🌱', word: '펼치기',    plain: '지금 배치에서 갈 수 있는 다음 배치들을 만들어요.' },
-    push:      { icon: '📥', word: '넣기',      plain: '새 배치를 대기 목록에 넣어 나중에 살펴봐요.' },
-    skip:      { icon: '🚪', word: '건너뛰기',  plain: '이미 본 배치라서 넣지 않아요.' },
-    exhausted: { icon: '🔚', word: '끝',        plain: '더 볼 게 없어요. 이 방법으론 못 찾았어요.' },
-    limit:     { icon: '✋', word: '멈춤',      plain: '너무 많이 살펴봐서 여기서 멈춰요.' },
-    restart:   { icon: '🔁', word: '다시',      plain: '더 깊이 볼 수 있게 처음부터 다시 시작해요.' },
-    path:      { icon: '🚶', word: '따라가기',  plain: '찾은 정답 길을 따라가요.' },
-  };
-
-  function narration() {
-    const v = player.view();
-    const algo = findById(ALGORITHMS, store.get().algorithmId);
-    if (v.empty) {
-      return el('div.action-card.action-card--intro', {},
-        el('div.action-card__body', {},
-          el('div.action-card__word', {}, `${algo.name}`),
-          el('div.action-card__plain', {}, `${algo.point}. ▶ 재생 또는 ⏭ 한 단계로 시작하세요.`)));
-    }
-    const vis = ACTION_VIS[v.action] ?? { icon: '•', word: '진행', plain: v.narration };
-    return el('div.action-card', { 'data-action': v.action },
-      el('div.action-card__icon', { 'aria-hidden': 'true' }, vis.icon),
-      el('div.action-card__body', {},
-        el('div.action-card__word', {}, vis.word),
-        el('div.action-card__plain', {}, vis.plain),
-        el('div.action-card__detail', {}, v.narration)));
-  }
-
   store.subscribe(draw);
   // 재생 중에는 매 프레임 다시 그린다(줄·도형 강조, 해설). 단 빈칸 채우기 화면은
   // 프레임마다 다시 그리면 드롭다운이 초기화되므로, 그때는 건너뛴다.

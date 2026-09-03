@@ -31,7 +31,7 @@ export const LINE = Object.freeze({
  * @param {number[]} options.goal       목표 상태
  * @param {function} options.heuristic  h(state) — OPEN 항목의 f 표시에 쓴다(맹목적 탐색도 참고로 계산)
  * @param {'queue'|'stack'} options.mode 큐면 BFS, 스택이면 DFS
- * @param {number}   options.limit      펼친 노드 수 상한 (요구사항 4.3.5)
+ * @param {number}   options.limit      확장한 노드 수 상한 (요구사항 4.3.5)
  */
 export function graphSearch({ start, goal, heuristic, mode, limit }) {
   const rec = new Recorder();
@@ -85,7 +85,7 @@ export function graphSearch({ start, goal, heuristic, mode, limit }) {
       rec.frame({
         line: LINE.CLOSE, action: 'limit', current: n,
         openSize: open.length, closedSize: closed.size,
-        narration: `펼친 노드가 ${limit}개에 이르러 멈춥니다. 탐색 공간이 너무 큽니다.`,
+        narration: `확장한 노드가 ${limit}개에 이르러 멈춥니다. 탐색 공간이 너무 큽니다.`,
       });
       return rec.finish({ reason: 'limit' });
     }

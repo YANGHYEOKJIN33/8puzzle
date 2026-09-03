@@ -9,6 +9,7 @@ import { ALGORITHMS } from './config.js';
 import { createPlayer } from './player.js';
 import { createComparePanel } from '../ui/comparePanel.js';
 import { createOnboarding } from '../ui/onboarding.js';
+import { createGlossaryPanel } from '../ui/glossaryPanel.js';
 import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
 import { mountLessonBar } from '../ui/lessonBar.js';
@@ -25,8 +26,9 @@ const store = createStore();
 const player = createPlayer(store);
 const compare = createComparePanel(store, player);
 const onboarding = createOnboarding(store);
+const glossary = createGlossaryPanel();
 
-mountTopbar(qs('#topbar'), store, compare.open, onboarding.open);
+mountTopbar(qs('#topbar'), store, compare.open, onboarding.open, glossary.open);
 mountLessonBar(qs('#lessonbar'), store);
 mountActionCard(qs('#actionbar'), store, player);
 mountCodePanel(qs('#panel-code'), store, player);

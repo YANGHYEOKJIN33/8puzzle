@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { GOAL, PRESETS } from '../src/app/config.js';
+import { GOAL, PRESETS, ALGORITHMS } from '../src/app/config.js';
 import { isSolvable, isValidState } from '../src/core/puzzle.js';
 import { optimalDepth } from './helpers/optimalDepth.js';
 
@@ -32,4 +32,13 @@ test('예제는 쉬운 것부터 어려운 순서로 놓여 있다', () => {
   const moves = PRESETS.map((preset) => preset.minMoves);
   const sorted = [...moves].sort((a, b) => a - b);
   assert.deepEqual(moves, sorted);
+});
+
+test('모든 알고리즘이 교과서 성질(완전성·최적성·시간·공간)을 갖는다', () => {
+  for (const algo of ALGORITHMS) {
+    assert.ok(algo.props, `${algo.id}에 props가 없다`);
+    for (const key of ['complete', 'optimal', 'time', 'space']) {
+      assert.ok(algo.props[key] && algo.props[key].length > 0, `${algo.id}.props.${key}가 비었다`);
+    }
+  }
 });
