@@ -142,6 +142,52 @@
 }
 .workspace[data-layout="board-data"] .panel--code { display: none; }
 
+/* 대기 목록 + 나무를 함께 비교하는 페이지 (요청 ①)
+   퍼즐은 왼쪽에 좁게 두고, 대기 목록과 나무가 한 화면에 같이 들어오도록 높이를 몰아 준다. */
+.workspace[data-layout="board-tree"] {
+  grid-template-columns: minmax(250px, 0.55fr) minmax(520px, 2.2fr);
+  grid-template-rows: 1fr;
+  grid-template-areas: "board data";
+}
+.workspace[data-layout="board-tree"] .panel--code { display: none; }
+
+/* 초기 상태 → 목표를 한 줄에 두고, 고르기 칸은 그 아래 줄로 내린다 */
+.workspace[data-layout="board-tree"] .board-duo {
+  justify-content: center;
+  gap: var(--sp-2);
+}
+.workspace[data-layout="board-tree"] .board-side { flex: 1 1 100%; min-width: 0; }
+.workspace[data-layout="board-tree"] .board--anim { width: min(80px, 12vh, 18vw); }
+.workspace[data-layout="board-tree"] .board--mini { width: min(62px, 9vh, 14vw); }
+.workspace[data-layout="board-tree"] .board--mini .tile { font-size: calc(0.72rem * var(--scale)); }
+.workspace[data-layout="board-tree"] .field {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: var(--sp-1) 0 0;
+}
+
+/* 대기 목록·나무 어느 쪽도 스크롤 밖으로 밀려나지 않게 — 남는 높이는 나무가 가진다 */
+.workspace[data-layout="board-tree"] .panel--data .panel__body {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.workspace[data-layout="board-tree"] .panel--data .ds-pick,
+.workspace[data-layout="board-tree"] .panel--data .ds-section { flex: 0 0 auto; }
+.workspace[data-layout="board-tree"] .panel--data .ds-section--tree { flex: 1 1 0; min-height: 56px; }
+/* 세는 값은 한 줄로 납작하게 — 아낀 높이는 나무에 준다 */
+.workspace[data-layout="board-tree"] .panel--data .counter {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: 2px var(--sp-2);
+}
+.workspace[data-layout="board-tree"] .panel--data .counter__label,
+.workspace[data-layout="board-tree"] .panel--data .counter__value { display: inline; }
+.workspace[data-layout="board-tree"] .panel--data .counter__value { font-size: var(--fs-md); }
+
 .workspace[data-layout="code"] {
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
@@ -174,3 +220,18 @@ body:not(.show-controls) .controlbar { display: none; }
 /* 동작 카드 자리 — 이 페이지에서 쓸 때만 보인다 */
 .actionbar { padding: var(--sp-2) var(--sp-4) 0; }
 body:not(.show-action) .actionbar { display: none; }
+
+/* 좁은 화면: 두 칸짜리 레슨 페이지도 세로 1열로 내린다 (요구사항 6.2) */
+@media (max-width: 900px) {
+  .workspace[data-layout="board-tree"],
+  .workspace[data-layout="code-board"] {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+  .workspace[data-layout="board-tree"] { grid-template-areas: "board" "data"; }
+  .workspace[data-layout="code-board"] { grid-template-areas: "board" "code"; }
+  /* 세로로 쌓이면 높이 제한이 없으므로 원래대로 흐르게 둔다 */
+  .workspace[data-layout="board-tree"] .panel--data .panel__body { overflow: auto; }
+  .workspace[data-layout="board-tree"] .board--anim { width: min(160px, 30vw); }
+  .workspace[data-layout="board-tree"] .board--mini { width: min(110px, 22vw); }
+}

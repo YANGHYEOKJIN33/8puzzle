@@ -862,6 +862,14 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .action-card__plain { font-size: var(--fs-md); color: var(--text); }
 .action-card__detail { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
 
+/* 볼 것이 많은 페이지에서는 동작 카드를 한 줄로 납작하게 (자리를 자료구조에 넘긴다) */
+body.show-slim .action-card { padding: var(--sp-1) var(--sp-3); gap: var(--sp-2); }
+body.show-slim .action-card__icon { font-size: calc(1.5rem * var(--scale)); }
+body.show-slim .action-card__body { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
+body.show-slim .action-card__word { font-size: var(--fs-md); }
+body.show-slim .action-card__plain { font-size: var(--fs-sm); }
+body.show-slim .action-card__detail { display: none; }
+
 /* ============================================================
    레슨 막대 부품
    ============================================================ */
