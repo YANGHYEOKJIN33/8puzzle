@@ -8,6 +8,8 @@ import { GOAL, PRESETS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { createAnimatedBoard } from './animatedBoard.js';
 import { lessonAt } from '../app/lesson.js';
+import { expand, isGoal } from '../core/puzzle.js';
+import { miniBoard } from './miniBoard.js';
 
 /** 작은 정적 판 하나 (목표 미리보기용) */
 export function renderBoard(state, moved = -1) {
@@ -36,7 +38,23 @@ function movedValueOf(node) {
 
 export function mountBoardPanel(root, store, player) {
   const hint = el('span.panel__hint', {}, '초기 상태 → 목표');
-  const anim = createAnimatedBoard();
+
+  // 직접 밀어 보는 모드(1쪽) — 학생이 손으로 연산자를 써 보게 한다.
+  // 여기서만 쓰는 값이라 store에 두지 않는다.
+  let hand = null;          // { state, moves }
+  const anim = createAnimatedBoard({ onTile: (value) => slideTile(value) });
+
+  function handMode() { return Boolean(lessonAt(store.get().lessonStep).show.play); }
+
+  function resetHand(state) { hand = { state: state.slice(), moves: 0 }; }
+
+  function slideTile(value) {
+    if (!handMode() || !hand) return;
+    const move = expand(hand.state).find((m) => m.tile === value);
+    if (!move) return;                       // 빈칸 옆이 아니면 못 민다
+    hand = { state: move.state, moves: hand.moves + 1 };
+    draw(player.view());
+  }
 
   const presetSelect = el('select', {
     id: 'preset-select',
@@ -44,8 +62,9 @@ export function mountBoardPanel(root, store, player) {
   }, PRESETS.map((p) => el('option', { value: p.id }, `${p.name} · ${p.note}`)));
 
   const nowLabel = el('div.board-cap');   // "지금 배치 / 초기 상태" 라벨
-  const banner = el('div');               // 해 경로 배너
+  const banner = el('div');               // 해 경로 배너 · 직접 밀기 안내
   const foot = el('div');                 // 진행 막대 또는 안내
+  const extra = el('div');                // 자식 노드 미리보기(2쪽)
 
   // 목표 판(정적) — 언제나 오른쪽에 보인다
   const goalCell = el('div.board-cell', {},
@@ -61,6 +80,7 @@ export function mountBoardPanel(root, store, player) {
         el('div.field', {}, el('label', { for: 'preset-select' }, '초기 상태'), presetSelect),
         foot),
     ),
+    extra,
   );
 
   fill(root, el('div.panel__head', {}, el('span.panel__title', {}, '퍼즐 판'), hint), body);
@@ -68,8 +88,20 @@ export function mountBoardPanel(root, store, player) {
   let lastPresetId = null;
 
   function draw(v) {
-    const preset = findById(PRESETS, store.get().presetId);
+    const state = store.get();
+    const preset = findById(PRESETS, state.presetId);
     presetSelect.value = preset.id;
+
+    // --- 직접 밀어 보는 모드 (1쪽) ---
+    if (handMode()) {
+      if (!hand || lastPresetId !== preset.id) { resetHand(preset.state); lastPresetId = preset.id; anim.reset(hand.state); }
+      else anim.update(hand.state, { movedValue: 0 });
+      anim.setMovable(expand(hand.state).map((m) => m.tile));
+      drawHand();
+      return;
+    }
+    anim.setMovable([]);
+    fill(extra, null);
 
     const node = v && !v.empty ? v.node : null;
     const started = Boolean(v && !v.empty);
@@ -89,10 +121,37 @@ export function mountBoardPanel(root, store, player) {
 
     const onPath = node && started && v.pathIds.has(node.id) && v.finished;
     fill(banner, onPath ? el('div.result.result--found', {}, '이 배치는 해 경로 위에 있습니다.') : null);
-    const showControls = Boolean(lessonAt(store.get().lessonStep).show.controls);
+    const showControls = Boolean(lessonAt(state.lessonStep).show.controls);
     fill(foot, !showControls ? null
       : started ? progress(v)
-      : el('p.panel__hint', {}, '아래 ⏭ 한 단계를 눌러 보세요.'));
+      : el('p.panel__hint', {}, '위쪽 ⏭ 한 단계를 눌러 보세요.'));
+
+    // 자식 노드 미리보기 — "확장"이 무슨 뜻인지 그림으로 (2쪽)
+    fill(extra, lessonAt(state.lessonStep).show.children ? childrenStrip(showState) : null);
+  }
+
+  /** 직접 밀어 보는 모드의 라벨·안내·되돌리기 */
+  function drawHand() {
+    const done = isGoal(hand.state);
+    fill(nowLabel, el('strong', {}, '내가 미는 판'), ` · ${hand.moves}번 움직임`);
+    fill(banner, done
+      ? el('div.result.result--found', {}, '🎉 목표 상태를 만들었어요! 컴퓨터는 이 길을 스스로 찾아냅니다.')
+      : el('p.panel__hint', {}, '파란 테두리 타일을 눌러 빈칸 쪽으로 밀어 보세요. 이렇게 상태를 바꾸는 규칙을 ',
+          el('strong', {}, '연산자(operator)'), '라고 해요.'));
+    fill(foot, el('button.pill', { type: 'button', onclick: () => { resetHand(findById(PRESETS, store.get().presetId).state); anim.reset(hand.state); draw(player.view()); } }, '↺ 처음 상태로'));
+    fill(extra, childrenStrip(hand.state, { title: '지금 판에서 갈 수 있는 다음 상태' }));
+  }
+
+  /** 지금 상태에서 만들 수 있는 자식 상태들 */
+  function childrenStrip(state, { title = '지금 노드를 확장하면 만들어지는 자식 노드' } = {}) {
+    const children = expand(state);
+    return el('div.kids', {},
+      el('div.kids__cap', {}, title,
+        el('span.kids__term', {}, `expand · ${children.length}개`)),
+      el('div.kids__list', {}, children.map((child) => el('div.kids__item', {},
+        miniBoard(child.state, { moved: child.to }),
+        el('span.kids__label', {}, child.label)))),
+    );
   }
 
   function progress(v) {

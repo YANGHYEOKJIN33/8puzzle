@@ -23,7 +23,7 @@ export function summarizeRun(id, start, { heuristicId = 'h2', limit = MAX_EXPANS
     found: s.found,
     reason: s.reason,
     moves: s.found ? s.moves : null,        // 해의 길이
-    expanded: result.stats.expanded,        // 펼친(방문) 노드 수
+    expanded: result.stats.expanded,        // 확장한 노드 수
     generated: result.stats.generated,      // 생성한 노드 수
     maxOpen: result.stats.maxOpen,          // OPEN 최대 크기
     frames: result.stats.frames,            // 소요 단계

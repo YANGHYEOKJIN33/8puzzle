@@ -81,7 +81,7 @@ export class Recorder {
     return node;
   }
 
-  /** 노드 하나를 펼쳤다(자식을 만들었다)고 표시 — "펼친 노드" 수를 센다 */
+  /** 노드 하나를 확장했다(자식을 만들었다)고 표시 — "확장한 노드" 수를 센다 */
   countExpanded() {
     this.expanded += 1;
   }

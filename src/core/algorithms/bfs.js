@@ -34,7 +34,7 @@ export const pseudo = Object.freeze([
  * @param {object}   [options]
  * @param {number[]} [options.goal]         목표 상태
  * @param {function} [options.heuristic]    OPEN 항목의 참고용 h 표시에 쓴다
- * @param {number}   [options.limit]        펼친 노드 수 상한
+ * @param {number}   [options.limit]        확장한 노드 수 상한
  * @returns 단계 기록과 결과 (trace.js의 finish() 형식)
  */
 export function run(start, options = {}) {

@@ -9,6 +9,7 @@ import { ALGORITHMS } from './config.js';
 import { createPlayer } from './player.js';
 import { createComparePanel } from '../ui/comparePanel.js';
 import { createOnboarding } from '../ui/onboarding.js';
+import { createGlossaryPanel } from '../ui/glossaryPanel.js';
 import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
 import { mountLessonBar } from '../ui/lessonBar.js';
@@ -25,11 +26,12 @@ const store = createStore();
 const player = createPlayer(store);
 const compare = createComparePanel(store, player);
 const onboarding = createOnboarding(store);
+const glossary = createGlossaryPanel();
 
-mountTopbar(qs('#topbar'), store, compare.open, onboarding.open);
+mountTopbar(qs('#topbar'), store, compare.open, onboarding.open, glossary.open);
 mountLessonBar(qs('#lessonbar'), store);
 mountActionCard(qs('#actionbar'), store, player);
-mountCodePanel(qs('#panel-code'), store, player);
+mountCodePanel(qs('#panel-code'), store, player, { onCompare: compare.open, onGlossary: glossary.open });
 mountBoardPanel(qs('#panel-board'), store, player);
 mountDataPanel(qs('#panel-data'), store, player);
 mountControls(qs('#controlbar'), store, player);
@@ -59,7 +61,7 @@ store.subscribe((state) => {
   const step = lessonAt(state.lessonStep);
   qs('#workspace').dataset.layout = step.layout;
   const body = document.body;
-  for (const key of ['board', 'action', 'controls', 'open', 'tree', 'picker', 'code', 'slim']) {
+  for (const key of ['board', 'action', 'controls', 'open', 'tree', 'picker', 'code', 'slim', 'play', 'children', 'summary']) {
     body.classList.toggle(`show-${key}`, Boolean(step.show[key]));
   }
   if (state.stageId !== step.stage) store.set({ stageId: step.stage });

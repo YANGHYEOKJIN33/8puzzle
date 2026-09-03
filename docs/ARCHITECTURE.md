@@ -19,6 +19,7 @@ src/
     config.js           알고리즘 목록, 학습 단계, 휴리스틱, 예제 상태
     lesson.js           🧩 탐색 탭의 쪽 구성 + 지금 탭의 쪽 묶음을 고르는 currentLesson()
     dsLesson.js         📦 자료구조 탭의 쪽 구성
+    glossary.js         용어 사전 자료 (정확한 용어 ↔ 영어 ↔ 쉬운 말)
     state.js            앱 상태 저장소 (구독 방식 + 로컬 저장) — mode가 두 탭을 가른다
     player.js           재생기 — 단계 기록을 한 컷씩 넘겨 주고 되감는다
     exercises.js        학습 2단계(빈칸 채우기) 문제 데이터
@@ -33,6 +34,7 @@ src/
     codePanel.js        순서도와 의사코드를 나란히 (2·3단계에서는 빈칸/편집기)
     dataPanel.js        대기 목록(OPEN)·이미 본 것·탐색 트리·카운터
     dsRoom.js           📦 자료구조 탭 화면 — 넣기·꺼내기·맞히기·셋 견주기·탐색으로 잇기
+    glossaryPanel.js    용어 사전 모달 (검색)
     controls.js         재생·한 단계·되감기 + 키보드 단축키
   core/                 순수 로직 — 화면을 전혀 모른다
     puzzle.js           8-퍼즐 규칙: 상태·이동·해 존재 판정

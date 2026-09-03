@@ -4,8 +4,9 @@
  * 학습 2·3단계에서는 빈칸 채우기 / 직접 작성 화면으로 바뀐다.
  */
 import { el, fill } from './dom.js';
-import { ALGORITHMS } from '../app/config.js';
+import { ALGORITHMS, STRUCTURE_CHOICES } from '../app/config.js';
 import { findById } from '../app/state.js';
+import { lessonAt } from '../app/lesson.js';
 import { getAlgorithm } from '../core/algorithms/index.js';
 import { buildFlowchart, boxForAction } from './flowchart.js';
 import { renderFill } from './fillPanel.js';
@@ -13,7 +14,7 @@ import { buildWritePanel } from './writePanel.js';
 import { createPyRunner } from '../app/pyRunner.js';
 
 
-export function mountCodePanel(root, store, player) {
+export function mountCodePanel(root, store, player, { onCompare = () => {}, onGlossary = () => {} } = {}) {
   const body = el('div.panel__body');
   const headHint = el('span.panel__hint', {}, '순서도와 코드를 같이 봐요');
 
@@ -45,6 +46,13 @@ export function mountCodePanel(root, store, player) {
 
   function draw() {
     const state = store.get();
+
+    // 마지막 쪽: 오늘 배운 것 정리
+    if (lessonAt(state.lessonStep).show.summary) {
+      headHint.textContent = '오늘 배운 것을 한 장으로';
+      fill(body, summaryView());
+      return;
+    }
 
     // 학습 2단계: 빈칸 채우기 화면
     if (state.stageId === 'fill') {
@@ -84,7 +92,7 @@ export function mountCodePanel(root, store, player) {
       el('div.codeduo', {},
         el('div.codeduo__col', {},
           el('div.codeduo__cap', {}, '순서도 — 지금 여기'),
-          el('div.codeduo__scroll', {}, flow.svg)),
+          el('div.codeduo__scroll.codeduo__scroll--flow', {}, flow.svg)),
         el('div.codeduo__col', {},
           el('div.codeduo__cap', {}, '코드 — 지금 이 줄'),
           el('div.codeduo__scroll', {}, codeLines)),
@@ -92,36 +100,44 @@ export function mountCodePanel(root, store, player) {
     );
   }
 
-  // 동작을 아이콘 + 쉬운 한 문장으로 (요청 ④ — 의사코드를 몰라도 무슨 일인지 알게)
-  const ACTION_VIS = {
-    init:      { icon: '🚩', word: '시작',      plain: '첫 배치를 대기 목록(OPEN)에 넣어요.' },
-    pop:       { icon: '👆', word: '꺼내기',    plain: '대기 목록에서 배치 하나를 꺼내 살펴봐요.' },
-    goal:      { icon: '🎉', word: '찾았다!',   plain: '목표에 도착! 여기까지 온 길이 정답이에요.' },
-    make:      { icon: '🌱', word: '펼치기',    plain: '지금 배치에서 갈 수 있는 다음 배치들을 만들어요.' },
-    push:      { icon: '📥', word: '넣기',      plain: '새 배치를 대기 목록에 넣어 나중에 살펴봐요.' },
-    skip:      { icon: '🚪', word: '건너뛰기',  plain: '이미 본 배치라서 넣지 않아요.' },
-    exhausted: { icon: '🔚', word: '끝',        plain: '더 볼 게 없어요. 이 방법으론 못 찾았어요.' },
-    limit:     { icon: '✋', word: '멈춤',      plain: '너무 많이 살펴봐서 여기서 멈춰요.' },
-    restart:   { icon: '🔁', word: '다시',      plain: '더 깊이 볼 수 있게 처음부터 다시 시작해요.' },
-    path:      { icon: '🚶', word: '따라가기',  plain: '찾은 정답 길을 따라가요.' },
-  };
-
-  function narration() {
-    const v = player.view();
-    const algo = findById(ALGORITHMS, store.get().algorithmId);
-    if (v.empty) {
-      return el('div.action-card.action-card--intro', {},
-        el('div.action-card__body', {},
-          el('div.action-card__word', {}, `${algo.name}`),
-          el('div.action-card__plain', {}, `${algo.point}. ▶ 재생 또는 ⏭ 한 단계로 시작하세요.`)));
-    }
-    const vis = ACTION_VIS[v.action] ?? { icon: '•', word: '진행', plain: v.narration };
-    return el('div.action-card', { 'data-action': v.action },
-      el('div.action-card__icon', { 'aria-hidden': 'true' }, vis.icon),
-      el('div.action-card__body', {},
-        el('div.action-card__word', {}, vis.word),
-        el('div.action-card__plain', {}, vis.plain),
-        el('div.action-card__detail', {}, v.narration)));
+  /** 마무리 정리 화면 — 수업의 "정리" 단계 */
+  function summaryView() {
+    const learned = [
+      ['상태 · 노드', '퍼즐 배치 하나가 상태, 탐색이 만든 상태 하나가 노드예요.'],
+      ['확장 (expand)', '노드 하나에서 갈 수 있는 자식 노드를 모두 만드는 일이에요.'],
+      ['OPEN · CLOSED', '아직 확장 안 한 노드는 OPEN, 이미 확장을 마친 노드는 CLOSED.'],
+      ['탐색 트리', '만든 노드를 부모–자식으로 이으면 탐색이 지나온 길이 보여요.'],
+      ['휴리스틱 h(n)', '목표까지 얼마나 남았을지 어림잡은 값. A*는 f = g + h를 씁니다.'],
+    ];
+    return el('div.wrap', {},
+      el('h3.wrap__title', {}, '✅ 오늘 배운 낱말'),
+      el('dl.wrap__list', {}, learned.flatMap(([term, desc]) => [
+        el('dt.wrap__term', {}, term),
+        el('dd.wrap__desc', {}, desc),
+      ])),
+      el('h3.wrap__title', {}, '🔗 자료구조 하나가 알고리즘을 정한다'),
+      el('div.wrap__scroll', {},
+        el('table.compare__table', {},
+          el('thead', {}, el('tr', {},
+            el('th', {}, 'OPEN 자료구조'), el('th', {}, '알고리즘'), el('th', {}, '성질'))),
+          el('tbody', {}, STRUCTURE_CHOICES.map((c) => {
+            const algo = findById(ALGORITHMS, c.algo);
+            return el('tr.compare__row', { onclick: () => store.set({ algorithmId: c.algo, lessonStep: 3 }) },
+              el('td', {}, c.name, ' ', el('span.dsitem__pri', {}, c.sub)),
+              el('td', {}, algo.name),
+              el('td', {}, algo.props ? `${algo.props.complete} · ${algo.props.optimal}` : ''));
+          })))),
+      el('p.panel__hint', {}, '표의 줄을 누르면 그 알고리즘으로 4쪽(자료구조 비교)에 갑니다.'),
+      el('h3.wrap__title', {}, '👉 더 해 볼 것'),
+      el('div.wrap__actions', {},
+        el('button.pill.ctrl--primary', { type: 'button', onclick: () => onCompare() }, '⚖ 7가지 알고리즘 비교하기'),
+        el('button.pill', { type: 'button', onclick: () => onGlossary() }, '📖 용어 다시 보기'),
+        el('button.pill', { type: 'button',
+          onclick: () => store.set({ presetId: 'hard', lessonStep: 3 }) }, '🎯 더 어려운 배치로 다시'),
+        el('button.pill', { type: 'button',
+          onclick: () => store.set({ mode: 'ds', dsStep: 0 }) }, '📦 자료구조 복습'),
+      ),
+    );
   }
 
   store.subscribe(draw);

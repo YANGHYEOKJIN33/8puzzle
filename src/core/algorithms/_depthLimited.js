@@ -57,7 +57,7 @@ export function boundedDfs(rec, { start, goal, heuristic, maxDepth, budget, line
       rec.frame({
         line: lines.POP, action: 'limit', current: n,
         openSize: open.length, closedSize: 0,
-        narration: `펼친 노드가 ${budget.limit}개에 이르러 멈춥니다. 탐색 공간이 너무 큽니다.`,
+        narration: `확장한 노드가 ${budget.limit}개에 이르러 멈춥니다. 탐색 공간이 너무 큽니다.`,
       });
       return { found: false, node: null, stopped: true };
     }

@@ -11,7 +11,7 @@ const MODES = [
   { id: 'ds',     label: '📦 자료구조',    tip: '큐·스택·우선순위 큐를 직접 넣고 꺼내 보며 배웁니다' },
 ];
 
-export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}) {
+export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}, onGlossary = () => {}) {
   const modeButtons = MODES.map((mode) => el('button.pill.modetab', {
     type: 'button', role: 'tab', title: mode.tip,
     onclick: () => store.set({ mode: mode.id }),
@@ -37,6 +37,11 @@ export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}
     type: 'button', title: '같은 문제를 여러 방법으로 풀어 결과를 나란히 비교',
     onclick: () => onCompare(),
   }, '⚖ 비교');
+
+  const glossaryBtn = el('button.pill', {
+    type: 'button', title: '화면에 나오는 용어의 뜻 찾아보기',
+    onclick: () => onGlossary(),
+  }, '📖 용어');
 
   const helpBtn = el('button.pill', {
     type: 'button', title: '사용 안내 다시 보기',
@@ -76,7 +81,7 @@ export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}
     el('div.modetabs', { role: 'tablist', 'aria-label': '무엇을 배울까요' }, modeButtons),
     algoField,
     el('span.topbar__spacer'),
-    el('div.topbar__tools', {}, helpBtn, compareBtn, smaller, bigger, themeBtn),
+    el('div.topbar__tools', {}, helpBtn, glossaryBtn, compareBtn, smaller, bigger, themeBtn),
   );
 
   store.subscribe((state) => {
@@ -87,8 +92,8 @@ export function mountTopbar(root, store, onCompare = () => {}, onHelp = () => {}
     algoField.hidden = !search;
     compareBtn.hidden = !search;
     themeBtn.textContent =
-      state.theme === 'auto' ? '화면 · 자동'
-      : state.theme === 'light' ? '화면 · 밝게'
-      : '화면 · 어둡게';
+      state.theme === 'auto' ? '🌗 자동'
+      : state.theme === 'light' ? '☀ 밝게'
+      : '🌙 어둡게';
   });
 }

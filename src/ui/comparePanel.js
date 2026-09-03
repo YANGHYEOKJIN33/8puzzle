@@ -5,7 +5,7 @@
  */
 import { el, fill } from './dom.js';
 import { COMPARABLE, summarizeRun, bestOf } from '../app/compare.js';
-import { PRESETS, HEURISTICS } from '../app/config.js';
+import { PRESETS, HEURISTICS, ALGORITHMS } from '../app/config.js';
 import { findById } from '../app/state.js';
 
 const yield0 = () => new Promise((r) => setTimeout(r, 0));
@@ -33,7 +33,7 @@ export function createComparePanel(store, player) {
             el('th', {}, '알고리즘'),
             el('th', {}, '결과'),
             el('th', {}, '해 길이'),
-            el('th', {}, '펼친 노드'),
+            el('th', {}, '확장한 노드'),
             el('th', {}, 'OPEN 최대'),
             el('th', {}, '단계'),
           ),
@@ -42,9 +42,10 @@ export function createComparePanel(store, player) {
       ),
     ),
     el('p.compare__note', {},
-      '해 길이·펼친 노드·OPEN 최대에서 ',
+      '해 길이·확장한 노드·OPEN 최대에서 ',
       el('span.compare__best-key', {}, '가장 좋은 값'),
       '을 초록으로 표시합니다. 행을 누르면 그 알고리즘으로 화면을 바꿉니다.'),
+    propsSection(),
   );
   backdrop.append(dialog);
   document.body.append(backdrop);
@@ -112,6 +113,34 @@ export function createComparePanel(store, player) {
     // 행을 누르면 그 알고리즘으로 화면 전환
     tr.classList.add('compare__row');
     tr.onclick = () => { store.set({ algorithmId: row.id, stageId: 'pseudo' }); close(); };
+  }
+
+  /**
+   * 교과서 성질표 — 위의 표는 "이번 문제에서 잰 값", 이 표는 "언제나 성립하는 성질".
+   * 둘을 나란히 두어야 학생이 측정값과 이론을 구분할 수 있다.
+   */
+  function propsSection() {
+    return el('details.compare__props', { open: false },
+      el('summary', {}, '📐 교과서 성질 — 완전성 · 최적성 · 시간 · 공간'),
+      el('div.compare__scroll', {},
+        el('table.compare__table', {},
+          el('thead', {}, el('tr', {},
+            el('th', {}, '알고리즘'),
+            el('th', {}, '완전성'),
+            el('th', {}, '최적성'),
+            el('th', {}, '시간'),
+            el('th', {}, '공간'))),
+          el('tbody', {}, ALGORITHMS.filter((a) => a.props).map((a) => el('tr', {},
+            el('td', {}, a.name),
+            el('td', {}, a.props.complete),
+            el('td', {}, a.props.optimal),
+            el('td.compare__big', {}, a.props.time),
+            el('td.compare__big', {}, a.props.space)))),
+        )),
+      el('p.compare__note', {},
+        'b = 분기 계수(한 노드의 자식 수) · d = 해가 있는 깊이 · m = 트리의 최대 깊이 · L = 정해 둔 깊이 한계. ',
+        '"완전성"은 해가 있으면 반드시 찾는가, "최적성"은 찾은 해가 가장 짧은가를 뜻해요.'),
+    );
   }
 
   function markBest(tr, key, value, best) {

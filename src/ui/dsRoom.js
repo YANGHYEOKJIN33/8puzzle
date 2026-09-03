@@ -71,7 +71,7 @@ export function mountDsRoom(root, store) {
     quizPick = null;
 
     message = jumpedOver.length > 0
-      ? { tone: 'ok', text: `${item.label}는 급함 ${item.priority}이라 앞의 ${jumpedOver.length}개를 제치고 끼어들었어요!` }
+      ? { tone: 'ok', text: `${item.label}는 우선순위 ${item.priority}(더 높음)이라 앞의 ${jumpedOver.length}개보다 앞자리에 삽입됐어요!` }
       : null;
 
     draw();
@@ -92,7 +92,7 @@ export function mountDsRoom(root, store) {
     justIn = null;
     bumped = new Set();
     if (!popped) {
-      message = { tone: 'warn', text: '구조가 비었어요. 먼저 넣기를 눌러 보세요.' };
+      message = { tone: 'warn', text: '자료구조가 비어 있어요(empty). 먼저 넣기(push)를 눌러 보세요.' };
     } else {
       justOut = popped.id;
       setTimeout(() => { if (justOut === popped.id) { justOut = null; draw(); } }, 700);
@@ -132,7 +132,7 @@ export function mountDsRoom(root, store) {
     return el(classes, { title: isNext ? '다음에 나갈 것' : '' },
       el('span.dsitem__label', {}, item.label),
       kindId === 'priority'
-        ? el('span.dsitem__pri', {}, el('b', {}, String(item.priority)), '번')
+        ? el('span.dsitem__pri', { title: `우선순위 ${item.priority}` }, '우선', el('b', {}, String(item.priority)))
         : null,
     );
   }
@@ -171,7 +171,7 @@ export function mountDsRoom(root, store) {
       return el('div.dsshape.dsshape--can', {},
         el('div.dscan__mouth', {},
           el('span.dscan__mouth-arrow', {}, '⬍'),
-          el('span', {}, '넣는 곳 = 꺼내는 곳 (여기 한 곳뿐)')),
+          el('span', {}, '넣는 곳(push) = 꺼내는 곳(pop) — 여기 한 곳뿐')),
         el('div.dscan__body', {}, empty, chips, more),
         el('div.dscan__floor', {}, '바닥 — 막혀 있어요'),
       );
@@ -179,19 +179,19 @@ export function mountDsRoom(root, store) {
 
     const note = kindId === 'priority'
       ? (nextItem
-          ? `지금은 ${nextItem.label}가 ${nextItem.priority}번으로 가장 급해요 → 다음에 나갑니다`
-          : '이 관은 새치기가 됩니다 — 번호가 작을수록 급해서 앞으로 끼어들어요.')
-      : '이 관은 한 줄로만 흘러요 — 끼어들기가 없어요.';
+          ? `${nextItem.label}의 우선순위 ${nextItem.priority}이(가) 가장 높아요 → 다음에 나갑니다(pop)`
+          : '우선순위에 따라 중간에 삽입됩니다 — 값이 작을수록 우선순위가 높아요.')
+      : '한 줄로만 흘러요 — 중간에 끼어들 수 없습니다.';
 
     return el('div.dsshape.dsshape--tube', {},
       el('div.dstube', {},
         el('div.dstube__cap.dstube__cap--in', {},
           el('span.dstube__cap-arrow', {}, '➜'),
-          el('span.dstube__cap-word', {}, '넣는 곳')),
+          el('span.dstube__cap-word', {}, '넣기 push')),
         el('div.dstube__body', {}, more, empty, chips),
         el('div.dstube__cap.dstube__cap--out', {},
           el('span.dstube__cap-arrow', {}, '➜'),
-          el('span.dstube__cap-word', {}, '꺼내는 곳')),
+          el('span.dstube__cap-word', {}, '꺼내기 pop')),
       ),
       el(`div.dstube__note${kindId === 'priority' && nextItem ? '.dstube__note--live' : ''}`, {}, note),
     );
@@ -246,8 +246,12 @@ export function mountDsRoom(root, store) {
 
   function opButtons(kindIds) {
     return el('div.dsops', {},
-      el('button.ctrl.ctrl--primary', { type: 'button', onclick: () => doPush(kindIds) }, '📥 넣기'),
-      el('button.ctrl', { type: 'button', onclick: () => doPop(kindIds) }, '👆 꺼내기'),
+      el('button.ctrl.ctrl--primary', {
+        type: 'button', title: '자료구조에 값 하나를 넣는다 (push)', onclick: () => doPush(kindIds),
+      }, '📥 넣기 ', el('span.ctrl__term', {}, 'push')),
+      el('button.ctrl', {
+        type: 'button', title: '규칙대로 값 하나를 꺼낸다 (pop)', onclick: () => doPop(kindIds),
+      }, '👆 꺼내기 ', el('span.ctrl__term', {}, 'pop')),
       el('button.pill', { type: 'button', onclick: () => { resetAll(); draw(); } }, '↺ 비우기'),
     );
   }
@@ -284,7 +288,7 @@ export function mountDsRoom(root, store) {
     return el('div.dsroom__grid', {},
       el('section.panel', {},
         el('div.panel__head', {},
-          el('span.panel__title', {}, '⚖ 셋을 나란히'),
+          el('span.panel__title', {}, '⚖ 세 자료구조 비교'),
           el('span.panel__hint', {}, '같은 것을 같은 순서로 넣었어요')),
         el('div.panel__body', {},
           el('div.dstrio', {},
@@ -303,7 +307,7 @@ export function mountDsRoom(root, store) {
           ),
           el('p.dsbridge__note', {},
             '같은 것을 같은 순서로 넣었는데 나오는 순서가 다르죠? ',
-            '순서를 정하는 건 “어떤 구조에 담았는가”예요.'),
+            '꺼내지는 순서를 정하는 건 “어떤 자료구조에 담았는가”예요.'),
         ),
         el('div.panel__foot', {}, opButtons(KIND_IDS)),
       ),
@@ -316,7 +320,7 @@ export function mountDsRoom(root, store) {
       el('section.panel', {},
         el('div.panel__head', {},
           el('span.panel__title', {}, '🔗 자료구조 → 탐색 방법'),
-          el('span.panel__hint', {}, '대기 목록을 무엇으로 두느냐가 탐색 방법을 정해요')),
+          el('span.panel__hint', {}, 'OPEN 리스트를 무엇으로 두느냐가 알고리즘을 정해요')),
         el('div.panel__body', {},
           el('div.dsbridge', {}, STRUCTURE_CHOICES.map((choice) => {
             const kind = dsKind(choice.id === 'queue' ? 'queue' : choice.id === 'stack' ? 'stack' : 'priority');
@@ -337,8 +341,8 @@ export function mountDsRoom(root, store) {
             );
           })),
           el('p.dsbridge__note', {},
-            '8-퍼즐 탐색에서 “대기 목록”이 바로 이 구조예요. ',
-            '구조를 바꾸면 컴퓨터가 찾아가는 순서가 통째로 달라집니다.'),
+            '8-퍼즐 탐색의 “OPEN 리스트”가 바로 이 자료구조예요. ',
+            '자료구조를 바꾸면 노드를 확장하는 순서가 통째로 달라집니다.'),
         ),
       ),
     );

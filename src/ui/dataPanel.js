@@ -13,11 +13,12 @@ import { miniBoard } from './miniBoard.js';
 import { renderTree } from './treeView.js';
 import { lessonAt } from '../app/lesson.js';
 
+/* 정확한 용어를 앞세우고, 쉬운 말은 괄호로 덧붙인다 (요구사항 6.1.3) */
 const COUNTERS = [
-  { id: 'generated', label: '만든 모양' },
-  { id: 'expanded',  label: '살펴본 모양' },
-  { id: 'maxOpen',   label: '줄 최대 길이' },
-  { id: 'depth',     label: '지금 깊이' },
+  { id: 'generated', label: '생성 노드',      sub: '만든 배치' },
+  { id: 'expanded',  label: '확장 노드',      sub: '살펴본 배치' },
+  { id: 'maxOpen',   label: 'OPEN 최대 크기', sub: '줄이 가장 길 때' },
+  { id: 'depth',     label: '현재 깊이',      sub: '몇 번째 수' },
 ];
 
 /** OPEN이 아주 길 때 화면이 느려지지 않도록 양 끝만 보여 준다 (요구사항 7.3.2) */
@@ -33,8 +34,10 @@ export function mountDataPanel(root, store, player) {
       COUNTERS.map((counter) => {
         const value = el('span.counter__value', {}, '–');
         counterValues.set(counter.id, value);
-        return el('div.counter', {},
-          el('span.counter__label', {}, counter.label),
+        return el('div.counter', { title: counter.sub },
+          el('span.counter__label', {},
+            counter.label,
+            el('span.counter__sub', {}, ` · ${counter.sub}`)),
           value,
         );
       }),
@@ -43,8 +46,8 @@ export function mountDataPanel(root, store, player) {
 
   fill(root,
     el('div.panel__head', {},
-      el('span.panel__title', {}, '대기 목록'),
-      el('span.panel__hint', {}, '대기 목록과 지나온 길'),
+      el('span.panel__title', {}, '자료구조'),
+      el('span.panel__hint', {}, 'OPEN 리스트와 탐색 트리'),
     ),
     body,
     foot,
@@ -55,9 +58,9 @@ export function mountDataPanel(root, store, player) {
     const node = nodes[id];
     const tag = evalTag === 'f' ? `f=${node.f}`
       : evalTag === 'h' ? `h=${node.h}`
-      : `깊이 ${node.depth}`;
+      : `g=${node.depth}`;
     return el(`div.open-item${pushed ? '.open-item--pushed' : ''}`, {
-      title: `깊이 ${node.depth}, g=${node.g}, h=${node.h}, f=${node.f}`,   // 마우스 올림 미리보기 (요구사항 4.2.4)
+      title: `깊이 ${node.depth} · g=${node.g}(지나온 비용) · h=${node.h}(남은 거리 어림값) · f=${node.f}`,
     },
       miniBoard(node.state, { moved: movedCell(nodes, node) }),
       el('span.open-item__tag', {}, tag),
@@ -67,7 +70,7 @@ export function mountDataPanel(root, store, player) {
   function renderOpen(viewData, structureKey, evalTag) {
     const { openIds, nodes, highlight, action } = viewData;
     if (openIds.length === 0) {
-      return el('div.open-flow', {}, el('div.open-empty', {}, '대기 목록이 비었어요'));
+      return el('div.open-flow', {}, el('div.open-empty', {}, 'OPEN이 비었어요 (대기 목록 없음)'));
     }
     const flow = el('div.open-flow');
 
@@ -119,8 +122,8 @@ export function mountDataPanel(root, store, player) {
         legend(),
         el('div.placeholder', {},
           el('strong', {}, '직접 작성한 코드의 해 경로'),
-          '이 단계에서는 OPEN·CLOSED가 여러분의 파이썬 코드 안에서 관리됩니다. ' +
-          '오른쪽 퍼즐 판과 아래 진행 막대로 찾은 경로를 재생해 보세요.'),
+          '이 단계에서는 OPEN·CLOSED를 여러분의 파이썬 코드가 직접 관리합니다. ' +
+          '퍼즐 판과 진행 막대로 찾은 경로를 재생해 보세요.'),
       );
       return;
     }
@@ -134,17 +137,23 @@ export function mountDataPanel(root, store, player) {
       show.open ? el('div.ds-section', {},
         el('div.inspect', {},
           algo.structure === 'single'
-            ? el('span', {}, el('strong', {}, '이웃 후보'), ` · ${viewData.openIds.length}개`)
-            : el('span', {}, el('strong', {}, '대기 목록'), ` · ${structure.name} · ${viewData.openIds.length}개`),
+            ? el('span', {}, el('strong', {}, '이웃 노드 후보'), ` · ${viewData.openIds.length}개`)
+            : el('span', {}, el('strong', {}, 'OPEN 리스트'), ' (대기 목록)',
+                ` · ${structure.name} · ${viewData.openIds.length}개`),
           el('span.topbar__spacer'),
           legendInline(),
-          algo.structure === 'single' ? null : el('span.closed-chip', {}, `이미 본 것 ${viewData.closedSize}개`),
+          algo.structure === 'single' ? null
+            : el('span.closed-chip', { title: '이미 확장을 마쳐 다시 보지 않는 노드' },
+                `CLOSED ${viewData.closedSize}개`),
         ),
         el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
       ) : null,
       // 아래: 탐색 트리
       show.tree ? el('div.ds-section.ds-section--tree', {},
-        el('div.inspect', {}, el('span', {}, el('strong', {}, '지나온 길 (나무 모양)'))),
+        el('div.inspect', {},
+          el('span', {}, el('strong', {}, '탐색 트리'), ' (Search Tree)'),
+          el('span.topbar__spacer'),
+          el('span.panel__hint', {}, '지금까지 만든 노드를 부모–자식으로 이은 그림')),
         renderTree(viewData, algo.evalTag),
       ) : null,
     );
@@ -165,7 +174,7 @@ export function mountDataPanel(root, store, player) {
       }, el('strong', {}, c.name), el('span.ds-chip__sub', {}, c.sub))));
     // 한 줄로 압축: 라벨 + 칩들 + 무엇이 되는지. 자세한 설명은 칩 툴팁(title)에.
     return el('div.ds-pick', {},
-      el('span.ds-pick__label', {}, '줄 세우는 방법 =', el('span.sr-only', {}, ' 바꾸기')),
+      el('span.ds-pick__label', {}, 'OPEN 자료구조 =', el('span.sr-only', {}, ' 바꾸기')),
       chips,
       active ? el('span.ds-pick__becomes', {}, `→ ${active.becomes}`) : null,
     );
@@ -173,9 +182,9 @@ export function mountDataPanel(root, store, player) {
 
   function legendInline() {
     return el('span.ds-legend ds-legend--inline', {},
-      el('span', {}, el('i.swatch.swatch--current'), '검사'),
-      el('span', {}, el('i.swatch.swatch--open'), '삽입'),
-      el('span', {}, el('i.swatch.swatch--path'), '해'),
+      el('span', {}, el('i.swatch.swatch--current'), '확장 중'),
+      el('span', {}, el('i.swatch.swatch--open'), 'OPEN 삽입'),
+      el('span', {}, el('i.swatch.swatch--path'), '해 경로'),
     );
   }
 

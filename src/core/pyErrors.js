@@ -26,7 +26,7 @@ const RULES = [
   },
   {
     match: /(탐색이 너무 오래|too many steps|step limit)/i,
-    ko: '탐색이 너무 오래 걸립니다(너무 많은 상태를 펼쳤습니다). 이미 본 상태를 다시 보지 않도록 CLOSED를 쓰고 있나요?',
+    ko: '탐색이 너무 오래 걸립니다(너무 많은 상태를 확장했습니다). 이미 본 상태를 다시 보지 않도록 CLOSED를 쓰고 있나요?',
   },
   {
     match: /search.*not defined|name 'search' is not defined/i,
