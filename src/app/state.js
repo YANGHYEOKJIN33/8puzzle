@@ -13,9 +13,10 @@ const PERSISTED = ['algorithmId', 'stageId', 'heuristicId', 'presetId', 'speedId
 
 const initial = {
   // 무엇을 배우는 중인가 — 두 개의 탭
-  //   search : 8-퍼즐 탐색 배우기 (원래 화면)
-  //   ds     : 자료구조 배우기 (큐·스택·우선순위 큐를 손으로 다뤄 본다)
-  mode: 'search',
+  //   ds     : 자료구조 배우기 (큐·스택·우선순위 큐를 손으로 다뤄 본다) — 기본 화면
+  //   search : 8-퍼즐 탐색 배우기
+  // 자료구조를 배운 적 없는 학생이 많으므로 여기서 시작한다.
+  mode: 'ds',
   dsStep: 0,            // 자료구조 탭의 몇 번째 쪽인가
 
   // 학생이 고르는 것 (요구사항 6.1.1 — 첫 화면의 결정은 두 개뿐)

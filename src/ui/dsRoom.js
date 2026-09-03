@@ -1,10 +1,14 @@
 /**
  * "자료구조 배우기" 방 — 스택·큐를 배운 적 없는 학생을 위한 손으로 해 보는 화면.
  *
- * 세 가지를 한 화면에 둡니다.
- *   ① 실생활 비유 한 줄 (매표소 줄 / 접시 더미 / 응급실)
- *   ② 직접 넣고 꺼내는 상자 — 넣은 순서와 나온 순서를 나란히 보여 준다
- *   ③ "다음에 나올 것은?" 맞히기 — 규칙을 스스로 확인하게 한다
+ * 화면을 왼쪽에서 오른쪽으로 흐르게 만들었습니다.
+ *
+ *     넣은 순서  →   [ 자 료 구 조 ]   →  나온 순서
+ *
+ * 가운데 그림은 "생김새"가 곧 규칙이 되도록 그립니다.
+ *   큐          : 양 끝이 뚫린 가로 관 — 왼쪽으로 들어와 오른쪽으로 나간다
+ *   스택        : 위만 뚫린 세로 통   — 넣는 곳과 꺼내는 곳이 같다
+ *   우선순위 큐 : 새치기가 되는 관    — 급한 것이 앞으로 끼어든다
  *
  * 마지막 쪽에서 같은 자료구조가 8-퍼즐 탐색의 대기 목록이 된다는 것으로 이어 줍니다.
  */
@@ -16,15 +20,20 @@ import { STRUCTURE_CHOICES } from '../app/config.js';
 const LABELS = 'ABCDEFGHIJKLMN';
 const KIND_IDS = DS_KINDS.map((k) => k.id);
 
+/** 그림에 한 번에 보여 줄 최대 개수 — 넘치면 "…개 더"로 접는다 (세로 통은 자리가 좁다) */
+const MAX_SHOWN = { queue: 7, priority: 7, stack: 4 };
+
 export function mountDsRoom(root, store) {
   // 놀이터 상태는 화면에만 있는 값이라 store에 두지 않는다(새로 고치면 처음부터).
   let seq = 0;
   const boxes = { queue: [], stack: [], priority: [] };
   const trays = { queue: [], stack: [], priority: [] };   // 나온 순서
   let pushed = [];                                        // 넣은 순서(공통)
-  let justIn = null;                                      // 방금 들어온 항목 id (초록 강조)
-  let quizPick = null;                                    // 학생이 고른 답
-  let message = null;                                     // 한 줄 안내
+  let justIn = null;                                      // 방금 들어온 것 (초록)
+  let justOut = null;                                     // 방금 나간 것 (주황)
+  let bumped = new Set();                                 // 새치기 당한 것들 (우선순위 큐)
+  let quizPick = null;
+  let message = null;
   const score = { right: 0, total: 0 };
 
   function makeItem() {
@@ -36,23 +45,41 @@ export function mountDsRoom(root, store) {
   function resetAll() {
     for (const id of KIND_IDS) { boxes[id] = []; trays[id] = []; }
     pushed = [];
-    seq = 0; justIn = null; quizPick = null; message = null;
+    seq = 0; justIn = null; justOut = null; bumped = new Set();
+    quizPick = null; message = null;
     score.right = 0; score.total = 0;
   }
 
-  /** 한 항목을 주어진 상자들에 넣는다 */
+  /* ------------------------------------------------------------ 넣기 · 꺼내기 */
+
   function doPush(kindIds) {
     const item = makeItem();
-    for (const id of kindIds) boxes[id] = push(id, boxes[id], item).items;
+    let jumpedOver = [];
+
+    for (const id of kindIds) {
+      const before = boxes[id];
+      const result = push(id, before, item);
+      // 우선순위 큐에서 몇 개를 제치고 끼어들었는지 (요청 ④ — 새치기를 눈에 보이게)
+      if (id === 'priority') jumpedOver = before.slice(result.index);
+      boxes[id] = result.items;
+    }
+
     pushed = [...pushed, item];
     justIn = item.id;
+    justOut = null;
+    bumped = new Set(jumpedOver.map((it) => it.id));
     quizPick = null;
-    message = null;
+
+    message = jumpedOver.length > 0
+      ? { tone: 'ok', text: `${item.label}는 급함 ${item.priority}이라 앞의 ${jumpedOver.length}개를 제치고 끼어들었어요!` }
+      : null;
+
     draw();
-    setTimeout(() => { if (justIn === item.id) { justIn = null; draw(); } }, 420);
+    setTimeout(() => {
+      if (justIn === item.id) { justIn = null; bumped = new Set(); draw(); }
+    }, 700);
   }
 
-  /** 주어진 상자들에서 하나씩 꺼낸다 */
   function doPop(kindIds) {
     let popped = null;
     for (const id of kindIds) {
@@ -62,81 +89,126 @@ export function mountDsRoom(root, store) {
       trays[id] = [...trays[id], result.item];
       popped = result.item;
     }
-    if (!popped) message = { tone: 'warn', text: '상자가 비었어요. 먼저 넣기를 눌러 보세요.' };
     justIn = null;
+    bumped = new Set();
+    if (!popped) {
+      message = { tone: 'warn', text: '구조가 비었어요. 먼저 넣기를 눌러 보세요.' };
+    } else {
+      justOut = popped.id;
+      setTimeout(() => { if (justOut === popped.id) { justOut = null; draw(); } }, 700);
+    }
     draw();
   }
 
-  /** 맞히기 — 고른 항목이 규칙상 다음에 나갈 것인지 판정하고, 이어서 실제로 꺼낸다 */
+  /** 맞히기 — 고른 것이 규칙상 다음에 나갈 것인지 판정하고, 이어서 실제로 꺼낸다 */
   function answer(kindId, item) {
-    const index = nextOutIndex(kindId, boxes[kindId]);
-    const truth = boxes[kindId][index];
+    const truth = boxes[kindId][nextOutIndex(kindId, boxes[kindId])];
     const kind = dsKind(kindId);
     quizPick = item.id;
     score.total += 1;
-    if (truth.id === item.id) {
-      score.right += 1;
-      message = { tone: 'ok', text: `맞았어요! ${kind.name}는 ${kind.rule}. 그래서 ${truth.label}가 나와요.` };
-    } else {
-      message = { tone: 'no', text: `아쉬워요. ${kind.name}는 ${kind.rule}. 그래서 ${truth.label}가 나와요.` };
-    }
+    const right = truth.id === item.id;
+    if (right) score.right += 1;
+    message = {
+      tone: right ? 'ok' : 'no',
+      text: `${right ? '맞았어요!' : '아쉬워요.'} ${kind.name}는 ${kind.rule}. 그래서 ${truth.label}가 나와요.`,
+    };
     draw();
     setTimeout(() => { quizPick = null; doPop([kindId]); }, 900);
   }
 
-  /* ---------------------------------------------------------------- 그리기 */
+  /* ---------------------------------------------------------------- 조각 그리기 */
 
-  /** 상자 안의 항목 하나 */
-  function chip(item, { kindId, isNext, small = false }) {
-    return el(`div.dsitem${isNext ? '.dsitem--next' : ''}${item.id === justIn ? '.dsitem--in' : ''}${small ? '.dsitem--sm' : ''}`,
-      { title: isNext ? '다음에 나갈 것' : '' },
+  /** 항목 하나 — 글자 하나로 알아보게 크게. 우선순위 큐면 급한 정도를 함께 보인다. */
+  function chip(item, { kindId = null, isNext = false, size = '', bump = true } = {}) {
+    const classes = [
+      'div.dsitem',
+      isNext ? '.dsitem--next' : '',
+      item.id === justIn ? '.dsitem--in' : '',
+      item.id === justOut ? '.dsitem--out' : '',
+      // 밀려남은 구조 안에서만 보여 준다 — 옆 기둥까지 흔들리면 어수선하다
+      bump && bumped.has(item.id) ? '.dsitem--bumped' : '',
+      size ? `.dsitem--${size}` : '',
+    ].join('');
+    return el(classes, { title: isNext ? '다음에 나갈 것' : '' },
       el('span.dsitem__label', {}, item.label),
-      kindId === 'priority' ? el('span.dsitem__pri', {}, `급함 ${item.priority}`) : null,
+      kindId === 'priority'
+        ? el('span.dsitem__pri', {}, el('b', {}, String(item.priority)), '번')
+        : null,
     );
   }
 
-  /** 상자 하나 — 큐·우선순위 큐는 가로줄, 스택은 세로 더미 */
-  function boxView(kindId, { small = false } = {}) {
-    const kind = dsKind(kindId);
+  /**
+   * 화면에 그릴 순서 — 어느 구조든 "다음에 나갈 것"이 출구 쪽에 오게 뒤집는다.
+   *   가로 관 : 출구가 오른쪽이므로 display의 끝이 출구
+   *   세로 통 : 출구가 위쪽이므로 display의 앞이 출구
+   * 접을 때는 언제나 출구에서 먼 것(오래 기다릴 것)부터 접는다.
+   */
+  function shownOrder(kindId, items) {
+    const max = MAX_SHOWN[kindId] ?? 7;
+    const display = [...items].reverse();
+    if (display.length <= max) return { display, hidden: 0 };
+    const kept = kindId === 'stack' ? display.slice(0, max) : display.slice(-max);
+    return { display: kept, hidden: display.length - max };
+  }
+
+  /**
+   * 가운데 그림 — 구조의 "생김새"가 곧 규칙 (요청 ③).
+   *   큐·우선순위 큐 : 양 끝이 뚫린 가로 관
+   *   스택           : 위만 뚫린 세로 통
+   */
+  function shape(kindId, { size = '' } = {}) {
     const items = boxes[kindId];
     const nextIndex = nextOutIndex(kindId, items);
-    const lane = el(`div.dslane${kindId === 'stack' ? '.dslane--stack' : ''}`);
+    const nextItem = nextIndex === -1 ? null : items[nextIndex];
+    const { display, hidden } = shownOrder(kindId, items);
 
-    if (items.length === 0) {
-      lane.append(el('div.dsempty', {}, '비었어요'));
-    } else {
-      // 스택은 마지막에 넣은 것이 위로 오도록 뒤집어 그린다
-      const order = kindId === 'stack' ? [...items].reverse() : items;
-      for (const item of order) {
-        lane.append(chip(item, { kindId, isNext: items[nextIndex] === item, small }));
-      }
+    const chips = display.map((it) => chip(it, { kindId, isNext: it === nextItem, size }));
+    const more = hidden > 0 ? el('span.dsmore', {}, `…${hidden}개 더`) : null;
+    const empty = items.length === 0 ? el('div.dsempty', {}, '비었어요') : null;
+
+    if (kindId === 'stack') {
+      // 세로 통 — 위쪽 한 곳만 뚫려 있다
+      return el('div.dsshape.dsshape--can', {},
+        el('div.dscan__mouth', {},
+          el('span.dscan__mouth-arrow', {}, '⬍'),
+          el('span', {}, '넣는 곳 = 꺼내는 곳 (여기 한 곳뿐)')),
+        el('div.dscan__body', {}, empty, chips, more),
+        el('div.dscan__floor', {}, '바닥 — 막혀 있어요'),
+      );
     }
 
-    return el('div.dsbox', {},
-      el('div.dsbox__ends', {},
-        el('span.dsbox__end', {}, kindId === 'stack' ? '⬆ 여기로 넣고, 여기서 꺼내요' : `⬅ ${kind.outWord}`),
-        el('span.topbar__spacer'),
-        kindId === 'stack' ? null : el('span.dsbox__end', {}, `${kind.inWord} ➡`),
+    const note = kindId === 'priority'
+      ? (nextItem
+          ? `지금은 ${nextItem.label}가 ${nextItem.priority}번으로 가장 급해요 → 다음에 나갑니다`
+          : '이 관은 새치기가 됩니다 — 번호가 작을수록 급해서 앞으로 끼어들어요.')
+      : '이 관은 한 줄로만 흘러요 — 끼어들기가 없어요.';
+
+    return el('div.dsshape.dsshape--tube', {},
+      el('div.dstube', {},
+        el('div.dstube__cap.dstube__cap--in', {},
+          el('span.dstube__cap-arrow', {}, '➜'),
+          el('span.dstube__cap-word', {}, '넣는 곳')),
+        el('div.dstube__body', {}, more, empty, chips),
+        el('div.dstube__cap.dstube__cap--out', {},
+          el('span.dstube__cap-arrow', {}, '➜'),
+          el('span.dstube__cap-word', {}, '꺼내는 곳')),
       ),
-      lane,
+      el(`div.dstube__note${kindId === 'priority' && nextItem ? '.dstube__note--live' : ''}`, {}, note),
     );
   }
 
-  /** 넣은 순서 / 나온 순서 두 줄 — 규칙의 결과를 눈으로 견주게 한다 */
-  function orderRows(kindId) {
-    const row = (label, list, hint) => el('div.dsorder', {},
-      el('span.dsorder__label', {}, label),
+  /** 옆 기둥 — 넣은 순서(왼쪽) / 나온 순서(오른쪽). 위가 먼저, 아래가 나중. */
+  function column(title, icon, list, hint) {
+    return el('div.dscol', {},
+      el('div.dscol__head', {}, el('span.dscol__icon', { 'aria-hidden': 'true' }, icon), title),
       list.length === 0
-        ? el('span.dsorder__hint', {}, hint)
-        : el('div.dsorder__list', {}, list.map((it) => chip(it, { kindId: 'none', isNext: false, small: true }))),
-    );
-    return el('div.dsorders', {},
-      row('넣은 순서', pushed, '아직 없어요'),
-      row('나온 순서', trays[kindId], '아직 없어요'),
+        ? el('div.dscol__hint', {}, hint)
+        : el('div.dscol__list', {}, list.map((it) => chip(it, { size: 'sm', bump: false }))),
+      el('div.dscol__foot', {}, list.length === 0 ? '' : `${list.length}개`),
     );
   }
 
-  /** "다음에 나올 것은?" 맞히기 줄 */
+  /** 맞히기 한 줄 */
   function quiz(kindId) {
     const items = boxes[kindId];
     if (items.length < 2) {
@@ -154,6 +226,7 @@ export function mountDsRoom(root, store) {
     );
   }
 
+  /** 위쪽 한 줄 — 실생활 비유 그림 + 규칙, 또는 방금 일어난 일 */
   function messageCard(kind) {
     if (!message) {
       return el('div.action-card.action-card--intro', {},
@@ -166,7 +239,8 @@ export function mountDsRoom(root, store) {
     return el('div.action-card', { 'data-tone': message.tone },
       el('div.action-card__icon', { 'aria-hidden': 'true' }, icon),
       el('div.action-card__body', {},
-        el('div.action-card__word', {}, message.tone === 'ok' ? '맞았어요!' : message.tone === 'no' ? '다시 볼까요' : '알려 드려요'),
+        el('div.action-card__word', {},
+          message.tone === 'ok' ? '이렇게 돼요!' : message.tone === 'no' ? '다시 볼까요' : '알려 드려요'),
         el('div.action-card__plain', {}, message.text)));
   }
 
@@ -178,9 +252,9 @@ export function mountDsRoom(root, store) {
     );
   }
 
-  /* ------------------------------------------------------------- 쪽별 화면 */
+  /* ------------------------------------------------------------------ 쪽별 화면 */
 
-  /** ①②③ 쪽 — 자료구조 하나를 손으로 다뤄 본다 */
+  /** ①②③ 쪽 — 넣은 순서 → 자료구조 → 나온 순서 (요청 ②) */
   function playView(kindId) {
     const kind = dsKind(kindId);
     return el('div.dsroom__grid', {},
@@ -190,9 +264,16 @@ export function mountDsRoom(root, store) {
           el('span.panel__hint', {}, kind.ruleEn)),
         el('div.panel__body', {},
           messageCard(kind),
-          boxView(kindId),
-          quiz(kindId),
-          orderRows(kindId)),
+          el('div.dsflow', {},
+            column('넣은 순서', '📥', pushed, '아직 없어요'),
+            el('div.dsflow__arrow', { 'aria-hidden': 'true' }, '➜'),
+            el('div.dsstage', {},
+              el('div.dsstage__cap', {}, kind.ruleShort),
+              shape(kindId)),
+            el('div.dsflow__arrow', { 'aria-hidden': 'true' }, '➜'),
+            column('나온 순서', '📤', trays[kindId], '아직 없어요'),
+          ),
+          quiz(kindId)),
         el('div.panel__foot', {}, opButtons([kindId])),
       ),
     );
@@ -206,25 +287,23 @@ export function mountDsRoom(root, store) {
           el('span.panel__title', {}, '⚖ 셋을 나란히'),
           el('span.panel__hint', {}, '같은 것을 같은 순서로 넣었어요')),
         el('div.panel__body', {},
-          el('div.dsorder', {},
-            el('span.dsorder__label', {}, '넣은 순서'),
-            pushed.length === 0
-              ? el('span.dsorder__hint', {}, '아직 없어요 — 아래 넣기를 눌러 보세요')
-              : el('div.dsorder__list', {}, pushed.map((it) => chip(it, { kindId: 'none', isNext: false, small: true })))),
-          el('div.dstrio', {}, DS_KINDS.map((kind) => el('div.dstrio__cell', {},
-            el('div.dstrio__cap', {},
-              el('strong', {}, `${kind.icon} ${kind.name}`),
-              el('span', {}, kind.ruleShort)),
-            boxView(kind.id, { small: true }),
-            el('div.dsorder', {},
-              el('span.dsorder__label', {}, '나온 순서'),
-              trays[kind.id].length === 0
-                ? el('span.dsorder__hint', {}, '아직 없어요')
-                : el('div.dsorder__list', {}, trays[kind.id].map((it) => chip(it, { kindId: 'none', isNext: false, small: true })))),
-          ))),
+          el('div.dstrio', {},
+            column('넣은 순서', '📥', pushed, '아직 없어요'),
+            el('div.dstrio__boxes', {}, DS_KINDS.map((kind) => el('div.dstrio__cell', {},
+              el('div.dstrio__cap', {},
+                el('strong', {}, `${kind.icon} ${kind.name}`),
+                el('span', {}, kind.ruleShort)),
+              shape(kind.id, { size: 'sm' }),
+              el('div.dstrio__out', {},
+                el('span.dscol__head', {}, '📤 나온 순서'),
+                trays[kind.id].length === 0
+                  ? el('span.dscol__hint', {}, '아직 없어요')
+                  : el('div.dstrio__outlist', {}, trays[kind.id].map((it) => chip(it, { size: 'sm', bump: false })))),
+            ))),
+          ),
           el('p.dsbridge__note', {},
             '같은 것을 같은 순서로 넣었는데 나오는 순서가 다르죠? ',
-            '순서를 정하는 건 “어떤 상자에 담았는가”예요.'),
+            '순서를 정하는 건 “어떤 구조에 담았는가”예요.'),
         ),
         el('div.panel__foot', {}, opButtons(KIND_IDS)),
       ),
@@ -258,14 +337,14 @@ export function mountDsRoom(root, store) {
             );
           })),
           el('p.dsbridge__note', {},
-            '8-퍼즐 탐색에서 “대기 목록”이 바로 이 상자예요. ',
-            '상자를 바꾸면 컴퓨터가 찾아가는 순서가 통째로 달라집니다.'),
+            '8-퍼즐 탐색에서 “대기 목록”이 바로 이 구조예요. ',
+            '구조를 바꾸면 컴퓨터가 찾아가는 순서가 통째로 달라집니다.'),
         ),
       ),
     );
   }
 
-  /* --------------------------------------------------------------- 조립 */
+  /* ----------------------------------------------------------------- 조립 */
 
   function draw() {
     const state = store.get();

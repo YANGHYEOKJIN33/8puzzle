@@ -247,12 +247,13 @@ body:not(.show-action) .actionbar { display: none; }
 .dsroom { padding: var(--sp-3) var(--sp-4); min-height: 0; overflow: hidden; }
 .dsroom__grid { display: grid; height: 100%; min-height: 0; }
 .dsroom .panel__body { display: flex; flex-direction: column; }
-/* 상자가 남는 높이를 갖고, 맞히기·순서 줄은 언제나 보이게 둔다 */
+/* 가운데 흐름이 남는 높이를 갖고, 맞히기 줄은 언제나 보이게 둔다 */
 .dsroom .panel__body > * { flex: 0 0 auto; }
-.dsroom .dsbox { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.dsroom .dslane { flex: 1 1 auto; min-height: 0; }
-.dsroom .dstrio { flex: 1 1 auto; align-content: start; }
-.dsroom .dstrio .dsbox { flex: 0 0 auto; }
+.dsroom .dsflow { flex: 1 1 auto; min-height: 0; }
+.dsroom .dstrio { flex: 1 1 auto; min-height: 0; }
+/* 구조 그림은 무대 높이 안에서만 늘어난다 */
+.dsroom .dstube__body,
+.dsroom .dscan__body { max-height: 100%; }
 
 /* 탐색 탭에서는 자료구조 방을, 자료구조 탭에서는 탐색 화면을 감춘다 */
 body:not(.mode-ds) .dsroom { display: none; }
