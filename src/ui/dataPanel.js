@@ -96,7 +96,7 @@ export function mountDataPanel(root, store, player) {
     return flow;
   }
 
-  player.subscribe((viewData) => {
+  function draw(viewData) {
     const state = store.get();
     const algo = findById(ALGORITHMS, state.algorithmId);
     const structure = STRUCTURE_LABEL[algo.structure];
@@ -156,7 +156,11 @@ export function mountDataPanel(root, store, player) {
       ),
       el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
     );
-  });
+  }
+
+  player.subscribe(draw);
+  // 탭·자료구조 선택 등 store 변화에도 다시 그린다(다음 단계를 밟지 않아도 전환되게)
+  store.subscribe(() => draw(player.view()));
 
   // OPEN 자료구조 바꾸기 — 학습자가 직접 골라 다른 결과를 본다 (핵심 실험)
   function structurePicker() {
