@@ -18,6 +18,7 @@ import { mountBoardPanel } from '../ui/boardPanel.js';
 import { mountCodePanel } from '../ui/codePanel.js';
 import { mountDataPanel } from '../ui/dataPanel.js';
 import { mountControls } from '../ui/controls.js';
+import { mountDsRoom } from '../ui/dsRoom.js';
 import { createCoach } from '../ui/coach.js';
 
 const store = createStore();
@@ -32,18 +33,29 @@ mountCodePanel(qs('#panel-code'), store, player);
 mountBoardPanel(qs('#panel-board'), store, player);
 mountDataPanel(qs('#panel-data'), store, player);
 mountControls(qs('#controlbar'), store, player);
+mountDsRoom(qs('#dsroom'), store);
 
 // 예측 퀴즈(학습 1단계 전용) — 코드 패널의 탭과 코드 사이에 끼워 둔다.
 // 코드 패널은 다시 그릴 때 body만 갈아 끼우므로 이 요소는 지워지지 않는다.
 const codeRoot = qs('#panel-code');
 codeRoot.insertBefore(createCoach(store, player), codeRoot.querySelector('.panel__body'));
 
+// 어느 탭인가 — 탐색 배우기 / 자료구조 배우기 (요청: 자료구조도 따로 배울 수 있게)
+store.subscribe((state) => {
+  const ds = state.mode === 'ds';
+  document.body.classList.toggle('mode-ds', ds);
+  if (ds) player.pause();   // 안 보이는 화면이 혼자 재생되지 않게
+});
+
 // 레슨 페이지가 바뀌면 화면 배치와 코드 모드를 그 페이지에 맞춘다.
 // (한 화면에 필요한 것만 보이게 — 학습 집중)
 let lastLesson = -1;
+let lastLessonMode = null;
 store.subscribe((state) => {
-  if (state.lessonStep === lastLesson) return;
+  if (state.mode === 'ds') { lastLessonMode = state.mode; return; }
+  if (state.lessonStep === lastLesson && lastLessonMode === state.mode) return;
   lastLesson = state.lessonStep;
+  lastLessonMode = state.mode;
   const step = lessonAt(state.lessonStep);
   qs('#workspace').dataset.layout = step.layout;
   const body = document.body;

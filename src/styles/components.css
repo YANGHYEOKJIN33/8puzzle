@@ -929,3 +929,172 @@ body.show-slim .action-card__detail { display: none; }
 
 /* 코드 패널 본문을 세로 flex로 (동작카드 + 나란히 영역) */
 .panel--code .panel__body { display: flex; flex-direction: column; overflow: hidden; }
+
+/* ============================================================
+   자료구조 배우기 탭 — 큐 · 스택 · 우선순위 큐를 직접 넣고 꺼내 본다
+   색은 기존 의미 그대로 쓴다: 파랑 = 다음에 나갈 것, 초록 = 방금 들어온 것
+   ============================================================ */
+
+/* 무엇을 배울까요 — 큰 탭 두 개 */
+.modetabs { display: flex; gap: var(--sp-1); flex: 0 0 auto; }
+.modetab { font-weight: 700; }
+
+/* 항목 하나 — 글자 하나로 알아보게 크게 */
+.dsitem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 54px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  flex: 0 0 auto;
+}
+.dsitem__label { font-size: var(--fs-xl); font-weight: 700; line-height: 1; }
+.dsitem__pri { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+.dsitem--sm { min-width: 34px; padding: var(--sp-1) var(--sp-2); border-width: 1px; }
+.dsitem--sm .dsitem__label { font-size: var(--fs-md); }
+
+/* 다음에 나갈 것 — 파랑 (탐색 화면의 "검사 중"과 같은 뜻) */
+.dsitem--next {
+  border-color: var(--current);
+  background: var(--current-bg);
+  color: var(--current);
+}
+.dsitem--next::after {
+  content: '다음';
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+/* 방금 들어온 것 — 초록 (탐색 화면의 "삽입"과 같은 뜻) */
+.dsitem--in {
+  border-color: var(--open);
+  background: var(--open-bg);
+  animation: ds-pop .4s cubic-bezier(.34, 1.45, .5, 1);
+}
+@keyframes ds-pop {
+  from { transform: scale(.55); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* 상자 — 들어오는 쪽과 나가는 쪽을 글자로 알려 준다 */
+.dsbox { margin: var(--sp-3) 0; }
+.dsbox__ends {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+}
+.dsbox__end { white-space: nowrap; }
+.dslane {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 74px;
+  padding: var(--sp-2);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  overflow: auto;
+}
+/* 스택은 세로 더미 — 맨 위(다음에 나갈 것)를 언제나 상자 맨 위에 붙여 둔다.
+   더미가 길어지면 아래쪽 오래된 것들이 스크롤로 밀려난다. */
+.dslane--stack {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 120px;
+}
+.dsempty { color: var(--text-muted); font-size: var(--fs-sm); padding: var(--sp-2); margin: auto; }
+
+/* 맞히기 줄 */
+.dsquiz {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.dsquiz--off { color: var(--text-muted); }
+.dsquiz__q { font-size: var(--fs-sm); font-weight: 700; }
+.dsquiz__picks { display: flex; gap: var(--sp-1); flex-wrap: wrap; }
+.dsquiz__pick { font-weight: 700; min-width: 38px; }
+.dsquiz__pick--picked { background: var(--current-bg); border-color: var(--current); color: var(--current); }
+.dsquiz__score { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+
+/* 넣은 순서 / 나온 순서 */
+.dsorders { display: grid; gap: var(--sp-2); margin-top: var(--sp-3); }
+.dsorder { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.dsorder__label {
+  flex: 0 0 auto;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 5.2em;
+}
+.dsorder__list { display: flex; gap: var(--sp-1); overflow-x: auto; min-width: 0; padding-bottom: 2px; }
+.dsorder__hint { font-size: var(--fs-xs); color: var(--text-muted); }
+
+/* 넣기 · 꺼내기 · 비우기 */
+.dsops { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* 셋을 나란히 */
+.dstrio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.dstrio__cell {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2);
+  min-width: 0;
+}
+.dstrio__cap { display: flex; flex-direction: column; font-size: var(--fs-xs); color: var(--text-muted); }
+.dstrio__cap strong { font-size: var(--fs-sm); color: var(--text); }
+.dstrio .dsbox { margin: var(--sp-2) 0; }
+/* 세 상자의 높이를 맞춰 "나온 순서" 줄이 나란히 오게 한다 */
+.dstrio .dslane,
+.dstrio .dslane--stack { min-height: 150px; max-height: 150px; }
+.dstrio .dsorder__label { width: 4.4em; }
+
+/* 자료구조 → 탐색 방법으로 잇기 */
+.dsbridge { display: grid; gap: var(--sp-2); }
+.dsbridge__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.dsbridge__from { display: flex; align-items: center; gap: var(--sp-2); flex: 1 1 220px; min-width: 0; }
+.dsbridge__icon { font-size: calc(1.6rem * var(--scale)); line-height: 1; }
+.dsbridge__rule, .dsbridge__why { font-size: var(--fs-xs); color: var(--text-muted); }
+.dsbridge__arrow { color: var(--text-muted); flex: 0 0 auto; }
+.dsbridge__to { flex: 1 1 260px; min-width: 0; }
+.dsbridge__to strong { color: var(--current); }
+.dsbridge__note { font-size: var(--fs-sm); color: var(--text-muted); margin-top: var(--sp-3); }
+
+/* 안내 카드 색 — 맞았을 때 초록, 틀렸을 때 주황 */
+.action-card[data-tone="ok"] { border-color: var(--open); background: var(--open-bg); }
+.action-card[data-tone="ok"] .action-card__word { color: var(--open); }
+.action-card[data-tone="no"] { border-color: var(--path); background: var(--path-bg); }
+.action-card[data-tone="no"] .action-card__word { color: var(--path); }
+.action-card[data-tone="warn"] { border-color: var(--border-strong); background: var(--surface-2); }
+.action-card[data-tone="warn"] .action-card__word { color: var(--text); }
+
+@media (max-width: 760px) {
+  .dstrio { grid-template-columns: 1fr; }
+}

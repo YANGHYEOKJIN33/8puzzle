@@ -49,6 +49,8 @@ export function mountControls(root, store, player) {
   document.addEventListener('keydown', (event) => {
     const tag = event.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || event.target?.isContentEditable) return;
+    // 자료구조 탭에서는 실행 제어가 화면에 없다 — 단축키도 듣지 않는다
+    if (document.body.classList.contains('mode-ds')) return;
     const map = { ' ': 'play', ArrowRight: 'step', ArrowLeft: 'back', Home: 'reset', End: 'skip' };
     const action = map[event.key];
     const button = action && buttons.get(action);

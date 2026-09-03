@@ -17,7 +17,9 @@ src/
     components.css      패널·퍼즐 판·코드 뷰·카운터 등 부품
   app/
     config.js           알고리즘 목록, 학습 단계, 휴리스틱, 예제 상태
-    state.js            앱 상태 저장소 (구독 방식 + 로컬 저장)
+    lesson.js           🧩 탐색 탭의 쪽 구성 + 지금 탭의 쪽 묶음을 고르는 currentLesson()
+    dsLesson.js         📦 자료구조 탭의 쪽 구성
+    state.js            앱 상태 저장소 (구독 방식 + 로컬 저장) — mode가 두 탭을 가른다
     player.js           재생기 — 단계 기록을 한 컷씩 넘겨 주고 되감는다
     exercises.js        학습 2단계(빈칸 채우기) 문제 데이터
     pyCode.js           학습 3단계 파이썬 프리앰블·시작 코드·정답
@@ -25,15 +27,17 @@ src/
     main.js             진입점 — 부품을 붙이고 재생기를 연결한다
   ui/
     dom.js              el() / fill() / qs() 만 있는 작은 도우미
-    topbar.js           알고리즘 선택 · 테마 · 글자 크기
-    stagebar.js         학습 단계 1/2/3 전환
+    topbar.js           탭(🧩 탐색 / 📦 자료구조) · 알고리즘 선택 · 테마 · 글자 크기
+    lessonBar.js        쪽 진행 막대 — 두 탭이 함께 쓴다
     boardPanel.js       8-퍼즐 판 그리기
-    codePanel.js        순서도 / 의사코드 / 파이썬 탭
-    dataPanel.js        OPEN·CLOSED·카운터
+    codePanel.js        순서도와 의사코드를 나란히 (2·3단계에서는 빈칸/편집기)
+    dataPanel.js        대기 목록(OPEN)·이미 본 것·탐색 트리·카운터
+    dsRoom.js           📦 자료구조 탭 화면 — 넣기·꺼내기·맞히기·셋 견주기·탐색으로 잇기
     controls.js         재생·한 단계·되감기 + 키보드 단축키
-  core/                 탐색 엔진 — 화면을 전혀 모르는 순수 로직
+  core/                 순수 로직 — 화면을 전혀 모른다
     puzzle.js           8-퍼즐 규칙: 상태·이동·해 존재 판정
     heuristics.js       h0 / h1 / h2
+    structures.js       큐·스택·우선순위 큐 규칙 (자료구조 탭이 쓴다)
 test/                   node:test 테스트 (의존성 없음)
   helpers/optimalDepth.js  참값 계산기 — 최소 이동 횟수를 BFS로 구한다
 docs/                   개발 문서
@@ -54,6 +58,11 @@ docs/                   개발 문서
    │  core/*  │  ← DOM을 전혀 모른다
    └──────────┘
 ```
+
+탭이 둘이지만 상태 저장소와 진행 막대는 하나를 함께 쓴다.
+`state.mode`가 `'search'`면 `#workspace`를, `'ds'`면 `#dsroom`을 보여 주고
+(`body.mode-ds` 클래스로 전환), 진행 막대는 `currentLesson(state)`가 돌려주는
+쪽 묶음을 그린다.
 
 핵심 규칙 하나: **`src/core/`는 화면을 모른다.**
 알고리즘은 "한 단계씩 무슨 일이 있었는지"를 기록한 목록만 만들고,

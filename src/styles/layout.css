@@ -5,12 +5,17 @@
    ============================================================ */
 
 .app {
-  display: grid;
-  grid-template-rows: auto auto auto 1fr auto auto;
+  display: flex;
+  flex-direction: column;
   height: 100dvh;
   overflow: hidden;   /* 요구사항 6.2.1: 페이지가 통째로 스크롤되지 않는다.
                          내용이 넘치면 각 패널 안에서만 스크롤한다. */
 }
+/* 막대들은 제 높이만 갖고, 남는 높이는 본문(탐색 화면 또는 자료구조 방)이 가진다.
+   쪽마다 숨는 막대가 달라도 배분이 흔들리지 않도록 줄 수가 아니라 flex로 정한다. */
+.app > * { flex: 0 0 auto; }
+.workspace,
+.dsroom { flex: 1 1 auto; min-height: 0; }
 
 /* --- 상단 막대 --- */
 .topbar {
@@ -234,4 +239,28 @@ body:not(.show-action) .actionbar { display: none; }
   .workspace[data-layout="board-tree"] .panel--data .panel__body { overflow: auto; }
   .workspace[data-layout="board-tree"] .board--anim { width: min(160px, 30vw); }
   .workspace[data-layout="board-tree"] .board--mini { width: min(110px, 22vw); }
+}
+
+/* ============================================================
+   자료구조 배우기 탭 — 탐색 화면과 자리를 바꿔 가며 쓴다
+   ============================================================ */
+.dsroom { padding: var(--sp-3) var(--sp-4); min-height: 0; overflow: hidden; }
+.dsroom__grid { display: grid; height: 100%; min-height: 0; }
+.dsroom .panel__body { display: flex; flex-direction: column; }
+/* 상자가 남는 높이를 갖고, 맞히기·순서 줄은 언제나 보이게 둔다 */
+.dsroom .panel__body > * { flex: 0 0 auto; }
+.dsroom .dsbox { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.dsroom .dslane { flex: 1 1 auto; min-height: 0; }
+.dsroom .dstrio { flex: 1 1 auto; align-content: start; }
+.dsroom .dstrio .dsbox { flex: 0 0 auto; }
+
+/* 탐색 탭에서는 자료구조 방을, 자료구조 탭에서는 탐색 화면을 감춘다 */
+body:not(.mode-ds) .dsroom { display: none; }
+body.mode-ds .workspace,
+body.mode-ds .actionbar,
+body.mode-ds .controlbar { display: none; }
+
+@media (max-width: 900px) {
+  .dsroom { overflow: visible; }
+  .dsroom__grid { height: auto; }
 }
