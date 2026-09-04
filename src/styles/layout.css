@@ -251,6 +251,10 @@
 .workspace[data-layout="code-board-data"] .ds-legend--inline { display: none; }
 .workspace[data-layout="code-board-data"] .panel--data .panel__body { padding: var(--sp-2); }
 .workspace[data-layout="code-board-data"] .open-wrap { margin-top: var(--sp-1); }
+/* 좁은 칸: 관을 납작하게 — 판이 짧아 안내 줄까지 다 보이게 */
+.workspace[data-layout="code-board-data"] .pipe__body { min-height: 46px; padding: var(--sp-1) var(--sp-2); }
+.workspace[data-layout="code-board-data"] .pipe__cap { padding: 0 var(--sp-1); }
+.workspace[data-layout="code-board-data"] .pipe__body .mini { width: 36px; height: 36px; }
 
 /* 실행 제어는 필요한 페이지에서만 */
 body:not(.show-controls) .controlbar { display: none; }

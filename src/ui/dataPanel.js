@@ -1,10 +1,12 @@
 /**
  * 자료구조 패널 (요구사항 4.1 ③ · 4.2) — 시각화의 핵심.
  *
- * 재생기의 현재 장면(view)을 받아 OPEN을 알고리즘에 맞는 모양으로 그린다.
- *   큐(BFS)   : 가로 띠 — 앞에서 나가고 뒤로 들어온다
- *   스택(DFS) : 세로 더미 — 위에서 넣고 위에서 뺀다
- * 방금 넣은 항목은 초록으로 강조하고(요구사항 4.2.2), 카운터 4종을 항상 보여 준다.
+ * 재생기의 현재 장면(view)을 받아 OPEN을 "자료구조 탭"과 같은 그림(관/통)으로 그린다.
+ * 구조의 생김새가 곧 규칙이 되도록, 노드(배치)가 어느 쪽으로 들어가고 나가는지 보인다.
+ *   큐(BFS)         : 양 끝이 뚫린 가로 관 — 왼쪽으로 넣고(push) 오른쪽으로 나간다(pop)
+ *   우선순위 큐(A*)  : 같은 관 — 오른쪽(pop)에는 평가값이 가장 작은 노드가 온다
+ *   스택(DFS)        : 오른쪽 한 곳만 뚫린 관 — 넣고 꺼내는 곳이 같다(LIFO)
+ * 오른쪽 끝(다음에 나갈 것)은 파랑, 방금 넣은 것은 초록으로 강조한다(요구사항 4.2.2).
  */
 import { el, fill } from './dom.js';
 import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO } from '../app/config.js';
@@ -21,9 +23,8 @@ const COUNTERS = [
   { id: 'depth',     label: '현재 깊이',      sub: '몇 번째 수' },
 ];
 
-/** OPEN이 아주 길 때 화면이 느려지지 않도록 양 끝만 보여 준다 (요구사항 7.3.2) */
-const HEAD = 10;
-const TAIL = 10;
+/** OPEN이 아주 길 때 화면이 느려지지 않도록 출구 쪽만 보여 준다 (요구사항 7.3.2) */
+const MAX_IN_PIPE = 16;
 
 export function mountDataPanel(root, store, player) {
   const body = el('div.panel__body');
@@ -54,12 +55,12 @@ export function mountDataPanel(root, store, player) {
   );
 
   /** 한 노드를 OPEN 항목으로 그린다. 알고리즘에 맞는 평가값을 꼬리표로 단다. */
-  function openItem(nodes, id, { pushed = false, evalTag = 'depth' } = {}) {
+  function openItem(nodes, id, { pushed = false, next = false, evalTag = 'depth' } = {}) {
     const node = nodes[id];
     const tag = evalTag === 'f' ? `f=${node.f}`
       : evalTag === 'h' ? `h=${node.h}`
       : `g=${node.depth}`;
-    return el(`div.open-item${pushed ? '.open-item--pushed' : ''}`, {
+    return el(`div.open-item${pushed ? '.open-item--pushed' : ''}${next ? '.open-item--next' : ''}`, {
       title: `깊이 ${node.depth} · g=${node.g}(지나온 비용) · h=${node.h}(남은 거리 어림값) · f=${node.f}`,
     },
       miniBoard(node.state, { moved: movedCell(nodes, node) }),
@@ -67,31 +68,86 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
-  function renderOpen(viewData, structureKey, evalTag) {
+  /**
+   * OPEN을 "관/통" 모양 안에 그린다 (요청: 자료구조 탭처럼 구조를 이미지로).
+   * 언제나 '다음에 나갈 것'이 오른쪽 끝(꺼내는 곳)에 오도록 정렬한다.
+   *   큐(FIFO)      : 맨 앞이 다음 → 뒤집어 오른쪽 끝으로
+   *   우선순위 큐    : 평가값이 가장 작은 것이 맨 앞 → 뒤집어 오른쪽 끝으로
+   *   스택(LIFO)    : 맨 위(마지막에 넣은 것)가 다음 → 이미 오른쪽 끝이므로 그대로
+   */
+  function renderPipe(viewData, structureKey, evalTag) {
     const { openIds, nodes, highlight, action } = viewData;
-    if (openIds.length === 0) {
-      return el('div.open-flow', {}, el('div.open-empty', {}, 'OPEN이 비었어요 (대기 목록 없음)'));
+
+    // 언덕 등반은 OPEN이 없다 — 이웃 후보들을 관 없이 한 줄로만 보여 준다
+    if (structureKey === 'single') {
+      const flow = el('div.open-flow');
+      const pushedId = action === 'push' || action === 'init' ? highlight : null;
+      if (openIds.length === 0) flow.append(el('div.open-empty', {}, '이웃 후보가 없어요'));
+      else for (const id of openIds) flow.append(openItem(nodes, id, { pushed: id === pushedId, evalTag }));
+      return el('div.open-pipe', {}, flow,
+        el('div.pipe__note', {}, '이 중 h가 가장 작은 이웃으로 옮겨 가요'));
     }
-    const flow = el('div.open-flow');
 
-    // 큐든 스택이든 가로 띠로 그려 화면 높이에 잘리지 않게 한다.
-    // 언제나 '다음에 나갈 것'이 왼쪽에 오도록 정렬한다.
-    //   큐(FIFO): 맨 앞이 다음 → 그대로
-    //   스택(LIFO): 맨 위(마지막에 넣은 것)가 다음 → 뒤집어서 마지막을 왼쪽에
-    const display = structureKey === 'stack' ? [...openIds].reverse() : openIds;
+    const stack = structureKey === 'stack';
 
-    // 방금 넣은 항목만 초록으로 (pop/skip 장면에서는 강조 없음)
-    const pushedId = action === 'push' || action === 'init' ? highlight : null;
-    const render = (id) => flow.append(openItem(nodes, id, { pushed: id === pushedId, evalTag }));
+    // 오른쪽 끝 = 다음에 나갈 것
+    const ordered = stack ? openIds : [...openIds].reverse();
 
-    if (display.length <= HEAD + TAIL + 1) {
-      display.forEach(render);
+    const body = el('div.pipe__body');
+    if (ordered.length === 0) {
+      body.append(el('div.open-empty', {}, 'OPEN이 비었어요 (대기 목록 없음)'));
     } else {
-      display.slice(0, HEAD).forEach(render);
-      flow.append(el('span.open-ellipsis', {}, `… ${display.length - HEAD - TAIL}개 더 …`));
-      display.slice(-TAIL).forEach(render);
+      // 방금 넣은 항목만 초록으로 (pop/skip 장면에서는 강조 없음)
+      const pushedId = action === 'push' || action === 'init' ? highlight : null;
+      const nextId = ordered[ordered.length - 1];   // 오른쪽 끝
+      const shown = ordered.length <= MAX_IN_PIPE ? ordered : ordered.slice(-MAX_IN_PIPE);
+      if (ordered.length > MAX_IN_PIPE) {
+        body.append(el('span.pipe__more', {}, `…${ordered.length - MAX_IN_PIPE}개 더`));
+      }
+      for (const id of shown) {
+        body.append(openItem(nodes, id, { pushed: id === pushedId, next: id === nextId, evalTag }));
+      }
     }
-    return flow;
+
+    const inCap = el('div.pipe__cap.pipe__cap--in', {},
+      el('span.pipe__arrow', {}, '➜'),
+      el('span.pipe__word', {}, '넣기 push'));
+    const outCap = el('div.pipe__cap.pipe__cap--out', {},
+      el('span.pipe__arrow', {}, '➜'),
+      el('span.pipe__word', {}, '꺼내기 pop'));
+
+    if (stack) {
+      // 스택: 왼쪽은 막힌 바닥, 오른쪽 한 곳에서 넣고 꺼낸다
+      return el('div.open-pipe.open-pipe--stack', {},
+        el('div.pipe', {},
+          el('div.pipe__cap.pipe__cap--floor', {}, el('span.pipe__word', {}, '바닥 막힘')),
+          body,
+          el('div.pipe__cap.pipe__cap--out', {},
+            el('span.pipe__arrow', {}, '⬍'),
+            el('span.pipe__word', {}, '넣고 꺼내는 곳')),
+        ),
+        pipeNote(structureKey, evalTag, nodes, openIds),
+      );
+    }
+    return el('div.open-pipe', {},
+      el('div.pipe', {}, inCap, body, outCap),
+      pipeNote(structureKey, evalTag, nodes, openIds),
+    );
+  }
+
+  /** 관 아래 한 줄 설명 — 지금 무엇이 왜 다음인지 (자료구조 탭의 안내와 같은 결) */
+  function pipeNote(structureKey, evalTag, nodes, openIds) {
+    if (openIds.length === 0) return null;
+    if (structureKey === 'stack') {
+      return el('div.pipe__note', {}, '마지막에 넣은 것이 먼저 나가요 (LIFO) — 오른쪽 끝이 다음 차례');
+    }
+    if (structureKey === 'priority') {
+      const front = nodes[openIds[0]];
+      const val = evalTag === 'f' ? `f=${front.f}` : `h=${front.h}`;
+      return el('div.pipe__note.pipe__note--live', {},
+        `오른쪽 끝(${val})이 가장 작아요 → 다음에 나갑니다 (pop)`);
+    }
+    return el('div.pipe__note', {}, '먼저 들어온 것이 먼저 나가요 (FIFO) — 오른쪽 끝이 다음 차례');
   }
 
   function draw(viewData) {
@@ -128,7 +184,6 @@ export function mountDataPanel(root, store, player) {
       return;
     }
 
-    const endLabel = endLabelFor(algo.structure, algo.evalTag);
     const show = lessonAt(state.lessonStep).show;
 
     fill(body,
@@ -146,7 +201,7 @@ export function mountDataPanel(root, store, player) {
             : el('span.closed-chip', { title: '이미 확장을 마쳐 다시 보지 않는 노드' },
                 `CLOSED ${viewData.closedSize}개`),
         ),
-        el('div.open-wrap', {}, renderOpen(viewData, algo.structure, algo.evalTag), endLabel),
+        el('div.open-wrap', {}, renderPipe(viewData, algo.structure, algo.evalTag)),
       ) : null,
       // 아래: 탐색 트리
       show.tree ? el('div.ds-section.ds-section--tree', {},
@@ -196,21 +251,6 @@ export function mountDataPanel(root, store, player) {
       el('span', {}, el('i.swatch.swatch--path'), '해 경로'),
     );
   }
-}
-
-/** 구조에 맞는 양 끝 안내 문구 */
-function endLabelFor(structure, evalTag) {
-  const evalName = evalTag === 'f' ? 'f' : evalTag === 'h' ? 'h' : '평가값';
-  if (structure === 'stack') {
-    return el('div.open-end-label', {}, el('span', {}, '← 맨 위 = 다음에 나감'), el('span', {}, '먼저 들어온 것 →'));
-  }
-  if (structure === 'priority') {
-    return el('div.open-end-label', {}, el('span', {}, `← ${evalName} 작음 = 다음에 나감`), el('span', {}, `${evalName} 큼 →`));
-  }
-  if (structure === 'single') {
-    return el('div.open-end-label', {}, el('span', {}, '이 중 h가 가장 작은 이웃으로 옮깁니다'), el('span', {}, ''));
-  }
-  return el('div.open-end-label', {}, el('span', {}, '← 다음에 나감'), el('span', {}, '나중에 들어옴 →'));
 }
 
 /** 부모와 견주어 이번에 움직인 칸(강조용)을 찾는다 */
