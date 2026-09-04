@@ -26,6 +26,9 @@ const COUNTERS = [
 /** OPEN이 아주 길 때 화면이 느려지지 않도록 출구 쪽만 보여 준다 (요구사항 7.3.2) */
 const MAX_IN_PIPE = 16;
 
+/** CLOSED가 많이 쌓였을 때 방금 닫힌 쪽(뒤)만 보여 준다 */
+const MAX_IN_CLOSED = 12;
+
 export function mountDataPanel(root, store, player) {
   const body = el('div.panel__body');
   const counterValues = new Map();
@@ -150,6 +153,49 @@ export function mountDataPanel(root, store, player) {
     return el('div.pipe__note', {}, '먼저 들어온 것이 먼저 나가요 (FIFO) — 오른쪽 끝이 다음 차례');
   }
 
+  /**
+   * CLOSED(닫힌 목록)를 "쌓이는 상자"로 그린다 (요청: OPEN뿐 아니라 CLOSED도 시각화).
+   *
+   * OPEN에서 꺼내(pop) 확장을 마친 노드는 CLOSED로 옮겨져 여기 쌓인다.
+   * 방금 옮겨 온 노드(closedIds의 마지막)는 확장(make) 장면에서 주황으로 강조해
+   * "OPEN → CLOSED"로 자료가 이동하는 순간을 눈으로 보게 한다.
+   */
+  function renderClosed(viewData, evalTag) {
+    const { closedIds, nodes, action, node: currentNode } = viewData;
+    // 방금 확장을 마쳐 CLOSED로 막 옮겨진 노드 = 그 장면에서 확장 중인 노드(current).
+    // make/limit 장면에서만 강조해 "OPEN → CLOSED"로 옮겨지는 순간을 보인다.
+    const justClosedId = (action === 'make' || action === 'limit') && currentNode ? currentNode.id : null;
+
+    const box = el('div.closed-box__body');
+    if (closedIds.length === 0) {
+      box.append(el('div.closed-empty', {}, '아직 닫힌 노드가 없어요 — 노드를 확장하면 여기에 쌓여요'));
+    } else {
+      const shown = closedIds.length <= MAX_IN_CLOSED ? closedIds : closedIds.slice(-MAX_IN_CLOSED);
+      if (closedIds.length > MAX_IN_CLOSED) {
+        box.append(el('span.closed-more', {}, `…먼저 닫힌 ${closedIds.length - MAX_IN_CLOSED}개`));
+      }
+      for (const id of shown) {
+        const node = nodes[id];
+        const tag = evalTag === 'f' ? `f=${node.f}` : evalTag === 'h' ? `h=${node.h}` : `g=${node.depth}`;
+        const fresh = id === justClosedId;
+        box.append(el(`div.closed-item${fresh ? '.closed-item--fresh' : ''}`, {
+          title: `이미 확장을 마친 노드 · 깊이 ${node.depth} · 다시 보지 않아요`,
+        },
+          miniBoard(node.state, { moved: movedCell(nodes, node) }),
+          el('span.open-item__tag', {}, tag),
+        ));
+      }
+    }
+
+    return el('div.closed-box', {},
+      el('div.closed-box__flow', {},
+        el('span.closed-box__arrow', {}, '⬇'),
+        el('span', {}, 'OPEN에서 꺼내 확장을 마친 노드가 여기 쌓여요')),
+      box,
+      el('div.pipe__note', {}, '집합(set)이라 순서는 없어요 — 이미 본 배치를 다시 안 보려고 모아 둡니다'),
+    );
+  }
+
   function draw(viewData) {
     const state = store.get();
     const algo = findById(ALGORITHMS, state.algorithmId);
@@ -197,11 +243,23 @@ export function mountDataPanel(root, store, player) {
                 ` · ${structure.name} · ${viewData.openIds.length}개`),
           el('span.topbar__spacer'),
           legendInline(),
-          algo.structure === 'single' ? null
-            : el('span.closed-chip', { title: '이미 확장을 마쳐 다시 보지 않는 노드' },
-                `CLOSED ${viewData.closedSize}개`),
         ),
         el('div.open-wrap', {}, renderPipe(viewData, algo.structure, algo.evalTag)),
+      ) : null,
+      // 가운데: CLOSED(닫힌 목록) — OPEN에서 옮겨 온 노드가 쌓이는 것을 함께 보여 준다.
+      // 경로만 확인하는 깊이 제한·반복 심화는 CLOSED를 두지 않으므로 그 사실을 알려 준다.
+      show.open && algo.structure !== 'single' ? el('div.ds-section', {},
+        el('div.inspect', {},
+          el('span', {}, el('strong', {}, 'CLOSED'), ' (닫힌 목록)',
+            algo.pathOnly ? ' · 안 씀' : ` · 집합 · ${viewData.closedSize}개`),
+          el('span.topbar__spacer'),
+          el('span.panel__hint', {}, '이미 확장을 마쳐 다시 보지 않는 노드'),
+        ),
+        algo.pathOnly
+          ? el('div.closed-box__body', {},
+              el('div.closed-empty', {},
+                '이 방식은 CLOSED(전역 방문표)를 두지 않아요 — 대신 "지금 내려온 경로"에 같은 배치가 있는지만 확인합니다.'))
+          : renderClosed(viewData, algo.evalTag),
       ) : null,
       // 아래: 탐색 트리
       show.tree ? el('div.ds-section.ds-section--tree', {},
