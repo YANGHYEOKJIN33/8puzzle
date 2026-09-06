@@ -33,6 +33,10 @@ export function mountDataPanel(root, store, player) {
   const body = el('div.panel__body');
   const counterValues = new Map();
 
+  // 한 화면에 정보가 많으면 혼란스러우니, 트리가 있는 쪽에서는 [자료구조 | 탐색 트리] 탭으로
+  // 하나만 보여 준다. 학습자의 선택은 쪽을 옮겨도 기억하도록 패널 지역 변수로 둔다.
+  let dataTab = 'struct';   // 'struct'(OPEN·CLOSED) | 'tree'
+
   const foot = el('div.panel__foot', {},
     el('div.counters', {},
       COUNTERS.map((counter) => {
@@ -208,8 +212,9 @@ export function mountDataPanel(root, store, player) {
     }
 
     if (viewData.empty) {
+      const show = lessonAt(state.lessonStep).show;
       fill(body,
-        structurePicker(),
+        show.picker ? structurePicker() : null,
         el('div.placeholder', {},
           el('strong', {}, '아직 실행 전입니다'),
           '아래 ', el('strong', { style: 'color:var(--current)' }, '▶ 재생'),
@@ -231,44 +236,74 @@ export function mountDataPanel(root, store, player) {
     }
 
     const show = lessonAt(state.lessonStep).show;
+    const hasTree = Boolean(show.tree);
+    const tab = hasTree ? dataTab : 'struct';   // 트리 탭이 없는 쪽은 늘 자료구조
 
-    fill(body,
-      show.picker ? structurePicker() : null,
-      // 위: OPEN(대기 목록)
-      show.open ? el('div.ds-section', {},
-        el('div.inspect', {},
-          algo.structure === 'single'
-            ? el('span', {}, el('strong', {}, '이웃 노드 후보'), ` · ${viewData.openIds.length}개`)
-            : el('span', {}, el('strong', {}, 'OPEN 리스트'), ' (대기 목록)',
-                ` · ${structure.name} · ${viewData.openIds.length}개`),
-          el('span.topbar__spacer'),
-          legendInline(),
-        ),
-        el('div.open-wrap', {}, renderPipe(viewData, algo.structure, algo.evalTag)),
-      ) : null,
-      // 가운데: CLOSED(닫힌 목록) — OPEN에서 옮겨 온 노드가 쌓이는 것을 함께 보여 준다.
-      // 경로만 확인하는 깊이 제한·반복 심화는 CLOSED를 두지 않으므로 그 사실을 알려 준다.
-      show.open && algo.structure !== 'single' ? el('div.ds-section', {},
-        el('div.inspect', {},
-          el('span', {}, el('strong', {}, 'CLOSED'), ' (닫힌 목록)',
-            algo.pathOnly ? ' · 안 씀' : ` · 집합 · ${viewData.closedSize}개`),
-          el('span.topbar__spacer'),
-          el('span.panel__hint', {}, '이미 확장을 마쳐 다시 보지 않는 노드'),
-        ),
-        algo.pathOnly
-          ? el('div.closed-box__body', {},
-              el('div.closed-empty', {},
-                '이 방식은 CLOSED(전역 방문표)를 두지 않아요 — 대신 "지금 내려온 경로"에 같은 배치가 있는지만 확인합니다.'))
-          : renderClosed(viewData, algo.evalTag),
-      ) : null,
-      // 아래: 탐색 트리
-      show.tree ? el('div.ds-section.ds-section--tree', {},
-        el('div.inspect', {},
-          el('span', {}, el('strong', {}, '탐색 트리'), ' (Search Tree)'),
-          el('span.topbar__spacer'),
-          el('span.panel__hint', {}, '지금까지 만든 노드를 부모–자식으로 이은 그림')),
-        renderTree(viewData, algo.evalTag),
-      ) : null,
+    const content = [];
+    if (show.picker) content.push(structurePicker());
+    if (hasTree) content.push(viewTabs(tab));
+
+    if (tab === 'tree') {
+      content.push(treeSection(viewData, algo));
+    } else {
+      if (show.open) content.push(openSection(viewData, algo, structure));
+      if (show.closed && algo.structure !== 'single') content.push(closedSection(viewData, algo));
+    }
+    fill(body, ...content);
+  }
+
+  /** [자료구조 | 탐색 트리] 탭 — 한 번에 하나만 보여 화면을 단순하게 유지한다 */
+  function viewTabs(active) {
+    const mk = (id, label, hint) => el('button.pill.dataview-tab', {
+      type: 'button', role: 'tab', 'aria-selected': String(active === id), title: hint,
+      onclick: () => { if (dataTab !== id) { dataTab = id; draw(player.view()); } },
+    }, label);
+    return el('div.dataview-tabs', { role: 'tablist', 'aria-label': '보기 전환' },
+      mk('struct', '자료구조', 'OPEN 리스트와 CLOSED'),
+      mk('tree', '탐색 트리', '지금까지 만든 노드를 부모–자식으로 이은 그림'));
+  }
+
+  /** OPEN(대기 목록) 구역 */
+  function openSection(viewData, algo, structure) {
+    return el('div.ds-section', {},
+      el('div.inspect', {},
+        algo.structure === 'single'
+          ? el('span', {}, el('strong', {}, '이웃 노드 후보'), ` · ${viewData.openIds.length}개`)
+          : el('span', {}, el('strong', {}, 'OPEN 리스트'), ' (대기 목록)',
+              ` · ${structure.name} · ${viewData.openIds.length}개`),
+        el('span.topbar__spacer'),
+        legendInline(),
+      ),
+      el('div.open-wrap', {}, renderPipe(viewData, algo.structure, algo.evalTag)),
+    );
+  }
+
+  /** CLOSED(닫힌 목록) 구역 — OPEN에서 옮겨 온 노드가 쌓이는 것을 보여 준다.
+   *  경로만 확인하는 깊이 제한·반복 심화는 CLOSED를 두지 않으므로 그 사실을 알려 준다. */
+  function closedSection(viewData, algo) {
+    return el('div.ds-section', {},
+      el('div.inspect', {},
+        el('span', {}, el('strong', {}, 'CLOSED'), ' (닫힌 목록)',
+          algo.pathOnly ? ' · 안 씀' : ` · 집합 · ${viewData.closedSize}개`),
+        el('span.topbar__spacer'),
+        el('span.panel__hint', {}, '이미 확장을 마쳐 다시 보지 않는 노드'),
+      ),
+      algo.pathOnly
+        ? el('div.closed-box__body', {},
+            el('div.closed-empty', {},
+              '이 방식은 CLOSED(전역 방문표)를 두지 않아요 — 대신 "지금 내려온 경로"에 같은 배치가 있는지만 확인합니다.'))
+        : renderClosed(viewData, algo.evalTag),
+    );
+  }
+
+  /** 탐색 트리 구역 */
+  function treeSection(viewData, algo) {
+    return el('div.ds-section.ds-section--tree', {},
+      el('div.inspect', {},
+        el('span', {}, el('strong', {}, '탐색 트리'), ' (Search Tree)'),
+        el('span.topbar__spacer'),
+        el('span.panel__hint', {}, '지금까지 만든 노드를 부모–자식으로 이은 그림')),
+      renderTree(viewData, algo.evalTag),
     );
   }
 

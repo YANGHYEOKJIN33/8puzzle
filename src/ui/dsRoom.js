@@ -16,6 +16,7 @@ import { el, fill } from './dom.js';
 import { DS_KINDS, dsKind, push, pop, nextOutIndex } from '../core/structures.js';
 import { dsLessonAt } from '../app/dsLesson.js';
 import { STRUCTURE_CHOICES } from '../app/config.js';
+import { lessonIndexById } from '../app/lesson.js';
 
 const LABELS = 'ABCDEFGHIJKLMN';
 const KIND_IDS = DS_KINDS.map((k) => k.id);
@@ -336,7 +337,7 @@ export function mountDsRoom(root, store) {
                 el('div.dsbridge__why', {}, choice.tip)),
               el('button.pill.ctrl--primary', {
                 type: 'button',
-                onclick: () => store.set({ mode: 'search', algorithmId: choice.algo, lessonStep: 3 }),
+                onclick: () => store.set({ mode: 'search', algorithmId: choice.algo, lessonStep: lessonIndexById('compare') }),
               }, '이 탐색 보러 가기'),
             );
           })),

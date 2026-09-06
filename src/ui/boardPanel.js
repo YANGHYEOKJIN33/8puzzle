@@ -128,10 +128,15 @@ export function mountBoardPanel(root, store, player) {
       : el('p.panel__hint', {}, '위쪽 ⏭ 한 단계를 눌러 보세요.'));
 
     // 판 아래 보조 그림 — 쪽마다 다르다
-    const show = lessonAt(state.lessonStep).show;
+    const step = lessonAt(state.lessonStep);
+    const show = step.show;
+    // 2쪽(상태공간)은 "이웃 상태", 3쪽(확장)은 "자식 노드·확장"으로 말을 달리한다.
+    const kidsOpts = step.id === 'space'
+      ? { title: '이 배치에서 한 번 밀어 갈 수 있는 이웃 상태', term: '이웃' }
+      : { title: '지금 노드를 확장하면 만들어지는 자식 노드', term: 'expand' };
     fill(extra,
-      show.children ? childrenStrip(showState)          // 2쪽: 확장이 무슨 뜻인지
-      : show.codemap ? codeMap(state.exerciseId)        // 6쪽: 코드가 퍼즐의 어디인지
+      show.children ? childrenStrip(showState, kidsOpts)  // 2·3쪽: 이웃/확장이 무슨 뜻인지
+      : show.codemap ? codeMap(state.exerciseId)          // 12쪽(빈칸 채우기): 코드가 퍼즐의 어디인지
       : null);
   }
 
@@ -160,12 +165,12 @@ export function mountBoardPanel(root, store, player) {
     fill(extra, childrenStrip(hand.state, { title: '지금 판에서 갈 수 있는 다음 상태' }));
   }
 
-  /** 지금 상태에서 만들 수 있는 자식 상태들 */
-  function childrenStrip(state, { title = '지금 노드를 확장하면 만들어지는 자식 노드' } = {}) {
+  /** 지금 상태에서 만들 수 있는 자식(이웃) 상태들 */
+  function childrenStrip(state, { title = '지금 노드를 확장하면 만들어지는 자식 노드', term = 'expand' } = {}) {
     const children = expand(state);
     return el('div.kids', {},
       el('div.kids__cap', {}, title,
-        el('span.kids__term', {}, `expand · ${children.length}개`)),
+        el('span.kids__term', {}, `${term} · ${children.length}개`)),
       el('div.kids__list', {}, children.map((child) => el('div.kids__item', {},
         miniBoard(child.state, { moved: child.to }),
         el('span.kids__label', {}, child.label)))),

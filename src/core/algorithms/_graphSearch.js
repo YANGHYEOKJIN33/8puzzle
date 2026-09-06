@@ -14,15 +14,18 @@ import { Recorder } from '../trace.js';
  * 의사코드 줄 번호 (1부터). BFS·DFS의 의사코드가 이 번호에 맞춰져 있다.
  * 화면은 프레임의 line 값으로 이 줄을 강조한다.
  */
+// 의사코드 줄 번호. 순서도의 도형과 1:1로 맞춘다(요청 #6: 순서도↔의사코드 일치).
+// "n을 CLOSED에 넣는다"와 "자식들을 만든다"는 순서도의 '확장' 도형 하나에 대응하므로
+// 의사코드에서도 한 줄(6)로 합쳤다. 그래서 CLOSE와 MAKE가 같은 줄을 가리킨다.
 export const LINE = Object.freeze({
-  INIT: 1,   // OPEN ← [시작 노드]
+  INIT: 1,   // OPEN ← [시작 노드]  (2줄: CLOSED ← ∅ 는 강조 대상 아님)
   LOOP: 3,   // OPEN이 비어 있지 않은 동안 반복
   POP:  4,   // n ← OPEN에서 꺼낸다
   GOAL: 5,   // n이 목표라면 성공
-  CLOSE: 6,  // n을 CLOSED에 넣는다
-  MAKE: 7,   // n의 자식들을 만든다
-  PUSH: 8,   // 자식을 OPEN에 넣는다 (이미 있으면 건너뛴다)
-  FAIL: 9,   // OPEN이 비었다 → 실패
+  CLOSE: 6,  // n을 CLOSED에 넣고, 자식들을 만든다 (확장)
+  MAKE: 6,   // (같은 줄)
+  PUSH: 7,   // 자식을 OPEN에 넣는다 (이미 있으면 건너뛴다)
+  FAIL: 8,   // OPEN이 비었다 → 실패
 });
 
 /**

@@ -98,7 +98,7 @@ export function buildFlowchart(structure) {
 
   // 도형들
   const boxes = [
-    box('start',      'terminal', cx, rows[0], bw, bh, '시작 · OPEN에 시작 노드'),
+    box('start',      'terminal', cx, rows[0], bw, bh, ['시작 · OPEN ← [시작 노드]', 'CLOSED ← ∅ (빈 집합)']),
     box('checkEmpty', 'diamond',  cx, rows[1], bw, bh + 8, 'OPEN이 비었는가?'),
     box('pop',        'process',  cx, rows[2], bw, bh,
       structure === 'priority' ? 'OPEN에서 평가값이 가장 작은 n을 꺼낸다' : `OPEN의 ${take}에서 n을 꺼낸다`),

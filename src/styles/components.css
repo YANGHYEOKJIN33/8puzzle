@@ -281,6 +281,8 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 @media (max-width: 600px) {
   .counters { grid-template-columns: repeat(2, 1fr); }
   .counter__label { white-space: nowrap; }
+  /* 좁은 화면에서는 "· 살펴본 배치" 같은 덧말을 접어 카운터가 칸을 넘지 않게 한다 */
+  .counter__sub { display: none; }
 }
 
 /* ============================================================
@@ -454,6 +456,51 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 }
 .closed-empty { color: var(--text-muted); font-size: var(--fs-sm); padding: var(--sp-3); text-align: center; }
 .closed-more { color: var(--text-muted); font-size: var(--fs-xs); white-space: nowrap; align-self: center; }
+
+/* --- 데이터 패널 보기 탭 [자료구조 | 탐색 트리] — 한 번에 하나만 보여 화면을 단순하게 --- */
+.dataview-tabs { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-2); flex: 0 0 auto; }
+.dataview-tab { font-size: var(--fs-sm); padding: var(--sp-1) var(--sp-3); }
+.dataview-tab[aria-selected="true"] {
+  background: var(--current-bg); border-color: var(--current); color: var(--current); font-weight: 700;
+}
+
+/* --- 10쪽: 순서도 '왜 이 모양인가' --- */
+.flowwhy { display: flex; gap: var(--sp-3); align-items: flex-start; height: 100%; min-height: 0; }
+.flowwhy__chart { flex: 1 1 44%; min-width: 0; align-self: stretch; }
+.flowwhy__chart svg { width: 100%; height: auto; max-height: 100%; }
+.flowwhy__side { flex: 1 1 56%; min-width: 0; max-height: 100%; overflow-y: auto; }
+.flowwhy__cap { font-weight: 700; margin-bottom: var(--sp-2); }
+.flowwhy__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.flowwhy__item {
+  display: flex; flex-direction: column; gap: 1px;
+  border-left: 3px solid var(--current); padding-left: var(--sp-2);
+}
+.flowwhy__shape { font-weight: 700; font-size: var(--fs-sm); }
+.flowwhy__why { font-size: var(--fs-sm); color: var(--text-muted); }
+
+/* --- 11쪽: 의사코드 한 줄씩 읽기 --- */
+.coderead { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.coderead__cap { font-weight: 700; margin-bottom: var(--sp-2); flex: 0 0 auto; }
+.coderead__list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  overflow-y: auto; min-height: 0;
+}
+.coderead__row {
+  display: grid; grid-template-columns: auto 1fr; column-gap: var(--sp-2); row-gap: 2px;
+  padding: var(--sp-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface);
+}
+.coderead__row--active { border-color: var(--current); background: var(--current-bg); }
+.coderead__no {
+  grid-column: 1; grid-row: 1 / span 2; align-self: start;
+  font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: var(--fs-xs);
+  border: 1px solid var(--border); border-radius: 4px; padding: 0 6px; height: fit-content;
+}
+.coderead__code { grid-column: 2; grid-row: 1; white-space: pre-wrap; font-size: var(--fs-sm); }
+.coderead__row--active .coderead__code { font-weight: 700; }
+.coderead__note { grid-column: 2; grid-row: 2; font-size: var(--fs-sm); color: var(--text-muted); }
+.coderead__hint { font-size: var(--fs-xs); color: var(--text-muted); margin: var(--sp-2) 0 0; flex: 0 0 auto; }
 
 /* 결과 배너 */
 .result {
@@ -980,7 +1027,8 @@ body.show-slim .action-card__detail { display: none; }
 /* ============================================================
    레슨 막대 부품
    ============================================================ */
-.lesson__dots { display: flex; gap: 4px; }
+/* 14쪽으로 늘어난 동그라미가 좁은 화면에서 넘치지 않게 줄바꿈을 허용한다 */
+.lesson__dots { display: flex; gap: 4px; flex-wrap: wrap; row-gap: 4px; min-width: 0; }
 .lesson__dot {
   width: 24px; height: 24px;
   border-radius: 999px;
@@ -999,6 +1047,13 @@ body.show-slim .action-card__detail { display: none; }
 .lesson__goal { margin: 3px 0 0; font-size: var(--fs-md); color: var(--text); }
 .lesson__todo { margin: 2px 0 0; font-size: var(--fs-sm); color: var(--text-muted); }
 .lesson__nav { min-width: 76px; }
+
+/* 14쪽으로 늘어난 진행 동그라미 — 좁은 화면에서는 작게 만들어 한 줄에 담는다.
+   (이 규칙은 .lesson__dot 기본 정의보다 뒤에 와야 우선한다) */
+@media (max-width: 600px) {
+  .lesson__dot { width: 20px; height: 20px; font-size: 10px; }
+  .lesson__dots { gap: 3px; row-gap: 3px; }
+}
 
 /* ============================================================
    순서도 + 코드 나란히 보기 (요청 1.5)

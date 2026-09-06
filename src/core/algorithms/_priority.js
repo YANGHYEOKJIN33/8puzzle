@@ -12,15 +12,16 @@
 import { expand, isGoal, key } from '../puzzle.js';
 import { Recorder } from '../trace.js';
 
+// 순서도 도형과 1:1이 되도록 CLOSED에 넣기 + 자식 만들기를 한 줄(6)로 합쳤다(요청 #6).
 export const LINE = Object.freeze({
   INIT: 1,   // OPEN ← [시작 노드]
   LOOP: 3,   // OPEN이 비어 있지 않은 동안
   POP:  4,   // 평가값이 가장 작은 노드를 꺼낸다
   GOAL: 5,   // 목표인가
-  CLOSE: 6,  // CLOSED에 넣는다
-  MAKE: 7,   // 자식들을 만든다
-  PUSH: 8,   // 자식을 평가값 자리에 끼워 넣는다
-  FAIL: 9,
+  CLOSE: 6,  // CLOSED에 넣고, 자식들을 만든다
+  MAKE: 6,   // (같은 줄)
+  PUSH: 7,   // 자식을 평가값 자리에 끼워 넣는다
+  FAIL: 8,
 });
 
 /**
