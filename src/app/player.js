@@ -13,6 +13,21 @@ import { runAlgorithm } from '../core/algorithms/index.js';
 import { getHeuristic } from '../core/heuristics.js';
 import { findById } from './state.js';
 
+/**
+ * 이 알고리즘·난이도에서 주 화면 데모를 몇 번 확장까지 보여 줄지 정한다.
+ *
+ * 대부분 알고리즘은 끝까지(MAX_EXPANSIONS 한도) 돌려 해를 찾는다.
+ * 스택 탐색(DFS)만은 8-퍼즐에서 한 갈래로 끝없이 파고들어 해를 못 찾으므로
+ * 짧게 잘라 "파고드는 모습"만 보여 준다(algo.demoLimit). 이때 난이도가
+ * 올라갈수록(목표가 깊을수록) 조금 더 길게 보여, 난이도를 바꾸면 진행 횟수도
+ * 실제로 달라지게 한다: 멈춤 지점 = demoLimit + 난이도순번 × demoStep.
+ */
+function demoLimitFor(algo, preset) {
+  if (algo.demoLimit == null) return MAX_EXPANSIONS;
+  const rank = preset ? Math.max(0, PRESETS.findIndex((p) => p.id === preset.id)) : 0;
+  return algo.demoLimit + rank * (algo.demoStep ?? 0);
+}
+
 /** 델타를 0번부터 index번 프레임까지 적용해 그 시점의 OPEN(노드 id 배열)을 만든다 */
 function openAt(frames, index) {
   const open = [];
@@ -31,6 +46,25 @@ function openAt(frames, index) {
     }
   }
   return open;
+}
+
+/**
+ * 0번부터 index번 프레임까지 훑어 지금까지 CLOSED에 쌓인 노드 id를 닫힌 순서대로 모은다.
+ * 노드는 확장을 마치는 순간(closedSize가 1 늘어나는 프레임의 current 노드) CLOSED로 옮겨진다.
+ * 그래서 "OPEN에서 꺼낸 노드가 CLOSED에 쌓이는" 움직임을 화면에서 그대로 보여 줄 수 있다.
+ * (경로만 확인하는 DLS·IDS·언덕 등반은 CLOSED를 쓰지 않아 closedSize가 늘 0 → 빈 배열.)
+ */
+function closedAt(frames, index) {
+  const ids = [];
+  const seen = new Set();
+  for (let i = 0; i <= index; i += 1) {
+    const f = frames[i];
+    if (f.currentId !== null && f.closedSize > ids.length && !seen.has(f.currentId)) {
+      ids.push(f.currentId);
+      seen.add(f.currentId);
+    }
+  }
+  return ids;
 }
 
 /** 해가 있으면 시작→목표 경로에 놓인 노드 id들의 집합을 만든다 (요구사항 4.3.4) */
@@ -69,6 +103,7 @@ export function createPlayer(store) {
       total: frames.length,
       node,
       openIds: openAt(frames, index),
+      closedIds: closedAt(frames, index),
       closedSize: frame.closedSize,
       counters: frame.counters,
       line: frame.line,
@@ -126,8 +161,10 @@ export function createPlayer(store) {
       const algo = findById(ALGORITHMS, state.algorithmId);
       return this.loadWith(state.algorithmId, preset ? preset.state : null, {
         heuristic: getHeuristic(state.heuristicId),
-        // 폭주하는 알고리즘(스택 탐색)은 주 화면에서 짧게 보여 준다
-        limit: algo.demoLimit ?? MAX_EXPANSIONS,
+        // 폭주하는 알고리즘(스택 탐색)은 주 화면에서 짧게 보여 준다.
+        // 난이도가 올라갈수록(목표가 깊을수록) 파고드는 모습을 조금 더 길게 —
+        // 그래야 난이도를 바꿨을 때 진행 횟수가 실제로 달라진다.
+        limit: demoLimitFor(algo, preset),
       });
     },
 

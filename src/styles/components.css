@@ -428,6 +428,33 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   font-variant-numeric: tabular-nums;
 }
 
+/* --- CLOSED(닫힌 목록)를 "쌓이는 상자"로 (요청: OPEN처럼 CLOSED도 시각화) --- */
+.closed-box { display: flex; flex-direction: column; gap: 3px; margin-top: var(--sp-2); }
+.closed-box__flow {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--fs-xs); color: var(--text-muted);
+}
+.closed-box__arrow { color: var(--closed); font-size: calc(1.1rem * var(--scale)); line-height: 1; }
+.closed-box__body {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2);
+  min-height: 66px;
+  overflow-x: auto;
+  border: 2px dashed var(--closed);
+  border-radius: var(--radius);
+  background: var(--closed-bg);
+}
+.closed-item { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; }
+.closed-item .mini { opacity: .82; }
+/* 방금 OPEN에서 옮겨 온 노드 — 주황(자료구조 탭의 "방금 나간 것"과 같은 뜻) */
+.closed-item--fresh { animation: open-pop .32s cubic-bezier(.34, 1.4, .5, 1); }
+.closed-item--fresh .mini { outline: 2px solid var(--path); box-shadow: 0 0 0 4px var(--path-bg); opacity: 1; }
+.closed-item--fresh::after {
+  content: '방금 닫힘'; font-size: 10px; font-weight: 700; color: var(--path); line-height: 1;
+}
+.closed-empty { color: var(--text-muted); font-size: var(--fs-sm); padding: var(--sp-3); text-align: center; }
+.closed-more { color: var(--text-muted); font-size: var(--fs-xs); white-space: nowrap; align-self: center; }
+
 /* 결과 배너 */
 .result {
   padding: var(--sp-2) var(--sp-3);

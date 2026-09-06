@@ -81,7 +81,13 @@ export const ALGORITHMS = [
     ready: true,
     // 8-퍼즐에서 스택 탐색은 어떤 입력이든 한 갈래로 끝없이 파고든다.
     // 주 화면에서는 그 "파고드는" 모습만 짧게 보여 주고 멈춘다(비교 화면은 전체 사용).
-    demoLimit: 60,
+    //
+    // demoLimit 하나로만 멈추면 어떤 난이도를 골라도 멈추는 지점이 같아
+    // "진행 횟수가 늘 똑같다"고 오해하게 된다. 그래서 난이도가 올라갈수록
+    // (목표가 더 깊이 있을수록) 파고드는 모습을 조금 더 길게 보여 준다.
+    // 실제 멈춤 지점 = demoLimit + (난이도 순번) × demoStep  (player.load 참고).
+    demoLimit: 12,
+    demoStep: 16,
     props: { complete: '아님 (무한히 깊어짐)', optimal: '아님', time: 'O(b^m)', space: 'O(b·m)' },
   },
   {
@@ -89,6 +95,8 @@ export const ALGORITHMS = [
     family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '깊이에 한계를 두어 무한히 내려가는 것을 막는다',
     ready: true,
+    // CLOSED(전역 방문표)를 쓰지 않고 "지금 내려온 경로"만 확인한다 → CLOSED 상자는 비운다.
+    pathOnly: true,
     props: { complete: '조건부 (해가 L 이내)', optimal: '아님', time: 'O(b^L)', space: 'O(b·L)' },
   },
   {
@@ -96,6 +104,8 @@ export const ALGORITHMS = [
     family: 'blind', structure: 'stack', evalTag: 'depth',
     point: '한계를 1씩 늘려가며 반복한다 · BFS의 최단성 + DFS의 적은 메모리',
     ready: true,
+    // 회를 거듭하며 같은 상태를 다시 보므로 전역 CLOSED를 두지 않고 경로만 확인한다.
+    pathOnly: true,
     props: { complete: '완전함', optimal: '최적 (간선 비용이 같을 때)', time: 'O(b^d)', space: 'O(b·d)' },
   },
   {
