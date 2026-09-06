@@ -28,6 +28,17 @@ export const pseudo = Object.freeze([
   '    현재 ← 그 이웃',
 ]);
 
+/** 의사코드 줄별 설명(레슨 11쪽). pseudo와 같은 길이. */
+export const notes = Object.freeze([
+  '시작 배치를 "현재"로 삼아요. OPEN·CLOSED를 두지 않는 국소 탐색이에요.',
+  '멈출 때까지 되풀이해요.',
+  '현재가 목표면 끝!',
+  '현재의 이웃들만 만들어 각자의 h를 재요 — 멀리 안 보고 바로 옆만 봐요.',
+  'h가 가장 작은(가장 나아 보이는) 이웃을 골라요.',
+  '그 이웃이 지금보다 나아지지 않으면 멈춰요 — 되돌아가지 않아서 지역 최적에 갇힐 수 있어요(이 한계가 교훈).',
+  '더 나으면 그 이웃으로 한 걸음 옮겨요.',
+]);
+
 const LINE = { START: 1, GOAL: 3, MAKE: 4, CHOOSE: 5, STUCK: 6, MOVE: 7 };
 
 export function run(start, options = {}) {

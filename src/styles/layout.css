@@ -140,7 +140,7 @@
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
-.lesson__top { flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-2); }
+.lesson__top { flex: 0 0 auto; display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
 .lesson__text { flex: 1 1 340px; min-width: 0; }
 .lesson__navs { flex: 0 0 auto; display: flex; gap: var(--sp-2); }
 

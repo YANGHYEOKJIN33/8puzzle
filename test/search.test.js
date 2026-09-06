@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 
 import { GOAL, expand, isGoal, isSolvable, key, shuffle } from '../src/core/puzzle.js';
 import { h2 } from '../src/core/heuristics.js';
-import { runAlgorithm, READY_IDS } from '../src/core/algorithms/index.js';
+import { runAlgorithm, READY_IDS, getAlgorithm } from '../src/core/algorithms/index.js';
 import * as bfs from '../src/core/algorithms/bfs.js';
 import * as dfs from '../src/core/algorithms/dfs.js';
 import { openSequence } from '../src/core/trace.js';
@@ -42,7 +42,15 @@ test('등록소에 7가지 알고리즘이 준비되어 있다', () => {
 
 test('BFS 의사코드와 DFS 의사코드는 줄 수가 같다 (같은 뼈대)', () => {
   assert.equal(bfs.pseudo.length, dfs.pseudo.length);
-  assert.equal(bfs.pseudo.length, 9);
+  assert.equal(bfs.pseudo.length, 8);
+});
+
+test('모든 알고리즘의 줄별 설명(notes)이 의사코드 줄 수와 맞는다 (레슨 11쪽)', () => {
+  for (const id of READY_IDS) {
+    const module = getAlgorithm(id);
+    assert.ok(Array.isArray(module.notes), `${id}에 notes가 있다`);
+    assert.equal(module.notes.length, module.pseudo.length, `${id}: notes와 pseudo 줄 수 일치`);
+  }
 });
 
 test('이미 목표인 상태는 0번 밀어 푼다 (BFS·DFS 모두)', () => {

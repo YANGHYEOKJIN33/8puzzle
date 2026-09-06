@@ -37,10 +37,11 @@ mountDataPanel(qs('#panel-data'), store, player);
 mountControls(qs('#controlbar'), store, player);
 mountDsRoom(qs('#dsroom'), store);
 
-// 예측 퀴즈(학습 1단계 전용) — 코드 패널의 탭과 코드 사이에 끼워 둔다.
-// 코드 패널은 다시 그릴 때 body만 갈아 끼우므로 이 요소는 지워지지 않는다.
-const codeRoot = qs('#panel-code');
-codeRoot.insertBefore(createCoach(store, player), codeRoot.querySelector('.panel__body'));
+// 예측 퀴즈("다음에 꺼낼 노드는?") — OPEN을 보며 맞히는 것이라, OPEN이 보이는
+// 자료구조 패널(4~9쪽)에 둔다. 순서도·코드 읽기 쪽(10·11쪽)에는 나오지 않아 화면이 단순하다.
+// 데이터 패널은 다시 그릴 때 body만 갈아 끼우므로 head와 body 사이의 이 요소는 지워지지 않는다.
+const dataRoot = qs('#panel-data');
+dataRoot.insertBefore(createCoach(store, player), dataRoot.querySelector('.panel__body'));
 
 // 어느 탭인가 — 탐색 배우기 / 자료구조 배우기 (요청: 자료구조도 따로 배울 수 있게)
 store.subscribe((state) => {
@@ -61,9 +62,12 @@ store.subscribe((state) => {
   const step = lessonAt(state.lessonStep);
   qs('#workspace').dataset.layout = step.layout;
   const body = document.body;
-  for (const key of ['board', 'action', 'controls', 'open', 'tree', 'picker', 'code', 'slim', 'play', 'children', 'summary', 'codemap']) {
+  for (const key of ['board', 'action', 'controls', 'open', 'closed', 'tree', 'picker', 'code', 'slim', 'play', 'children', 'summary', 'codemap', 'coderead', 'flowwhy']) {
     body.classList.toggle(`show-${key}`, Boolean(step.show[key]));
   }
+  // 안내형 흐름 — 어떤 쪽은 그 쪽에 들어갈 때 알고리즘을 정해 준다(6쪽 BFS·7쪽 DFS·8쪽 A*).
+  // 쪽이 바뀔 때만 실행되므로(위 가드) 학습자가 직접 고른 선택과 부딪히지 않는다.
+  if (step.algo && state.algorithmId !== step.algo) store.set({ algorithmId: step.algo });
   if (state.stageId !== step.stage) store.set({ stageId: step.stage });
 });
 
