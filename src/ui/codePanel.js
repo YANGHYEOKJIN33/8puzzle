@@ -6,12 +6,14 @@
 import { el, fill } from './dom.js';
 import { ALGORITHMS, STRUCTURE_CHOICES } from '../app/config.js';
 import { findById } from '../app/state.js';
-import { lessonAt, lessonIndexById } from '../app/lesson.js';
+import { currentStep } from '../app/lesson.js';
 import { getAlgorithm } from '../core/algorithms/index.js';
 import { buildFlowchart, boxForAction } from './flowchart.js';
 import { renderFill } from './fillPanel.js';
 import { buildWritePanel } from './writePanel.js';
 import { createPyRunner } from '../app/pyRunner.js';
+import { pyMapFor } from '../app/pyMap.js';
+import { QUIZ } from '../app/quiz.js';
 
 
 export function mountCodePanel(root, store, player, { onCompare = () => {}, onGlossary = () => {} } = {}) {
@@ -30,6 +32,9 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
   // 학습 2단계(빈칸 채우기)가 기억할 값
   const fillLocal = { exerciseId: 'blind-pop', choices: {}, feedback: null, render: () => draw() };
 
+  // 이해 확인 퀴즈에서 고른 답 (문제 index → 고른 보기 index). 다시 그려도 유지.
+  const quizChoice = {};
+
   // 학습 3단계(직접 작성) 화면은 텍스트영역 유지를 위해 한 번만 만든다.
   // 실행기는 갈아 끼울 수 있다(테스트에서 window.__PY_RUNNER__로 주입).
   let writeEl = null;
@@ -47,11 +52,19 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
   function draw() {
     const state = store.get();
 
-    // 마지막 쪽: 오늘 배운 것 정리
-    if (lessonAt(state.lessonStep).show.summary) {
+    // 정리 탭: 오늘 배운 것 정리
+    if (currentStep(state).show.summary) {
       body.dataset.mode = 'flow';
       headHint.textContent = '오늘 배운 것을 한 장으로';
       fill(body, summaryView());
+      return;
+    }
+
+    // 정리 탭: 이해 확인 퀴즈
+    if (currentStep(state).show.quiz) {
+      body.dataset.mode = 'flow';
+      headHint.textContent = '문제로 이해를 확인해요';
+      renderQuiz();
       return;
     }
 
@@ -76,7 +89,7 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
     const module = getAlgorithm(algo.id);
 
     // 10쪽: 순서도만 크게 + "왜 이 모양인가" 설명 (의사코드는 옆에 두지 않는다 — 혼란 방지)
-    if (lessonAt(state.lessonStep).show.flowwhy) {
+    if (currentStep(state).show.flowwhy) {
       body.dataset.mode = 'flow';
       headHint.textContent = '순서도가 왜 이 모양인지';
       renderFlowWhy(algo);
@@ -84,10 +97,18 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
     }
 
     // 11쪽: 의사코드만 한 줄씩 + 줄별 설명 (순서도는 옆에 두지 않는다)
-    if (lessonAt(state.lessonStep).show.coderead) {
+    if (currentStep(state).show.coderead) {
       body.dataset.mode = 'flow';
       headHint.textContent = '의사코드를 한 줄씩';
       renderCodeRead(algo, module);
+      return;
+    }
+
+    // 알고리즘 ④쪽: 의사코드 ↔ 파이썬 대치
+    if (currentStep(state).show.pymap) {
+      body.dataset.mode = 'flow';
+      headHint.textContent = '의사코드와 파이썬을 나란히';
+      renderPyMap(algo, module);
       return;
     }
 
@@ -161,6 +182,66 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
     );
   }
 
+  /** 알고리즘 ④쪽 — 의사코드 한 줄 ↔ 파이썬 한 줄. 밟으면 양쪽에서 같은 줄이 켜진다. */
+  function renderPyMap(algo, module) {
+    const line = activeLine();
+    const pseudo = (module && module.pseudo) || [];
+    const map = pyMapFor(algo.id);
+    const py = map.py || [];
+    const rows = pseudo.map((ps, i) => {
+      const active = i + 1 === line;
+      const core = i === map.coreLine;
+      return el(`li.pymap__row${active ? '.pymap__row--active' : ''}${core ? '.pymap__row--core' : ''}`, {},
+        el('code.pymap__ps', {}, ps.replace(/(\S) {2,}/g, '$1 ')),
+        el('span.pymap__arrow', {}, '→'),
+        el('code.pymap__py', {}, py[i] || ''));
+    });
+    const swap = map.swap ? el('div.pymap__swap', {},
+      el('span.pymap__swaplabel', {}, `🔑 핵심 한 줄 바꿔 보기 — ${map.swap.label}`),
+      el('select.pymap__select', {
+        'aria-label': map.swap.label,
+        onchange: (e) => store.set({ mode: 'algo', algoTab: e.target.value, algoStep: 3 }),
+      }, map.swap.options.map((o) => el('option', { value: o.algoTab, selected: o.algoTab === algo.id }, o.text))),
+    ) : null;
+    fill(body,
+      el('div.pymap', {},
+        el('div.pymap__cap', {}, `🐍 ${algo.name} — 의사코드 ↔ 파이썬`),
+        el('div.pymap__legend', {}, el('span', {}, '의사코드(사람 말에 가까움)'), el('span', {}, '파이썬(컴퓨터가 실행)')),
+        el('ol.pymap__list', {}, rows),
+        map.coreWhy ? el('div.pymap__corewhy', {}, `🔑 ${map.coreWhy}`) : null,
+        swap,
+        el('p.coderead__hint', {}, '⏭ 한 단계를 누르면 양쪽에서 같은 줄이 파랗게 켜지고, 오른쪽 판·OPEN이 함께 움직여요.'),
+      ),
+    );
+  }
+
+  /** 이해 확인 퀴즈 — 답을 고르면 바로 정오답과 이유를 보여 준다. */
+  function renderQuiz() {
+    const answered = Object.keys(quizChoice).length;
+    const correct = QUIZ.reduce((n, q, i) => n + (quizChoice[i] != null && q.options[quizChoice[i]].ok ? 1 : 0), 0);
+    fill(body,
+      el('div.quiz', {},
+        el('div.quiz__cap', {}, '✅ 이해 확인'),
+        el('div.quiz__score', {}, `푼 문제 ${answered}/${QUIZ.length} · 맞힌 개수 ${correct}`),
+        ...QUIZ.map((q, i) => {
+          const chosen = quizChoice[i];
+          const done = chosen != null;
+          return el('div.quiz__item', {},
+            el('div.quiz__q', {}, `${i + 1}. ${q.q}`),
+            el('div.quiz__opts', {}, q.options.map((o, j) => {
+              const cls = done ? (o.ok ? '.quiz__opt--ok' : (j === chosen ? '.quiz__opt--no' : '')) : '';
+              return el(`button.pill.quiz__opt${cls}`, {
+                type: 'button', disabled: done,
+                onclick: () => { quizChoice[i] = j; draw(); },
+              }, o.text);
+            })),
+            done ? el('div.quiz__why', {}, (q.options[chosen].ok ? '✓ 맞았어요! ' : '✗ 다시 볼까요 — ') + q.why) : null,
+          );
+        }),
+      ),
+    );
+  }
+
   /** 마무리 정리 화면 — 수업의 "정리" 단계 */
   function summaryView() {
     const learned = [
@@ -183,18 +264,18 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
             el('th', {}, 'OPEN 자료구조'), el('th', {}, '알고리즘'), el('th', {}, '성질'))),
           el('tbody', {}, STRUCTURE_CHOICES.map((c) => {
             const algo = findById(ALGORITHMS, c.algo);
-            return el('tr.compare__row', { onclick: () => store.set({ algorithmId: c.algo, lessonStep: lessonIndexById('compare') }) },
+            return el('tr.compare__row', { onclick: () => store.set({ mode: 'algo', algoTab: c.algo, algoStep: 0 }) },
               el('td', {}, c.name, ' ', el('span.dsitem__pri', {}, c.sub)),
               el('td', {}, algo.name),
               el('td', {}, algo.props ? `${algo.props.complete} · ${algo.props.optimal}` : ''));
           })))),
-      el('p.panel__hint', {}, '표의 줄을 누르면 그 알고리즘으로 9쪽(자료구조 바꿔 비교)에 갑니다.'),
+      el('p.panel__hint', {}, '표의 줄을 누르면 그 알고리즘 탭으로 갑니다.'),
       el('h3.wrap__title', {}, '👉 더 해 볼 것'),
       el('div.wrap__actions', {},
         el('button.pill.ctrl--primary', { type: 'button', onclick: () => onCompare() }, '⚖ 7가지 알고리즘 비교하기'),
         el('button.pill', { type: 'button', onclick: () => onGlossary() }, '📖 용어 다시 보기'),
         el('button.pill', { type: 'button',
-          onclick: () => store.set({ presetId: 'hard', lessonStep: lessonIndexById('compare') }) }, '🎯 더 어려운 배치로 다시'),
+          onclick: () => store.set({ presetId: 'hard', mode: 'algo', algoStep: 0 }) }, '🎯 더 어려운 배치로 다시'),
         el('button.pill', { type: 'button',
           onclick: () => store.set({ mode: 'ds', dsStep: 0 }) }, '📦 자료구조 복습'),
       ),

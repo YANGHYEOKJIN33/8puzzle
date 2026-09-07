@@ -9,11 +9,12 @@
  * 오른쪽 끝(다음에 나갈 것)은 파랑, 방금 넣은 것은 초록으로 강조한다(요구사항 4.2.2).
  */
 import { el, fill } from './dom.js';
-import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO } from '../app/config.js';
+import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO, PRESETS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { miniBoard } from './miniBoard.js';
 import { renderTree } from './treeView.js';
-import { lessonAt } from '../app/lesson.js';
+import { currentStep } from '../app/lesson.js';
+import { h0, h1, h2 } from '../core/heuristics.js';
 
 /* 정확한 용어를 앞세우고, 쉬운 말은 괄호로 덧붙인다 (요구사항 6.1.3) */
 const COUNTERS = [
@@ -200,6 +201,35 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
+  /** 휴리스틱·평가함수 쪽 — 지금 배치에서 h0/h1/h2 값과 f=g+h를 눈으로 보인다 (탐색 기초) */
+  function renderHeuristic(viewData) {
+    // 이 쪽은 밟지 않는 정적 쪽이라 시작(init) 프레임의 node가 없다 → 지금 고른 초기 배치를 쓴다.
+    const node = viewData && !viewData.empty ? viewData.node : null;
+    const st = node ? node.state : findById(PRESETS, store.get().presetId).state;
+    const g = node ? node.g : 0;
+    const rows = [
+      { name: 'h₀ · 항상 0', v: h0(st), why: '아무 정보도 안 써요 (그냥 0)' },
+      { name: 'h₁ · 제자리 아닌 타일 수', v: h1(st), why: '자리가 틀린 타일이 몇 개인지 세요 (빈칸 제외)' },
+      { name: 'h₂ · 맨해튼 거리 합', v: h2(st), why: '타일마다 제자리까지 가로·세로 몇 칸인지 세어 모두 더해요' },
+    ];
+    fill(body,
+      el('div.heur', {},
+        el('div.heur__cap', {}, '🎯 남은 거리 어림값  h(state)'),
+        el('div.heur__row', {},
+          el('div.heur__board', {}, miniBoard(st, {}), el('span.heur__blabel', {}, '지금 배치')),
+          el('ul.heur__list', {}, rows.map((r) => el('li.heur__item', {},
+            el('strong', {}, `${r.name} = ${r.v}`),
+            el('span.heur__why', {}, r.why)))),
+        ),
+        el('div.heur__f', {},
+          el('div.heur__fcap', {}, '평가함수  f = g + h'),
+          el('div', {}, `g(온 비용) = ${g},  h₂ = ${h2(st)}  →  f = ${g + h2(st)}`),
+          el('div.heur__note', {}, '최상우선은 h만 보고, A*는 f = g + h 가 가장 작은 노드부터 꺼내요. h가 똑똑할수록 덜 헤매요.'),
+        ),
+      ),
+    );
+  }
+
   function draw(viewData) {
     const state = store.get();
     const algo = findById(ALGORITHMS, state.algorithmId);
@@ -211,8 +241,11 @@ export function mountDataPanel(root, store, player) {
       counterValues.get(counter.id).textContent = v;
     }
 
+    // 휴리스틱·평가함수 쪽(탐색 기초) — OPEN 대신 h·f 값을 보여 준다
+    if (currentStep(state).show.heuristic) { renderHeuristic(viewData); return; }
+
     if (viewData.empty) {
-      const show = lessonAt(state.lessonStep).show;
+      const show = currentStep(state).show;
       fill(body,
         show.picker ? structurePicker() : null,
         el('div.placeholder', {},
@@ -235,7 +268,7 @@ export function mountDataPanel(root, store, player) {
       return;
     }
 
-    const show = lessonAt(state.lessonStep).show;
+    const show = currentStep(state).show;
     const hasTree = Boolean(show.tree);
     const tab = hasTree ? dataTab : 'struct';   // 트리 탭이 없는 쪽은 늘 자료구조
 

@@ -7,7 +7,7 @@ import { el, fill } from './dom.js';
 import { GOAL, PRESETS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { createAnimatedBoard } from './animatedBoard.js';
-import { lessonAt } from '../app/lesson.js';
+import { currentStep } from '../app/lesson.js';
 import { expand, isGoal } from '../core/puzzle.js';
 import { findExercise } from '../app/exercises.js';
 import { miniBoard } from './miniBoard.js';
@@ -45,7 +45,7 @@ export function mountBoardPanel(root, store, player) {
   let hand = null;          // { state, moves }
   const anim = createAnimatedBoard({ onTile: (value) => slideTile(value) });
 
-  function handMode() { return Boolean(lessonAt(store.get().lessonStep).show.play); }
+  function handMode() { return Boolean(currentStep(store.get()).show.play); }
 
   function resetHand(state) { hand = { state: state.slice(), moves: 0 }; }
 
@@ -122,13 +122,13 @@ export function mountBoardPanel(root, store, player) {
 
     const onPath = node && started && v.pathIds.has(node.id) && v.finished;
     fill(banner, onPath ? el('div.result.result--found', {}, '이 배치는 해 경로 위에 있습니다.') : null);
-    const showControls = Boolean(lessonAt(state.lessonStep).show.controls);
+    const showControls = Boolean(currentStep(state).show.controls);
     fill(foot, !showControls ? null
       : started ? progress(v)
       : el('p.panel__hint', {}, '위쪽 ⏭ 한 단계를 눌러 보세요.'));
 
     // 판 아래 보조 그림 — 쪽마다 다르다
-    const step = lessonAt(state.lessonStep);
+    const step = currentStep(state);
     const show = step.show;
     // 2쪽(상태공간)은 "이웃 상태", 3쪽(확장)은 "자식 노드·확장"으로 말을 달리한다.
     const kidsOpts = step.id === 'space'

@@ -457,6 +457,21 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .closed-empty { color: var(--text-muted); font-size: var(--fs-sm); padding: var(--sp-3); text-align: center; }
 .closed-more { color: var(--text-muted); font-size: var(--fs-xs); white-space: nowrap; align-self: center; }
 
+/* --- 휴리스틱·평가함수 쪽 --- */
+.heur { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-2); }
+.heur__cap { font-weight: 700; font-size: var(--fs-md); }
+.heur__row { display: flex; gap: var(--sp-4); align-items: flex-start; flex-wrap: wrap; }
+.heur__board { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; }
+.heur__board .mini { width: 96px; height: 96px; }
+.heur__blabel { font-size: var(--fs-xs); color: var(--text-muted); }
+.heur__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); flex: 1 1 260px; min-width: 0; }
+.heur__item { display: flex; flex-direction: column; gap: 1px; border-left: 3px solid var(--current); padding-left: var(--sp-2); }
+.heur__item strong { font-size: var(--fs-md); }
+.heur__why { font-size: var(--fs-sm); color: var(--text-muted); }
+.heur__f { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); padding: var(--sp-2) var(--sp-3); }
+.heur__fcap { font-weight: 700; margin-bottom: 2px; }
+.heur__note { font-size: var(--fs-sm); color: var(--text-muted); margin-top: 2px; }
+
 /* --- 데이터 패널 보기 탭 [자료구조 | 탐색 트리] — 한 번에 하나만 보여 화면을 단순하게 --- */
 .dataview-tabs { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-2); flex: 0 0 auto; }
 .dataview-tab { font-size: var(--fs-sm); padding: var(--sp-1) var(--sp-3); }
@@ -501,6 +516,38 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .coderead__row--active .coderead__code { font-weight: 700; }
 .coderead__note { grid-column: 2; grid-row: 2; font-size: var(--fs-sm); color: var(--text-muted); }
 .coderead__hint { font-size: var(--fs-xs); color: var(--text-muted); margin: var(--sp-2) 0 0; flex: 0 0 auto; }
+
+/* --- 알고리즘 ④쪽: 의사코드 ↔ 파이썬 대치 --- */
+.pymap { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.pymap__cap { font-weight: 700; margin-bottom: var(--sp-1); flex: 0 0 auto; }
+.pymap__legend { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--text-muted); margin-bottom: var(--sp-2); flex: 0 0 auto; }
+.pymap__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; min-height: 0; }
+.pymap__row {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--sp-2); align-items: center;
+  padding: var(--sp-1) var(--sp-2); border: 1px solid transparent; border-radius: var(--radius-sm);
+}
+.pymap__row--active { border-color: var(--current); background: var(--current-bg); }
+.pymap__ps, .pymap__py { white-space: pre-wrap; font-size: var(--fs-sm); min-width: 0; }
+.pymap__py { font-family: var(--font-code); color: var(--current); }
+.pymap__arrow { color: var(--text-muted); }
+.pymap__row--core { box-shadow: inset 3px 0 0 var(--path); }
+.pymap__row--core .pymap__py { font-weight: 700; }
+.pymap__corewhy { margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--path); font-weight: 600; flex: 0 0 auto; }
+.pymap__swap { margin-top: var(--sp-2); display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; flex: 0 0 auto; }
+.pymap__swaplabel { font-weight: 700; font-size: var(--fs-sm); }
+.pymap__select { max-width: 100%; }
+
+/* --- 정리·확인: 이해 확인 퀴즈 --- */
+.quiz { display: flex; flex-direction: column; gap: var(--sp-3); max-width: 760px; }
+.quiz__cap { font-weight: 700; font-size: var(--fs-lg); }
+.quiz__item { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--sp-3); background: var(--surface); }
+.quiz__q { font-weight: 700; margin-bottom: var(--sp-2); }
+.quiz__opts { display: flex; flex-direction: column; gap: var(--sp-2); }
+.quiz__opt { text-align: left; }
+.quiz__opt--ok { border-color: var(--open); background: var(--open-bg); color: var(--text); font-weight: 700; }
+.quiz__opt--no { border-color: var(--danger, var(--closed)); background: var(--closed-bg); }
+.quiz__why { margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--text-muted); }
+.quiz__score { font-weight: 700; }
 
 /* 결과 배너 */
 .result {
@@ -1109,8 +1156,20 @@ body.show-slim .action-card__detail { display: none; }
    ============================================================ */
 
 /* 무엇을 배울까요 — 큰 탭 두 개 */
-.modetabs { display: flex; gap: var(--sp-1); flex: 0 0 auto; }
+.modetabs { display: flex; gap: var(--sp-1); flex: 0 0 auto; flex-wrap: wrap; }
 .modetab { font-weight: 700; }
+.modetab[aria-selected="true"] { background: var(--current); border-color: var(--current); color: #fff; }
+
+/* 알고리즘 하위 탭 */
+.subtabs__label { font-size: var(--fs-sm); color: var(--text-muted); font-weight: 700; }
+.subtab { font-size: var(--fs-sm); padding: var(--sp-1) var(--sp-3); }
+.subtab[aria-selected="true"] {
+  background: var(--current-bg); border-color: var(--current); color: var(--current); font-weight: 700;
+}
+/* 좁은 화면: 큰 탭 넷이 한 줄에 안 들어가면 줄바꿈(components.css가 늦게 로드돼 우선한다) */
+@media (max-width: 600px) {
+  .modetabs { flex: 1 1 100%; }
+}
 
 /* --- 항목 하나 --- */
 .dsitem {

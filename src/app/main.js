@@ -14,7 +14,7 @@ import { qs } from '../ui/dom.js';
 import { mountTopbar } from '../ui/topbar.js';
 import { mountLessonBar } from '../ui/lessonBar.js';
 import { mountActionCard } from '../ui/actionCard.js';
-import { lessonAt } from './lesson.js';
+import { currentLesson, currentStep } from './lesson.js';
 import { mountBoardPanel } from '../ui/boardPanel.js';
 import { mountCodePanel } from '../ui/codePanel.js';
 import { mountDataPanel } from '../ui/dataPanel.js';
@@ -50,24 +50,35 @@ store.subscribe((state) => {
   if (ds) player.pause();   // 안 보이는 화면이 혼자 재생되지 않게
 });
 
-// 레슨 페이지가 바뀌면 화면 배치와 코드 모드를 그 페이지에 맞춘다.
-// (한 화면에 필요한 것만 보이게 — 학습 집중)
-let lastLesson = -1;
-let lastLessonMode = null;
+// 레슨 쪽이 바뀌면 화면 배치와 코드 모드를 그 쪽에 맞춘다(한 화면에 필요한 것만 — 학습 집중).
+// 상단 탭(basics·algo·wrap)마다 쪽 묶음이 다르고, algo 탭은 고른 알고리즘으로 4쪽을 조립한다.
+const SHOW_KEYS = ['board', 'action', 'controls', 'open', 'closed', 'tree', 'picker', 'code',
+  'slim', 'play', 'children', 'summary', 'codemap', 'coderead', 'flowwhy', 'heuristic', 'pymap', 'quiz'];
+let lastSig = '';
 store.subscribe((state) => {
-  if (state.mode === 'ds') { lastLessonMode = state.mode; return; }
-  if (state.lessonStep === lastLesson && lastLessonMode === state.mode) return;
-  lastLesson = state.lessonStep;
-  lastLessonMode = state.mode;
-  const step = lessonAt(state.lessonStep);
+  if (state.mode === 'ds') { lastSig = 'ds'; return; }
+
+  // algo 탭에서는 하위 탭(algoTab)이 곧 player가 돌릴 알고리즘이다 — algorithmId를 맞춘다.
+  if (state.mode === 'algo' && state.algorithmId !== state.algoTab) {
+    store.set({ algorithmId: state.algoTab });   // 다시 이 구독자를 부른다
+    return;
+  }
+
+  const { index } = currentLesson(state);
+  const step = currentStep(state);
+  const sig = `${state.mode}|${index}|${step.id}`;
+
+  // 기초 탭의 일부 쪽은 데모 알고리즘을 고정한다(예: 휴리스틱 쪽은 A*).
+  if (step.algo && state.mode !== 'algo' && state.algorithmId !== step.algo) {
+    store.set({ algorithmId: step.algo });
+    return;
+  }
+
+  if (sig === lastSig) return;
+  lastSig = sig;
   qs('#workspace').dataset.layout = step.layout;
   const body = document.body;
-  for (const key of ['board', 'action', 'controls', 'open', 'closed', 'tree', 'picker', 'code', 'slim', 'play', 'children', 'summary', 'codemap', 'coderead', 'flowwhy']) {
-    body.classList.toggle(`show-${key}`, Boolean(step.show[key]));
-  }
-  // 안내형 흐름 — 어떤 쪽은 그 쪽에 들어갈 때 알고리즘을 정해 준다(6쪽 BFS·7쪽 DFS·8쪽 A*).
-  // 쪽이 바뀔 때만 실행되므로(위 가드) 학습자가 직접 고른 선택과 부딪히지 않는다.
-  if (step.algo && state.algorithmId !== step.algo) store.set({ algorithmId: step.algo });
+  for (const key of SHOW_KEYS) body.classList.toggle(`show-${key}`, Boolean(step.show[key]));
   if (state.stageId !== step.stage) store.set({ stageId: step.stage });
 });
 
