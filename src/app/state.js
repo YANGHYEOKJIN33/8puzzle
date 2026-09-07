@@ -9,15 +9,22 @@
 const STORAGE_KEY = 'puzzle8-lab:prefs';
 
 /** 저장해 둘 값 — 학습 진도가 아니라 "고른 설정"만 남긴다 */
-const PERSISTED = ['algorithmId', 'stageId', 'heuristicId', 'presetId', 'speedId', 'theme', 'scale', 'lessonStep', 'mode', 'dsStep'];
+const PERSISTED = ['algorithmId', 'stageId', 'heuristicId', 'presetId', 'speedId', 'theme', 'scale',
+  'mode', 'dsStep', 'basicsStep', 'algoStep', 'algoTab', 'wrapStep'];
 
 const initial = {
-  // 무엇을 배우는 중인가 — 두 개의 탭
-  //   ds     : 자료구조 배우기 (큐·스택·우선순위 큐를 손으로 다뤄 본다) — 기본 화면
-  //   search : 8-퍼즐 탐색 배우기
-  // 자료구조를 배운 적 없는 학생이 많으므로 여기서 시작한다.
+  // 무엇을 배우는 중인가 — 상단 큰 탭 넷 (요청: 2단계 내비게이션)
+  //   ds     : 자료구조 배우기 (큐·스택·우선순위 큐를 손으로) — 기본 화면
+  //   basics : 8-퍼즐과 탐색의 기초 (상태·노드·확장·OPEN·CLOSED·순서도·휴리스틱)
+  //   algo   : 알고리즘별 심화 (하위 탭으로 BFS·DFS·최상·A*·언덕등반, 각 4쪽)
+  //   wrap   : 정리·이해 확인
+  // 자료구조를 배운 적 없는 학생이 많으므로 ds에서 시작한다.
   mode: 'ds',
   dsStep: 0,            // 자료구조 탭의 몇 번째 쪽인가
+  basicsStep: 0,        // 탐색 기초 탭의 몇 번째 쪽인가
+  algoStep: 0,          // 알고리즘 탭의 몇 번째 쪽인가(0~3, 하위 탭을 바꿔도 유지)
+  algoTab: 'bfs',       // 알고리즘 탭에서 고른 알고리즘(하위 탭). algo 모드에서 algorithmId로 반영된다.
+  wrapStep: 0,          // 정리 탭의 몇 번째 쪽인가
 
   // 학생이 고르는 것 (요구사항 6.1.1 — 첫 화면의 결정은 두 개뿐)
   algorithmId: 'bfs',
@@ -34,7 +41,6 @@ const initial = {
   scale: 1,             // 글자 크기 배율 (요구사항 6.2.2)
   codeView: 'pseudo',   // 코드 패널에 무엇을 보일지: flow | pseudo | python
   dataView: 'open',     // (예전 탭 잔재 — 지금은 OPEN·트리를 함께 보여 준다)
-  lessonStep: 0,        // 레슨 몇 번째 페이지인가 (0부터)
 
   // 실행 상태 (탐색 엔진은 3·4단계에서 붙인다)
   running: false,

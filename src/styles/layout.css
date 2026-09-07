@@ -20,13 +20,22 @@
 /* --- 상단 막대 --- */
 .topbar {
   display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-4);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
+/* 상단 막대 첫 줄 — 제목·큰 탭·도구 */
+.topbar__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+/* 상단 막대 둘째 줄 — 알고리즘 하위 탭 (algo 모드에서만) */
+.subtabs { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.subtabs[hidden] { display: none; }
 .topbar__title {
   font-size: var(--fs-lg);
   line-height: 1.2;
