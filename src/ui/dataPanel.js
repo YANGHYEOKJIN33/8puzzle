@@ -14,6 +14,7 @@ import { findById } from '../app/state.js';
 import { miniBoard } from './miniBoard.js';
 import { currentStep } from '../app/lesson.js';
 import { h0, h1, h2 } from '../core/heuristics.js';
+import { createFlip } from './flip.js';
 
 /* 정확한 용어를 앞세우고, 쉬운 말은 괄호로 덧붙인다 (요구사항 6.1.3) */
 const COUNTERS = [
@@ -32,7 +33,7 @@ const MAX_IN_CLOSED = 12;
 export function mountDataPanel(root, store, player) {
   const body = el('div.panel__body');
   const counterValues = new Map();
-
+  const flip = createFlip();   // 항목이 순간이동하지 않고 미끄러져 들어가고 나가게 (요청 #1)
 
   const foot = el('div.panel__foot', {},
     el('div.counters', {},
@@ -59,12 +60,13 @@ export function mountDataPanel(root, store, player) {
   );
 
   /** 한 노드를 OPEN 항목으로 그린다. 알고리즘에 맞는 평가값을 꼬리표로 단다. */
-  function openItem(nodes, id, { pushed = false, next = false, evalTag = 'depth' } = {}) {
+  function openItem(nodes, id, { pushed = false, next = false, evalTag = 'depth', enter = 'left' } = {}) {
     const node = nodes[id];
     const tag = evalTag === 'f' ? `f=${node.f}`
       : evalTag === 'h' ? `h=${node.h}`
       : `g=${node.depth}`;
     return el(`div.open-item${pushed ? '.open-item--pushed' : ''}${next ? '.open-item--next' : ''}`, {
+      'data-flip': `n${id}`, 'data-enter': enter,
       title: `깊이 ${node.depth} · g=${node.g}(지나온 비용) · h=${node.h}(남은 거리 어림값) · f=${node.f}`,
     },
       miniBoard(node.state, { moved: movedCell(nodes, node) }),
@@ -108,8 +110,9 @@ export function mountDataPanel(root, store, player) {
       if (ordered.length > MAX_IN_PIPE) {
         body.append(el('span.pipe__more', {}, `…${ordered.length - MAX_IN_PIPE}개 더`));
       }
+      const enter = stack ? 'right' : 'left';   // 스택은 오른쪽에서, 큐·우선순위는 왼쪽에서 들어온다
       for (const id of shown) {
-        body.append(openItem(nodes, id, { pushed: id === pushedId, next: id === nextId, evalTag }));
+        body.append(openItem(nodes, id, { pushed: id === pushedId, next: id === nextId, evalTag, enter }));
       }
     }
 
@@ -179,7 +182,9 @@ export function mountDataPanel(root, store, player) {
         const node = nodes[id];
         const tag = evalTag === 'f' ? `f=${node.f}` : evalTag === 'h' ? `h=${node.h}` : `g=${node.depth}`;
         const fresh = id === justClosedId;
+        // 같은 id를 OPEN 항목과 공유한다 → OPEN에서 꺼내진 노드가 CLOSED 상자로 미끄러져 내려온다
         box.append(el(`div.closed-item${fresh ? '.closed-item--fresh' : ''}`, {
+          'data-flip': `n${id}`, 'data-enter': 'up',
           title: `이미 확장을 마친 노드 · 깊이 ${node.depth} · 다시 보지 않아요`,
         },
           miniBoard(node.state, { moved: movedCell(nodes, node) }),
@@ -226,7 +231,18 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
+  let lastSig = null;
   function draw(viewData) {
+    const s = store.get();
+    // 쪽/알고리즘/모드가 바뀌면 옛 위치 기억을 버려 항목이 화면을 가로질러 날지 않게 한다
+    const sig = `${s.mode}|${s.algorithmId}|${s.dsStep}|${s.basicsStep}|${s.algoStep}|${s.wrapStep}|${s.stageId}`;
+    const reset = sig !== lastSig;
+    lastSig = sig;
+    drawInner(viewData);
+    flip(body, { reset });   // 다시 그린 뒤 항목들을 옛 자리→새 자리로 미끄러뜨린다
+  }
+
+  function drawInner(viewData) {
     const state = store.get();
     const algo = findById(ALGORITHMS, state.algorithmId);
     const structure = STRUCTURE_LABEL[algo.structure];
