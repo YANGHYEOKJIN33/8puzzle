@@ -4,7 +4,7 @@
  * 원칙
  *  - 한 쪽 = 배울 것 하나. 화면에는 그 하나에 필요한 것만 켠다(혼란 방지).
  *  - goal(배울 것) 문장 안에 "왜 배우나(이유)"를 함께 녹인다.
- *  - 알고리즘 탭은 알고리즘마다 같은 4쪽 템플릿을 쓰고, 내용은 고른 알고리즘(algoTab)으로 갈린다.
+ *  - 알고리즘 탭은 알고리즘마다 같은 3쪽 템플릿을 쓰고, 내용은 고른 알고리즘(algoTab)으로 갈린다.
  *
  * layout : 화면 배치 이름 (styles/layout.css의 .workspace[data-layout=...])
  * stage  : 코드 패널 모드 (pseudo | fill | write)
@@ -75,8 +75,8 @@ export const BASICS = [
 
 /* ══════════════════════════ 알고리즘 (algo) ══════════════════════════ */
 /**
- * 알고리즘 하위 탭마다 같은 4쪽 템플릿을 쓴다. 쪽 내용(설명)은 고른 알고리즘에 따라 갈린다.
- * ALGO_INFO에 알고리즘별 설명 문구를 모아 두고, algoPages()가 4쪽으로 조립한다.
+ * 알고리즘 하위 탭마다 같은 3쪽 템플릿을 쓴다. 쪽 내용(설명)은 고른 알고리즘에 따라 갈린다.
+ * ALGO_INFO에 알고리즘별 설명 문구를 모아 두고, algoPages()가 3쪽으로 조립한다.
  */
 const ALGO_INFO = {
   bfs: {
@@ -118,14 +118,14 @@ const ALGO_PAGE_META = [
     goal: '이 알고리즘을 말과 코드 중간쯤으로 적은 것이 의사코드예요. 한 단계 밟으면 실행 중인 줄이 강조되고, 그 줄이 바꾸는 퍼즐 판·탐색 트리·자료구조(OPEN·CLOSED)가 함께 움직여요. "코드 한 줄 = 화면의 어떤 변화"를 눈으로 이어 보는 쪽이에요.',
     todo: '⏭ 한 단계씩 천천히 눌러 보세요. 줄이 강조되는 순간, 트리에서 지금 노드가 완료로 바뀌고, 꺼낸 노드가 OPEN→CLOSED로 내려가는 것을 짝지어 확인하세요. 특히 "꺼내는 줄"이 이 알고리즘의 성격을 정한다는 점에 주목하세요.',
     layout: 'code-board-data',
-    show: { code: true, coderead: true, board: true, action: true, controls: true, open: true, closed: true, tree: true, slim: true },
+    show: { code: true, coderead: true, board: true, action: true, controls: true, open: true, closed: true, treeTab: true, slim: true },
   },
   {
     id: 'python', badge: '③', name: '의사코드 ↔ 파이썬',
     goal: '의사코드 한 줄이 어떤 파이썬 코드가 되는지 나란히 맞춰 봐요. 파이썬을 몰라도 괜찮아요 — 한 단계 밟으면 양쪽에서 같은 줄이 켜지고, 그 줄이 판·탐색 트리·OPEN을 어떻게 바꾸는지 함께 움직여요. 성격을 정하는 핵심 한 줄만 바꿔 차이도 관찰해요.',
     todo: '한 단계씩 밟으며 의사코드↔파이썬이 같은 일을 하는 걸 확인하고, 트리·OPEN으로 진행 위치를 보세요. 드롭다운으로 "핵심 한 줄"을 바꾸면 결과가 어떻게 달라지는지도 보세요.',
     layout: 'code-board-data',
-    show: { code: true, pymap: true, board: true, action: true, controls: true, open: true, closed: true, tree: true, slim: true },
+    show: { code: true, pymap: true, board: true, action: true, controls: true, open: true, closed: true, treeTab: true, slim: true },
   },
 ];
 
@@ -181,7 +181,7 @@ function clampIndex(i, len) { return Math.max(0, Math.min(len - 1, i | 0)); }
 
 /**
  * 지금 상단 탭에서 쓸 쪽 묶음과 위치를 돌려준다. (진행 막대·레이아웃 이펙트가 함께 쓴다)
- * 알고리즘 탭은 고른 알고리즘(algoTab)으로 4쪽을 조립한다.
+ * 알고리즘 탭은 고른 알고리즘(algoTab)으로 3쪽을 조립한다.
  */
 export function currentLesson(state) {
   switch (state.mode) {

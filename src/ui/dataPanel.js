@@ -15,6 +15,7 @@ import { miniBoard } from './miniBoard.js';
 import { currentStep } from '../app/lesson.js';
 import { h0, h1, h2 } from '../core/heuristics.js';
 import { createFlip } from './flip.js';
+import { infoTerm } from './infoTip.js';
 
 /* 정확한 용어를 앞세우고, 쉬운 말은 괄호로 덧붙인다 (요구사항 6.1.3) */
 const COUNTERS = [
@@ -256,7 +257,7 @@ export function mountDataPanel(root, store, player) {
     ];
     fill(body,
       el('div.heur', {},
-        el('div.heur__cap', {}, '🎯 남은 거리 어림값  h(state)'),
+        el('div.heur__cap', {}, '🎯 ', infoTerm('휴리스틱', { label: '남은 거리 어림값', strong: true }), '  h(state)'),
         el('div.heur__row', {},
           el('div.heur__board', {}, miniBoard(st, {}), el('span.heur__blabel', {}, '지금 배치')),
           el('ul.heur__list', {}, rows.map((r) => el('li.heur__item', {},
@@ -264,8 +265,10 @@ export function mountDataPanel(root, store, player) {
             el('span.heur__why', {}, r.why)))),
         ),
         el('div.heur__f', {},
-          el('div.heur__fcap', {}, '평가함수  f = g + h'),
-          el('div', {}, `g(온 비용) = ${g},  h₂ = ${h2(st)}  →  f = ${g + h2(st)}`),
+          el('div.heur__fcap', {}, infoTerm('f(n)', { label: '평가함수', strong: true }), '  f = g + h'),
+          el('div', {},
+            infoTerm('g(n)', { label: 'g(온 비용)' }), ` = ${g},  `,
+            infoTerm('h(n)', { label: 'h₂' }), ` = ${h2(st)}  →  f = ${g + h2(st)}`),
           el('div.heur__note', {}, '최상우선은 h만 보고, A*는 f = g + h 가 가장 작은 노드부터 꺼내요. h가 똑똑할수록 덜 헤매요.'),
         ),
       ),
@@ -339,7 +342,7 @@ export function mountDataPanel(root, store, player) {
       el('div.inspect', {},
         algo.structure === 'single'
           ? el('span', {}, el('strong', {}, '이웃 노드 후보'), ` · ${viewData.openIds.length}개`)
-          : el('span', {}, el('strong', {}, 'OPEN 리스트'), ' (대기 목록)',
+          : el('span', {}, infoTerm('OPEN 리스트', { strong: true }), ' (대기 목록)',
               ` · ${structure.name} · ${viewData.openIds.length}개`),
         el('span.topbar__spacer'),
         legendInline(),
@@ -353,7 +356,7 @@ export function mountDataPanel(root, store, player) {
   function closedSection(viewData, algo) {
     return el('div.ds-section', {},
       el('div.inspect', {},
-        el('span', {}, el('strong', {}, 'CLOSED'), ' (닫힌 목록)',
+        el('span', {}, infoTerm('CLOSED', { strong: true }), ' (닫힌 목록)',
           algo.pathOnly ? ' · 안 씀' : ` · 집합 · ${viewData.closedSize}개`),
         el('span.topbar__spacer'),
         el('span.panel__hint', {}, '이미 확장을 마쳐 다시 보지 않는 노드'),

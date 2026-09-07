@@ -250,7 +250,8 @@
    코드가 왼쪽 전체 높이를 쓰고, 오른쪽은 위에 퍼즐 판, 아래에 자료구조. */
 .workspace[data-layout="code-board-data"] {
   grid-template-columns: minmax(360px, 1.15fr) minmax(300px, 1fr);
-  grid-template-rows: minmax(200px, 1.35fr) minmax(150px, 1fr);
+  /* 판은 탭으로 접혀 짧아졌으니 아래 자료구조(OPEN→CLOSED 이동)에 높이를 몰아 준다 (요청 #1·#3.4) */
+  grid-template-rows: minmax(150px, 0.72fr) minmax(300px, 1.7fr);
   grid-template-areas:
     "code board"
     "code data";
@@ -274,6 +275,20 @@
 .workspace[data-layout="code-board-data"] .pipe__body { min-height: 46px; padding: var(--sp-1) var(--sp-2); }
 .workspace[data-layout="code-board-data"] .pipe__cap { padding: 0 var(--sp-1); }
 .workspace[data-layout="code-board-data"] .pipe__body .mini { width: 36px; height: 36px; }
+/* 좁은 칸: OPEN→꺼낸자리→CLOSED가 한눈에 들어오게 사이 요소를 납작하게 (요청 #1·#3.4) */
+.workspace[data-layout="code-board-data"] .ds-section .inspect .panel__hint,
+.workspace[data-layout="code-board-data"] .closed-box__flow,
+.workspace[data-layout="code-board-data"] .hold__arrow--down,
+.workspace[data-layout="code-board-data"] .closed-box .pipe__note { display: none; }
+.workspace[data-layout="code-board-data"] .hold { margin: 0; gap: 0; }
+.workspace[data-layout="code-board-data"] .hold__cap { font-size: var(--fs-xs); }
+.workspace[data-layout="code-board-data"] .hold-slot { min-height: 34px; padding: var(--sp-1); }
+.workspace[data-layout="code-board-data"] .hold-item .mini { width: 34px; height: 34px; }
+.workspace[data-layout="code-board-data"] .hold__arrow { font-size: 10px; }
+.workspace[data-layout="code-board-data"] .closed-box__body { min-height: 40px; padding: var(--sp-1) var(--sp-2); }
+.workspace[data-layout="code-board-data"] .closed-item .mini { width: 34px; height: 34px; }
+.workspace[data-layout="code-board-data"] .ds-section { gap: 2px; }
+.workspace[data-layout="code-board-data"] .panel--data .panel__body { gap: var(--sp-1); }
 
 /* 실행 제어는 필요한 페이지에서만 */
 body:not(.show-controls) .controlbar { display: none; }

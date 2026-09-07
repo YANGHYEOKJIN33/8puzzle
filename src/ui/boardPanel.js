@@ -74,27 +74,44 @@ export function mountBoardPanel(root, store, player) {
     renderBoardMini(GOAL),
     el('div.board-cap', {}, el('strong', {}, '목표')));
 
-  const body = el('div.panel__body', {},
-    el('div.board-duo', {},
-      el('div.board-cell', {}, anim.el, nowLabel),
-      el('div.board-arrow', { 'aria-hidden': 'true' }, '→'),
-      goalCell,
-      el('div.board-side', {}, banner,
-        el('div.field', {}, el('label', { for: 'preset-select' }, '초기 상태'), presetSelect),
-        foot),
-    ),
-    extra,
-    treeArea,
+  const boardDuo = el('div.board-duo', {},
+    el('div.board-cell', {}, anim.el, nowLabel),
+    el('div.board-arrow', { 'aria-hidden': 'true' }, '→'),
+    goalCell,
+    el('div.board-side', {}, banner,
+      el('div.field', {}, el('label', { for: 'preset-select' }, '초기 상태'), presetSelect),
+      foot),
   );
+
+  // 알고리즘 ②③처럼 한 화면에 볼 게 많은 쪽: 판↔트리를 탭으로 갈라 자료구조에 자리를 준다 (요청 #3.4).
+  let boardTab = 'board';   // 'board' | 'tree'
+  const tabBoard = el('button.pill.boardtab', { type: 'button', role: 'tab', onclick: () => setBoardTab('board') }, '🧩 퍼즐 판');
+  const tabTree = el('button.pill.boardtab', { type: 'button', role: 'tab', onclick: () => setBoardTab('tree') }, '🌳 탐색 트리');
+  const tabStrip = el('div.boardtabs', { role: 'tablist', 'aria-label': '판·트리 보기' }, tabBoard, tabTree);
+  tabStrip.hidden = true;
+  function setBoardTab(t) { boardTab = t; draw(player.view()); }
+
+  const body = el('div.panel__body', {}, tabStrip, boardDuo, extra, treeArea);
 
   fill(root, el('div.panel__head', {}, el('span.panel__title', {}, '퍼즐 판'), hint), body);
 
   let lastPresetId = null;
+  let lastTabSig = null;
 
   function draw(v) {
     const state = store.get();
     const preset = findById(PRESETS, state.presetId);
     presetSelect.value = preset.id;
+
+    // 판↔트리 탭을 쓰는 쪽인가 (알고리즘 ②③). 쪽/알고리즘이 바뀌면 '판'으로 되돌린다.
+    const treeTab = Boolean(currentStep(state).show.treeTab);
+    const tabSig = `${state.mode}|${state.algoStep}|${state.algoTab}`;
+    if (tabSig !== lastTabSig) { boardTab = 'board'; lastTabSig = tabSig; }
+    tabStrip.hidden = !treeTab;
+    tabBoard.setAttribute('aria-selected', String(!treeTab || boardTab === 'board'));
+    tabTree.setAttribute('aria-selected', String(treeTab && boardTab === 'tree'));
+    const showTreeInstead = treeTab && boardTab === 'tree';
+    boardDuo.hidden = showTreeInstead;
 
     // --- 직접 밀어 보는 모드 (1쪽) ---
     if (handMode()) {
@@ -142,8 +159,13 @@ export function mountBoardPanel(root, store, player) {
       : show.codemap ? codeMap(state.exerciseId)          // 12쪽(빈칸 채우기): 코드가 퍼즐의 어디인지
       : null);
 
-    // 판 아래 빈 공간에 탐색 트리를 늘 띄운다 — 지금 어디까지 진행됐는지 학생이 실시간으로 본다.
-    if (show.tree) {
+    // 트리 탭을 고른 쪽에서는 자식 미리보기를 숨겨 트리에 자리를 준다.
+    if (showTreeInstead) fill(extra, null);
+
+    // 탐색 트리:
+    //  · show.tree(①·기초): 판 아래에 늘 띄워 진행 위치를 실시간으로 본다.
+    //  · treeTab + 트리 탭 선택(②③): 판 대신 트리를 크게 보여 준다.
+    if (show.tree || showTreeInstead) {
       const algo = findById(ALGORITHMS, state.algorithmId);
       fill(treeArea,
         el('div.board-tree__cap', {},

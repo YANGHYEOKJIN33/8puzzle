@@ -478,6 +478,34 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .hold-item--goal .mini { outline: 3px solid var(--path); box-shadow: 0 0 0 5px var(--path-bg); }
 .hold-empty { color: var(--text-muted); font-size: var(--fs-sm); text-align: center; }
 
+/* --- 인라인 용어 풍선 (ⓘ) 요청 #3.2 · #3.4 --- */
+.infotip {
+  display: inline-flex; align-items: center; gap: 2px;
+  border: 0; background: none; padding: 0; margin: 0;
+  font: inherit; color: inherit; cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.infotip__i {
+  font-size: .82em; color: var(--current); line-height: 1;
+  border-bottom: 1px dotted transparent;
+}
+.infotip:hover .infotip__i,
+.infotip:focus-visible .infotip__i { color: var(--current); transform: scale(1.15); }
+.infotip:hover > span:first-child,
+.infotip:hover > strong:first-child { text-decoration: underline dotted var(--current); text-underline-offset: 3px; }
+.infopop {
+  position: fixed; z-index: 60; max-width: min(300px, 88vw);
+  padding: var(--sp-3);
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  box-shadow: 0 8px 28px rgba(16, 22, 32, .28);
+  animation: narr-in .16s ease;
+}
+.infopop__term { font-weight: 700; font-size: var(--fs-md); }
+.infopop__en { font-weight: 400; color: var(--text-muted); font-size: var(--fs-sm); }
+.infopop__plain { margin-top: 4px; font-size: var(--fs-sm); line-height: 1.5; }
+.infopop__where { margin-top: 6px; font-size: var(--fs-xs); color: var(--text-muted); }
+
 /* --- 휴리스틱·평가함수 쪽 --- */
 .heur { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-2); }
 .heur__cap { font-weight: 700; font-size: var(--fs-md); }
@@ -968,6 +996,16 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
    ============================================================ */
 /* 퍼즐 판 아래에 늘 떠 있는 탐색 트리 — 지금 진행 위치를 학생이 계속 보게 한다 */
 .panel--board .panel__body { display: flex; flex-direction: column; }
+/* 판↔트리 탭 (알고리즘 ②③) 요청 #3.4 */
+.boardtabs { display: flex; gap: var(--sp-1); margin-bottom: var(--sp-2); flex: 0 0 auto; }
+/* display를 직접 준 요소라 hidden 속성이 안 먹는다 — 명시적으로 감춘다 */
+.boardtabs[hidden], .board-duo[hidden] { display: none !important; }
+.boardtab { font-size: var(--fs-sm); padding: 3px var(--sp-3); }
+.boardtab[aria-selected="true"] {
+  background: var(--current); color: #fff; border-color: var(--current);
+}
+/* 탭으로 트리를 볼 때는 위쪽 구분선을 없애 자리를 아낀다 */
+.boardtabs:not([hidden]) ~ .board-tree { margin-top: 0; border-top: 0; padding-top: 0; }
 .board-tree {
   margin-top: var(--sp-3);
   border-top: 1px solid var(--border);
