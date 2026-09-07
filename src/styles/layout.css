@@ -168,6 +168,16 @@
   grid-template-areas: "board" "data";
 }
 .workspace[data-layout="board-data"] .panel--code { display: none; }
+
+/* ① 어떻게 8퍼즐을 푸나 — 탐색 트리(왼쪽, 판 아래) | 자료구조 OPEN·CLOSED(오른쪽) 나란히 (요청 #4) */
+.workspace[data-layout="tree-data"] {
+  grid-template-columns: minmax(340px, 1.55fr) minmax(280px, 1fr);
+  grid-template-rows: 1fr;
+  grid-template-areas: "board data";
+}
+.workspace[data-layout="tree-data"] .panel--code { display: none; }
+.workspace[data-layout="tree-data"] .board--anim { width: min(72px, 10vh, 15vw); }
+.workspace[data-layout="tree-data"] .board--mini { width: min(56px, 8vh, 11vw); }
 /* 판은 조금 작게, 카운터는 한 줄로 — 아낀 높이는 OPEN 리스트에 준다 */
 .workspace[data-layout="board-data"] .board--anim { width: min(80px, 11vh, 26vw); }
 .workspace[data-layout="board-data"] .board--mini { width: min(62px, 9vh, 18vw); }
@@ -240,7 +250,7 @@
    코드가 왼쪽 전체 높이를 쓰고, 오른쪽은 위에 퍼즐 판, 아래에 자료구조. */
 .workspace[data-layout="code-board-data"] {
   grid-template-columns: minmax(360px, 1.15fr) minmax(300px, 1fr);
-  grid-template-rows: minmax(150px, auto) minmax(170px, 1fr);
+  grid-template-rows: minmax(200px, 1.35fr) minmax(150px, 1fr);
   grid-template-areas:
     "code board"
     "code data";
@@ -294,20 +304,25 @@ body:not(.show-action) .actionbar { display: none; }
 /* 좁은 화면: 두 칸짜리 레슨 페이지도 세로 1열로 내린다 (요구사항 6.2) */
 @media (max-width: 900px) {
   .workspace[data-layout="board-tree"],
+  .workspace[data-layout="tree-data"],
   .workspace[data-layout="code-board"],
   .workspace[data-layout="code-board-data"] {
     grid-template-columns: 1fr;
     grid-template-rows: none;
   }
   .workspace[data-layout="board-tree"] { grid-template-areas: "board" "data"; }
+  .workspace[data-layout="tree-data"] { grid-template-areas: "board" "data"; }
   .workspace[data-layout="code-board"] { grid-template-areas: "board" "code"; }
   .workspace[data-layout="code-board-data"] { grid-template-areas: "board" "data" "code"; }
   .workspace[data-layout="code-board-data"] .board--anim { width: min(160px, 30vw); }
   .workspace[data-layout="code-board-data"] .board--mini { width: min(110px, 22vw); }
   /* 세로로 쌓이면 높이 제한이 없으므로 원래대로 흐르게 둔다 */
-  .workspace[data-layout="board-tree"] .panel--data .panel__body { overflow: auto; }
-  .workspace[data-layout="board-tree"] .board--anim { width: min(160px, 30vw); }
-  .workspace[data-layout="board-tree"] .board--mini { width: min(110px, 22vw); }
+  .workspace[data-layout="board-tree"] .panel--data .panel__body,
+  .workspace[data-layout="tree-data"] .panel--data .panel__body { overflow: auto; }
+  .workspace[data-layout="board-tree"] .board--anim,
+  .workspace[data-layout="tree-data"] .board--anim { width: min(160px, 30vw); }
+  .workspace[data-layout="board-tree"] .board--mini,
+  .workspace[data-layout="tree-data"] .board--mini { width: min(110px, 22vw); }
 }
 
 /* ============================================================

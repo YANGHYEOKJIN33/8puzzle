@@ -449,7 +449,7 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .closed-item { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; }
 .closed-item .mini { opacity: .82; }
 /* 방금 OPEN에서 옮겨 온 노드 — 주황(자료구조 탭의 "방금 나간 것"과 같은 뜻) */
-.closed-item--fresh { animation: open-pop .32s cubic-bezier(.34, 1.4, .5, 1); }
+/* 방금 CLOSED로 옮겨진 노드 강조(주황). 들어오는 "이동"은 FLIP이 맡는다. */
 .closed-item--fresh .mini { outline: 2px solid var(--path); box-shadow: 0 0 0 4px var(--path-bg); opacity: 1; }
 .closed-item--fresh::after {
   content: '방금 닫힘'; font-size: 10px; font-weight: 700; color: var(--path); line-height: 1;
@@ -867,8 +867,8 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
   60%  { transform: scale(1.08); opacity: 1; }
   to   { transform: scale(1); opacity: 1; }
 }
-/* 방금 넣은 OPEN 항목이 톡 튀어 들어온다 (요구사항 4.2.2) */
-.open-item--pushed { animation: open-pop .32s cubic-bezier(.34, 1.4, .5, 1); }
+/* 방금 넣은 OPEN 항목 강조(초록). 들어오는 "이동"은 FLIP(ui/flip.js)이 맡는다 —
+   여기서 transform 애니메이션을 걸면 FLIP과 충돌하므로 강조만 남긴다. */
 .open-item--pushed .mini { box-shadow: 0 0 0 2px var(--open); }
 
 @keyframes current-pulse {
@@ -883,8 +883,9 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 @keyframes narr-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
 .narration { animation: narr-in .25s ease; }
 
-/* OPEN 항목들이 자리를 옮길 때 부드럽게 */
-.open-item { transition: transform .2s ease; }
+/* OPEN·CLOSED 항목의 이동은 FLIP(ui/flip.js)이 인라인 트랜지션으로 처리한다.
+   되돌린 자리에서 원위치로 미끄러지는 동안 튀지 않도록 will-change만 힌트로 준다. */
+.open-item, .closed-item { will-change: transform; }
 
 /* ============================================================
    첫 방문 안내 (개선: 학습자 이해)
@@ -1261,26 +1262,16 @@ body.show-slim .action-card__detail { display: none; }
 .dsitem--next::after { content: '다음'; font-size: var(--fs-xs); font-weight: 700; }
 .dsitem--next .dsitem__pri b { color: var(--current); }
 
-/* 방금 들어온 것 — 초록 */
+/* 방금 들어온 것 — 초록 (미끄러져 들어오는 이동은 FLIP이 맡고, 여기서는 색만) */
 .dsitem--in {
   border-color: var(--open);
   background: var(--open-bg);
-  animation: ds-pop .45s cubic-bezier(.34, 1.45, .5, 1);
+  box-shadow: 0 0 0 3px var(--open-bg), 0 2px 0 rgba(16, 22, 32, .10);
 }
 /* 방금 나간 것 — 주황 (나온 순서 기둥에서 눈에 띄게) */
 .dsitem--out { border-color: var(--path); background: var(--path-bg); }
-/* 새치기를 당해 뒤로 밀린 것 — 잠깐 흔들린다 (요청 ④) */
-.dsitem--bumped { animation: ds-bump .5s ease-in-out; }
-
-@keyframes ds-pop {
-  from { transform: scale(.5); opacity: 0; }
-  to   { transform: scale(1);  opacity: 1; }
-}
-@keyframes ds-bump {
-  0%, 100% { transform: translateX(0); }
-  30%      { transform: translateX(7px); }
-  65%      { transform: translateX(-3px); }
-}
+/* 새치기를 당해 뒤로 밀린 것 — 자리 이동은 FLIP이 미끄러뜨리므로 색으로만 표시 (요청 ④) */
+.dsitem--bumped { border-color: var(--path); }
 
 /* --- 왼쪽/오른쪽 기둥 : 넣은 순서 · 나온 순서 --- */
 .dsflow {

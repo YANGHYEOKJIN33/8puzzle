@@ -13,6 +13,7 @@
  * 마지막 쪽에서 같은 자료구조가 8-퍼즐 탐색의 대기 목록이 된다는 것으로 이어 줍니다.
  */
 import { el, fill } from './dom.js';
+import { createFlip } from './flip.js';
 import { DS_KINDS, dsKind, push, pop, nextOutIndex } from '../core/structures.js';
 import { dsLessonAt } from '../app/dsLesson.js';
 import { STRUCTURE_CHOICES } from '../app/config.js';
@@ -35,6 +36,7 @@ export function mountDsRoom(root, store) {
   let quizPick = null;
   let message = null;
   const score = { right: 0, total: 0 };
+  const flip = createFlip();   // 자료구조 안의 항목이 순간이동하지 않고 미끄러져 들어오게 (요청 #1)
 
   function makeItem() {
     const label = LABELS[seq % LABELS.length];
@@ -119,7 +121,7 @@ export function mountDsRoom(root, store) {
   /* ---------------------------------------------------------------- 조각 그리기 */
 
   /** 항목 하나 — 글자 하나로 알아보게 크게. 우선순위 큐면 급한 정도를 함께 보인다. */
-  function chip(item, { kindId = null, isNext = false, size = '', bump = true } = {}) {
+  function chip(item, { kindId = null, isNext = false, size = '', bump = true, flipId = null, enter = 'left' } = {}) {
     const classes = [
       'div.dsitem',
       isNext ? '.dsitem--next' : '',
@@ -129,7 +131,10 @@ export function mountDsRoom(root, store) {
       bump && bumped.has(item.id) ? '.dsitem--bumped' : '',
       size ? `.dsitem--${size}` : '',
     ].join('');
-    return el(classes, { title: isNext ? '다음에 나갈 것' : '' },
+    // flipId가 있는 항목만 미끄러진다 (자료구조 안). 옆 기둥은 정적으로 둔다.
+    const attrs = { title: isNext ? '다음에 나갈 것' : '' };
+    if (flipId) { attrs['data-flip'] = flipId; attrs['data-enter'] = enter; }
+    return el(classes, attrs,
       el('span.dsitem__label', {}, item.label),
       kindId === 'priority'
         ? el('span.dsitem__pri', { title: `우선순위 ${item.priority}` }, '우선', el('b', {}, String(item.priority)))
@@ -162,7 +167,11 @@ export function mountDsRoom(root, store) {
     const nextItem = nextIndex === -1 ? null : items[nextIndex];
     const { display, hidden } = shownOrder(kindId, items);
 
-    const chips = display.map((it) => chip(it, { kindId, isNext: it === nextItem, size }));
+    // 스택은 입구가 위쪽 → 위에서 내려오고, 관은 왼쪽 입구 → 왼쪽에서 들어온다
+    const enter = kindId === 'stack' ? 'up' : 'left';
+    const chips = display.map((it) => chip(it, {
+      kindId, isNext: it === nextItem, size, flipId: `${kindId}-${it.id}`, enter,
+    }));
     const more = hidden > 0 ? el('span.dsmore', {}, `…${hidden}개 더`) : null;
     const empty = items.length === 0 ? el('div.dsempty', {}, '비었어요') : null;
 
@@ -350,6 +359,7 @@ export function mountDsRoom(root, store) {
 
   /* ----------------------------------------------------------------- 조립 */
 
+  let lastDrawSig = null;
   function draw() {
     const state = store.get();
     if (state.mode !== 'ds') return;
@@ -357,6 +367,10 @@ export function mountDsRoom(root, store) {
     if (step.view === 'compare') fill(root, compareView());
     else if (step.view === 'bridge') fill(root, bridgeView());
     else fill(root, playView(step.kind));
+    // 쪽이 바뀌면 옛 위치 기억을 버려 항목이 화면을 가로질러 날지 않게 한다
+    const sig = `${state.dsStep}`;
+    flip(root, { reset: sig !== lastDrawSig });
+    lastDrawSig = sig;
   }
 
   let lastStep = -1;
