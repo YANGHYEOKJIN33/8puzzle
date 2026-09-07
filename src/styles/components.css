@@ -457,6 +457,27 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 .closed-empty { color: var(--text-muted); font-size: var(--fs-sm); padding: var(--sp-3); text-align: center; }
 .closed-more { color: var(--text-muted); font-size: var(--fs-xs); white-space: nowrap; align-self: center; }
 
+/* --- 지금 꺼낸 노드 자리 (OPEN → 여기 → CLOSED 이동을 눈으로) 요청 #1 --- */
+.hold { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; }
+.hold__arrow {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--fs-xs); color: var(--text-muted); line-height: 1;
+}
+.hold__arrow span:first-child { color: var(--current); font-size: calc(1.05rem * var(--scale)); }
+.hold__word { font-size: var(--fs-xs); }
+.hold__cap { font-size: var(--fs-sm); font-weight: 600; color: var(--text); text-align: center; }
+.hold-slot {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 60px; width: 100%;
+  padding: var(--sp-2);
+  border: 2px solid var(--current);
+  border-radius: var(--radius);
+  background: var(--current-bg);
+}
+.hold-item .mini { outline: 3px solid var(--current); box-shadow: 0 0 0 5px var(--current-bg); }
+.hold-item--goal .mini { outline: 3px solid var(--path); box-shadow: 0 0 0 5px var(--path-bg); }
+.hold-empty { color: var(--text-muted); font-size: var(--fs-sm); text-align: center; }
+
 /* --- 휴리스틱·평가함수 쪽 --- */
 .heur { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-2); }
 .heur__cap { font-weight: 700; font-size: var(--fs-md); }

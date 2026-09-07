@@ -113,21 +113,15 @@ const ALGO_PAGE_META = [
     show: { board: true, action: true, controls: true, open: true, closed: true, tree: true, slim: true },
   },
   {
-    id: 'pseudo', badge: '②', name: '의사코드 읽기',
-    goal: '이 알고리즘을 말과 코드 중간쯤으로 적은 것이 의사코드예요. 각 줄이 무슨 일을 하고 왜 필요한지 한 줄씩 읽어 두면, 다음 쪽에서 코드가 어떻게 움직이는지 이해할 수 있어요.',
-    todo: '한 단계씩 누르면 실행 중인 줄이 강조되고, 오른쪽 트리·자료구조에서 지금 어디까지 왔는지 보여요. 특히 "꺼내는 줄"이 이 알고리즘의 성격을 정한다는 점에 주목하세요.',
+    // ②와 ③(의사코드 읽기 + 줄별 동작)은 화면·조작이 똑같아 하나로 합쳤다 (요청 #2).
+    id: 'pseudo', badge: '②', name: '의사코드로 한 단계씩',
+    goal: '이 알고리즘을 말과 코드 중간쯤으로 적은 것이 의사코드예요. 한 단계 밟으면 실행 중인 줄이 강조되고, 그 줄이 바꾸는 퍼즐 판·탐색 트리·자료구조(OPEN·CLOSED)가 함께 움직여요. "코드 한 줄 = 화면의 어떤 변화"를 눈으로 이어 보는 쪽이에요.',
+    todo: '⏭ 한 단계씩 천천히 눌러 보세요. 줄이 강조되는 순간, 트리에서 지금 노드가 완료로 바뀌고, 꺼낸 노드가 OPEN→CLOSED로 내려가는 것을 짝지어 확인하세요. 특히 "꺼내는 줄"이 이 알고리즘의 성격을 정한다는 점에 주목하세요.',
     layout: 'code-board-data',
     show: { code: true, coderead: true, board: true, action: true, controls: true, open: true, closed: true, tree: true, slim: true },
   },
   {
-    id: 'trace', badge: '③', name: '줄별 동작을 이미지로',
-    goal: '의사코드 한 줄이 실제로 무엇을 바꾸는지 이미지로 봐요. 한 단계 밟을 때마다 실행 중인 줄과, 그 줄이 바꾸는 퍼즐 판·탐색 트리·자료구조(OPEN·CLOSED)가 함께 움직여요. "코드 한 줄 = 화면의 어떤 변화"를 눈으로 잇는 쪽이에요.',
-    todo: '⏭ 한 단계씩 천천히 눌러 보세요. 줄이 강조되는 순간, 트리에서 지금 노드가 완료로 바뀌고, 아래 OPEN 관에 새 노드가 미끄러져 들어가는 것을 짝지어 확인하세요.',
-    layout: 'code-board-data',
-    show: { code: true, coderead: true, board: true, action: true, controls: true, open: true, closed: true, tree: true, slim: true },
-  },
-  {
-    id: 'python', badge: '④', name: '의사코드 ↔ 파이썬',
+    id: 'python', badge: '③', name: '의사코드 ↔ 파이썬',
     goal: '의사코드 한 줄이 어떤 파이썬 코드가 되는지 나란히 맞춰 봐요. 파이썬을 몰라도 괜찮아요 — 한 단계 밟으면 양쪽에서 같은 줄이 켜지고, 그 줄이 판·탐색 트리·OPEN을 어떻게 바꾸는지 함께 움직여요. 성격을 정하는 핵심 한 줄만 바꿔 차이도 관찰해요.',
     todo: '한 단계씩 밟으며 의사코드↔파이썬이 같은 일을 하는 걸 확인하고, 트리·OPEN으로 진행 위치를 보세요. 드롭다운으로 "핵심 한 줄"을 바꾸면 결과가 어떻게 달라지는지도 보세요.',
     layout: 'code-board-data',

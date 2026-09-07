@@ -202,6 +202,47 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
+  /**
+   * OPEN과 CLOSED 사이의 "지금 꺼낸 노드" 자리 (요청 #1 — OPEN→CLOSED 이동을 눈으로).
+   *
+   * 노드는 pop 프레임에서 OPEN에서 빠지지만 아직 CLOSED에 들어가기 전이라, 예전에는
+   * 이 순간 화면에서 잠깐 사라져 "미끄러지는" 이동이 끊겼다. 그래서 꺼낸 노드를 이
+   * 중간 자리에 잠시 세워 둔다. 그러면 같은 노드(data-flip)가
+   *   OPEN(관)  →  이 자리(확장 중)  →  CLOSED(상자)
+   * 로 끊기지 않고 천천히 미끄러져 이동하는 것을 학생이 눈으로 따라갈 수 있다.
+   */
+  function holdingSlot(viewData, evalTag) {
+    const { action, node } = viewData;
+    // pop/goal 프레임에서만 노드가 이 자리에 있다 (아직 CLOSED로 안 내려간 순간).
+    const here = (action === 'pop' || action === 'goal') && node ? node : null;
+    const tagOf = (n) => evalTag === 'f' ? `f=${n.f}` : evalTag === 'h' ? `h=${n.h}` : `g=${n.depth}`;
+    const isGoal = action === 'goal';
+
+    const slot = el('div.hold-slot', {});
+    if (here) {
+      slot.append(el(`div.open-item.hold-item${isGoal ? '.hold-item--goal' : ''}`, {
+        'data-flip': `n${here.id}`,
+        title: `방금 OPEN에서 꺼낸 노드 · 깊이 ${here.depth}`,
+      },
+        miniBoard(here.state, { moved: movedCell(viewData.nodes, here) }),
+        el('span.open-item__tag', {}, tagOf(here)),
+      ));
+    } else {
+      slot.append(el('div.hold-empty', {}, '여기서 꺼낸 노드를 확장해요'));
+    }
+
+    return el('div.hold', {},
+      el('div.hold__arrow', {}, el('span', {}, '⬇'), el('span.hold__word', {}, '꺼내기 pop')),
+      el('div.hold__cap', {},
+        isGoal ? '🎉 목표 노드! 여기서 탐색을 멈춰요'
+          : here ? '🔍 지금 꺼낸 노드 — 자식을 만든 뒤 CLOSED로 내려가요'
+          : '지금 꺼낸 노드가 여기 잠깐 서요'),
+      slot,
+      el('div.hold__arrow hold__arrow--down', {},
+        el('span', {}, '⬇'), el('span.hold__word', {}, '확장을 마치면 CLOSED로')),
+    );
+  }
+
   /** 휴리스틱·평가함수 쪽 — 지금 배치에서 h0/h1/h2 값과 f=g+h를 눈으로 보인다 (탐색 기초) */
   function renderHeuristic(viewData) {
     // 이 쪽은 밟지 않는 정적 쪽이라 시작(init) 프레임의 node가 없다 → 지금 고른 초기 배치를 쓴다.
@@ -285,6 +326,9 @@ export function mountDataPanel(root, store, player) {
     const content = [];
     if (show.picker) content.push(structurePicker());
     if (show.open) content.push(openSection(viewData, algo, structure));
+    // OPEN과 CLOSED가 함께 보이는 알고리즘에서만 "지금 꺼낸 노드" 자리를 둔다 (요청 #1).
+    const hasClosed = show.closed && algo.structure !== 'single' && !algo.pathOnly;
+    if (show.open && hasClosed) content.push(holdingSlot(viewData, algo.evalTag));
     if (show.closed && algo.structure !== 'single') content.push(closedSection(viewData, algo));
     fill(body, ...content);
   }
