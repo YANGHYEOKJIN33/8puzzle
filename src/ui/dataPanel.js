@@ -12,7 +12,6 @@ import { el, fill } from './dom.js';
 import { ALGORITHMS, STRUCTURE_LABEL, STRUCTURE_CHOICES, STRUCTURE_OF_ALGO, PRESETS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { miniBoard } from './miniBoard.js';
-import { renderTree } from './treeView.js';
 import { currentStep } from '../app/lesson.js';
 import { h0, h1, h2 } from '../core/heuristics.js';
 
@@ -34,10 +33,6 @@ export function mountDataPanel(root, store, player) {
   const body = el('div.panel__body');
   const counterValues = new Map();
 
-  // 한 화면에 정보가 많으면 혼란스러우니, 트리가 있는 쪽에서는 [자료구조 | 탐색 트리] 탭으로
-  // 하나만 보여 준다. 학습자의 선택은 쪽을 옮겨도 기억하도록 패널 지역 변수로 둔다.
-  // 기본을 '탐색 트리'로 — 배치가 어떤 순서로 확장되는지(자료구조의 흐름)를 먼저 보게 한다.
-  let dataTab = 'tree';   // 'struct'(OPEN·CLOSED) | 'tree'
 
   const foot = el('div.panel__foot', {},
     el('div.counters', {},
@@ -269,32 +264,13 @@ export function mountDataPanel(root, store, player) {
       return;
     }
 
+    // 데이터 패널은 OPEN·CLOSED "자료구조"를 보인다. 탐색 트리는 퍼즐 판 아래에 늘 떠 있다.
     const show = currentStep(state).show;
-    const hasTree = Boolean(show.tree);
-    const tab = hasTree ? dataTab : 'struct';   // 트리 탭이 없는 쪽은 늘 자료구조
-
     const content = [];
     if (show.picker) content.push(structurePicker());
-    if (hasTree) content.push(viewTabs(tab));
-
-    if (tab === 'tree') {
-      content.push(treeSection(viewData, algo));
-    } else {
-      if (show.open) content.push(openSection(viewData, algo, structure));
-      if (show.closed && algo.structure !== 'single') content.push(closedSection(viewData, algo));
-    }
+    if (show.open) content.push(openSection(viewData, algo, structure));
+    if (show.closed && algo.structure !== 'single') content.push(closedSection(viewData, algo));
     fill(body, ...content);
-  }
-
-  /** [자료구조 | 탐색 트리] 탭 — 한 번에 하나만 보여 화면을 단순하게 유지한다 */
-  function viewTabs(active) {
-    const mk = (id, label, hint) => el('button.pill.dataview-tab', {
-      type: 'button', role: 'tab', 'aria-selected': String(active === id), title: hint,
-      onclick: () => { if (dataTab !== id) { dataTab = id; draw(player.view()); } },
-    }, label);
-    return el('div.dataview-tabs', { role: 'tablist', 'aria-label': '보기 전환' },
-      mk('struct', '자료구조', 'OPEN 리스트와 CLOSED'),
-      mk('tree', '탐색 트리', '지금까지 만든 노드를 부모–자식으로 이은 그림'));
   }
 
   /** OPEN(대기 목록) 구역 */
@@ -327,17 +303,6 @@ export function mountDataPanel(root, store, player) {
             el('div.closed-empty', {},
               '이 방식은 CLOSED(전역 방문표)를 두지 않아요 — 대신 "지금 내려온 경로"에 같은 배치가 있는지만 확인합니다.'))
         : renderClosed(viewData, algo.evalTag),
-    );
-  }
-
-  /** 탐색 트리 구역 — 8-퍼즐 배치를 노드로, 확장 순서를 번호로 (자료구조가 훑는 순서가 보인다) */
-  function treeSection(viewData, algo) {
-    return el('div.ds-section.ds-section--tree', {},
-      el('div.inspect', {},
-        el('span', {}, el('strong', {}, '탐색 트리'), ' (Search Tree)'),
-        el('span.topbar__spacer'),
-        el('span.panel__hint', {}, '번호 = 확장 순서 · 어떤 순서로 트리를 훑는지 보세요')),
-      renderTree(viewData, algo.evalTag, algo.structure),
     );
   }
 
