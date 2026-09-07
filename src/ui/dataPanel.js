@@ -36,7 +36,8 @@ export function mountDataPanel(root, store, player) {
 
   // 한 화면에 정보가 많으면 혼란스러우니, 트리가 있는 쪽에서는 [자료구조 | 탐색 트리] 탭으로
   // 하나만 보여 준다. 학습자의 선택은 쪽을 옮겨도 기억하도록 패널 지역 변수로 둔다.
-  let dataTab = 'struct';   // 'struct'(OPEN·CLOSED) | 'tree'
+  // 기본을 '탐색 트리'로 — 배치가 어떤 순서로 확장되는지(자료구조의 흐름)를 먼저 보게 한다.
+  let dataTab = 'tree';   // 'struct'(OPEN·CLOSED) | 'tree'
 
   const foot = el('div.panel__foot', {},
     el('div.counters', {},
@@ -329,14 +330,14 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
-  /** 탐색 트리 구역 */
+  /** 탐색 트리 구역 — 8-퍼즐 배치를 노드로, 확장 순서를 번호로 (자료구조가 훑는 순서가 보인다) */
   function treeSection(viewData, algo) {
     return el('div.ds-section.ds-section--tree', {},
       el('div.inspect', {},
         el('span', {}, el('strong', {}, '탐색 트리'), ' (Search Tree)'),
         el('span.topbar__spacer'),
-        el('span.panel__hint', {}, '지금까지 만든 노드를 부모–자식으로 이은 그림')),
-      renderTree(viewData, algo.evalTag),
+        el('span.panel__hint', {}, '번호 = 확장 순서 · 어떤 순서로 트리를 훑는지 보세요')),
+      renderTree(viewData, algo.evalTag, algo.structure),
     );
   }
 
