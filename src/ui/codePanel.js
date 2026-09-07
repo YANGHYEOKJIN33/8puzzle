@@ -201,7 +201,7 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
       el('span.pymap__swaplabel', {}, `🔑 핵심 한 줄 바꿔 보기 — ${map.swap.label}`),
       el('select.pymap__select', {
         'aria-label': map.swap.label,
-        onchange: (e) => store.set({ mode: 'algo', algoTab: e.target.value, algoStep: 3 }),
+        onchange: (e) => store.set({ mode: 'algo', algoTab: e.target.value, algoStep: 2 }),
       }, map.swap.options.map((o) => el('option', { value: o.algoTab, selected: o.algoTab === algo.id }, o.text))),
     ) : null;
     fill(body,

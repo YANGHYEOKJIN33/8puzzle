@@ -15,6 +15,7 @@ import { miniBoard } from './miniBoard.js';
 import { currentStep } from '../app/lesson.js';
 import { h0, h1, h2 } from '../core/heuristics.js';
 import { createFlip } from './flip.js';
+import { infoTerm } from './infoTip.js';
 
 /* 정확한 용어를 앞세우고, 쉬운 말은 괄호로 덧붙인다 (요구사항 6.1.3) */
 const COUNTERS = [
@@ -202,6 +203,47 @@ export function mountDataPanel(root, store, player) {
     );
   }
 
+  /**
+   * OPEN과 CLOSED 사이의 "지금 꺼낸 노드" 자리 (요청 #1 — OPEN→CLOSED 이동을 눈으로).
+   *
+   * 노드는 pop 프레임에서 OPEN에서 빠지지만 아직 CLOSED에 들어가기 전이라, 예전에는
+   * 이 순간 화면에서 잠깐 사라져 "미끄러지는" 이동이 끊겼다. 그래서 꺼낸 노드를 이
+   * 중간 자리에 잠시 세워 둔다. 그러면 같은 노드(data-flip)가
+   *   OPEN(관)  →  이 자리(확장 중)  →  CLOSED(상자)
+   * 로 끊기지 않고 천천히 미끄러져 이동하는 것을 학생이 눈으로 따라갈 수 있다.
+   */
+  function holdingSlot(viewData, evalTag) {
+    const { action, node } = viewData;
+    // pop/goal 프레임에서만 노드가 이 자리에 있다 (아직 CLOSED로 안 내려간 순간).
+    const here = (action === 'pop' || action === 'goal') && node ? node : null;
+    const tagOf = (n) => evalTag === 'f' ? `f=${n.f}` : evalTag === 'h' ? `h=${n.h}` : `g=${n.depth}`;
+    const isGoal = action === 'goal';
+
+    const slot = el('div.hold-slot', {});
+    if (here) {
+      slot.append(el(`div.open-item.hold-item${isGoal ? '.hold-item--goal' : ''}`, {
+        'data-flip': `n${here.id}`,
+        title: `방금 OPEN에서 꺼낸 노드 · 깊이 ${here.depth}`,
+      },
+        miniBoard(here.state, { moved: movedCell(viewData.nodes, here) }),
+        el('span.open-item__tag', {}, tagOf(here)),
+      ));
+    } else {
+      slot.append(el('div.hold-empty', {}, '여기서 꺼낸 노드를 확장해요'));
+    }
+
+    return el('div.hold', {},
+      el('div.hold__arrow', {}, el('span', {}, '⬇'), el('span.hold__word', {}, '꺼내기 pop')),
+      el('div.hold__cap', {},
+        isGoal ? '🎉 목표 노드! 여기서 탐색을 멈춰요'
+          : here ? '🔍 지금 꺼낸 노드 — 자식을 만든 뒤 CLOSED로 내려가요'
+          : '지금 꺼낸 노드가 여기 잠깐 서요'),
+      slot,
+      el('div.hold__arrow hold__arrow--down', {},
+        el('span', {}, '⬇'), el('span.hold__word', {}, '확장을 마치면 CLOSED로')),
+    );
+  }
+
   /** 휴리스틱·평가함수 쪽 — 지금 배치에서 h0/h1/h2 값과 f=g+h를 눈으로 보인다 (탐색 기초) */
   function renderHeuristic(viewData) {
     // 이 쪽은 밟지 않는 정적 쪽이라 시작(init) 프레임의 node가 없다 → 지금 고른 초기 배치를 쓴다.
@@ -215,7 +257,7 @@ export function mountDataPanel(root, store, player) {
     ];
     fill(body,
       el('div.heur', {},
-        el('div.heur__cap', {}, '🎯 남은 거리 어림값  h(state)'),
+        el('div.heur__cap', {}, '🎯 ', infoTerm('휴리스틱', { label: '남은 거리 어림값', strong: true }), '  h(state)'),
         el('div.heur__row', {},
           el('div.heur__board', {}, miniBoard(st, {}), el('span.heur__blabel', {}, '지금 배치')),
           el('ul.heur__list', {}, rows.map((r) => el('li.heur__item', {},
@@ -223,8 +265,10 @@ export function mountDataPanel(root, store, player) {
             el('span.heur__why', {}, r.why)))),
         ),
         el('div.heur__f', {},
-          el('div.heur__fcap', {}, '평가함수  f = g + h'),
-          el('div', {}, `g(온 비용) = ${g},  h₂ = ${h2(st)}  →  f = ${g + h2(st)}`),
+          el('div.heur__fcap', {}, infoTerm('f(n)', { label: '평가함수', strong: true }), '  f = g + h'),
+          el('div', {},
+            infoTerm('g(n)', { label: 'g(온 비용)' }), ` = ${g},  `,
+            infoTerm('h(n)', { label: 'h₂' }), ` = ${h2(st)}  →  f = ${g + h2(st)}`),
           el('div.heur__note', {}, '최상우선은 h만 보고, A*는 f = g + h 가 가장 작은 노드부터 꺼내요. h가 똑똑할수록 덜 헤매요.'),
         ),
       ),
@@ -285,6 +329,9 @@ export function mountDataPanel(root, store, player) {
     const content = [];
     if (show.picker) content.push(structurePicker());
     if (show.open) content.push(openSection(viewData, algo, structure));
+    // OPEN과 CLOSED가 함께 보이는 알고리즘에서만 "지금 꺼낸 노드" 자리를 둔다 (요청 #1).
+    const hasClosed = show.closed && algo.structure !== 'single' && !algo.pathOnly;
+    if (show.open && hasClosed) content.push(holdingSlot(viewData, algo.evalTag));
     if (show.closed && algo.structure !== 'single') content.push(closedSection(viewData, algo));
     fill(body, ...content);
   }
@@ -295,7 +342,7 @@ export function mountDataPanel(root, store, player) {
       el('div.inspect', {},
         algo.structure === 'single'
           ? el('span', {}, el('strong', {}, '이웃 노드 후보'), ` · ${viewData.openIds.length}개`)
-          : el('span', {}, el('strong', {}, 'OPEN 리스트'), ' (대기 목록)',
+          : el('span', {}, infoTerm('OPEN 리스트', { strong: true }), ' (대기 목록)',
               ` · ${structure.name} · ${viewData.openIds.length}개`),
         el('span.topbar__spacer'),
         legendInline(),
@@ -309,7 +356,7 @@ export function mountDataPanel(root, store, player) {
   function closedSection(viewData, algo) {
     return el('div.ds-section', {},
       el('div.inspect', {},
-        el('span', {}, el('strong', {}, 'CLOSED'), ' (닫힌 목록)',
+        el('span', {}, infoTerm('CLOSED', { strong: true }), ' (닫힌 목록)',
           algo.pathOnly ? ' · 안 씀' : ` · 집합 · ${viewData.closedSize}개`),
         el('span.topbar__spacer'),
         el('span.panel__hint', {}, '이미 확장을 마쳐 다시 보지 않는 노드'),

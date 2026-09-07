@@ -51,7 +51,7 @@ store.subscribe((state) => {
 });
 
 // 레슨 쪽이 바뀌면 화면 배치와 코드 모드를 그 쪽에 맞춘다(한 화면에 필요한 것만 — 학습 집중).
-// 상단 탭(basics·algo·wrap)마다 쪽 묶음이 다르고, algo 탭은 고른 알고리즘으로 4쪽을 조립한다.
+// 상단 탭(basics·algo·wrap)마다 쪽 묶음이 다르고, algo 탭은 고른 알고리즘으로 3쪽을 조립한다.
 const SHOW_KEYS = ['board', 'action', 'controls', 'open', 'closed', 'tree', 'picker', 'code',
   'slim', 'play', 'children', 'summary', 'codemap', 'coderead', 'flowwhy', 'heuristic', 'pymap', 'quiz'];
 let lastSig = '';

@@ -34,12 +34,18 @@ export function createFlip() {
         const dx = prev.left - r.left;
         const dy = prev.top - r.top;
         if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+          // 멀리 이동할수록(OPEN→CLOSED 같은 칸 이동) 더 천천히 — 눈으로 따라가게 (요청 #1).
+          const dist = Math.hypot(dx, dy);
+          const dur = dist > 120 ? '.72s' : dist > 50 ? '.55s' : '.4s';
           elm.style.transition = 'none';
           elm.style.transform = `translate(${dx}px, ${dy}px)`;
+          elm.style.zIndex = '5';   // 이동하는 노드가 다른 항목 위로 지나가게
           requestAnimationFrame(() => {
-            elm.style.transition = 'transform .3s cubic-bezier(.4, 0, .2, 1)';
+            elm.style.transition = `transform ${dur} cubic-bezier(.45, .05, .3, 1)`;
             elm.style.transform = '';
           });
+          const clear = () => { elm.style.zIndex = ''; elm.removeEventListener('transitionend', clear); };
+          elm.addEventListener('transitionend', clear);
         }
       } else {
         // 새로 들어온 항목 — 넣는 쪽에서 미끄러져 들어온다
