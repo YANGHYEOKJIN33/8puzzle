@@ -492,6 +492,14 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 }
 .flowwhy__shape { font-weight: 700; font-size: var(--fs-sm); }
 .flowwhy__why { font-size: var(--fs-sm); color: var(--text-muted); }
+/* 밟는 중인 도형의 설명을 켜서 "하나하나" 따라가게 한다 (다른 설명도 읽을 수 있게 둔다) */
+.flowwhy__item { transition: background .12s ease; }
+.flowwhy__item--active {
+  border-left-width: 5px;
+  background: var(--current-bg); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.flowwhy__item--active .flowwhy__shape { color: var(--current); }
+.flowwhy__item--active .flowwhy__why { color: var(--text); }
 
 /* --- 11쪽: 의사코드 한 줄씩 읽기 --- */
 .coderead { display: flex; flex-direction: column; height: 100%; min-height: 0; }
@@ -1341,7 +1349,13 @@ body.show-slim .action-card__detail { display: none; }
 .dsquiz__score { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
 
 /* --- 넣기 · 꺼내기 · 비우기 --- */
-.dsops { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+/* 넣기·꺼내기·비우기 — 화면 위쪽에 둔다(요청: 버튼을 위로). 아래 내용과 띄운다. */
+.dsops {
+  display: flex; gap: var(--sp-2); flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+}
 
 /* --- 셋을 나란히 --- */
 .dstrio {

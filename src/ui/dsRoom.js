@@ -267,6 +267,7 @@ export function mountDsRoom(root, store) {
           el('span.panel__title', {}, `${kind.icon} ${kind.name} (${kind.sub})`),
           el('span.panel__hint', {}, kind.ruleEn)),
         el('div.panel__body', {},
+          opButtons([kindId]),
           messageCard(kind),
           el('div.dsflow', {},
             column('넣은 순서', '📥', pushed, '아직 없어요'),
@@ -278,7 +279,6 @@ export function mountDsRoom(root, store) {
             column('나온 순서', '📤', trays[kindId], '아직 없어요'),
           ),
           quiz(kindId)),
-        el('div.panel__foot', {}, opButtons([kindId])),
       ),
     );
   }
@@ -291,6 +291,7 @@ export function mountDsRoom(root, store) {
           el('span.panel__title', {}, '⚖ 세 자료구조 비교'),
           el('span.panel__hint', {}, '같은 것을 같은 순서로 넣었어요')),
         el('div.panel__body', {},
+          opButtons(KIND_IDS),
           el('div.dstrio', {},
             column('넣은 순서', '📥', pushed, '아직 없어요'),
             el('div.dstrio__boxes', {}, DS_KINDS.map((kind) => el('div.dstrio__cell', {},
@@ -309,7 +310,6 @@ export function mountDsRoom(root, store) {
             '같은 것을 같은 순서로 넣었는데 나오는 순서가 다르죠? ',
             '꺼내지는 순서를 정하는 건 “어떤 자료구조에 담았는가”예요.'),
         ),
-        el('div.panel__foot', {}, opButtons(KIND_IDS)),
       ),
     );
   }

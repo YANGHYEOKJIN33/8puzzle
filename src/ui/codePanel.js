@@ -142,20 +142,21 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
     );
   }
 
-  /** 10쪽 — 순서도 + "왜 이 모양인가" 설명. 밟으면 활성 도형이 이동한다. */
+  /** 순서도 쪽 — 순서도 + 도형별 설명. 한 단계씩 밟으면 지금 도형과 그 설명이 함께 켜진다(하나하나). */
   function renderFlowWhy(algo) {
     if (!flow || flowStructure !== algo.structure) {
       flow = buildFlowchart(algo.structure);
       flowStructure = algo.structure;
     }
-    flow.setActive(boxForAction(activeAction(), algo.structure));
+    const activeBox = boxForAction(activeAction(), algo.structure);
+    flow.setActive(activeBox);
     fill(body,
       el('div.flowwhy', {},
         el('div.flowwhy__chart', {}, flow.svg),
         el('div.flowwhy__side', {},
-          el('div.flowwhy__cap', {}, '🔎 왜 이 모양일까요?'),
-          el('ul.flowwhy__list', {}, flowWhyItems(algo.structure).map(([shape, why]) =>
-            el('li.flowwhy__item', {},
+          el('div.flowwhy__cap', {}, '🔎 순서도를 하나씩 따라가요 (⏭ 밟으면 지금 도형·설명이 켜져요)'),
+          el('ul.flowwhy__list', {}, flowWhyItems(algo.structure).map(([shape, why, box]) =>
+            el(`li.flowwhy__item${box && box === activeBox ? '.flowwhy__item--active' : ''}`, {},
               el('span.flowwhy__shape', {}, shape),
               el('span.flowwhy__why', {}, why)))),
         ),
@@ -296,24 +297,24 @@ export function mountCodePanel(root, store, player, { onCompare = () => {}, onGl
 function flowWhyItems(structure) {
   if (structure === 'single') {
     return [
-      ['시작', '탐색 목록(OPEN) 없이 "지금 상태" 하나만 들고 출발해요. 국소 탐색이라서요.'],
-      ['◇ 목표인가?', '지금 상태가 목표면 바로 끝내려고 먼저 확인해요.'],
-      ['□ 이웃의 h 재기', '멀리 안 보고 바로 옆 이웃만 만들어 각자의 h(남은 거리 어림값)를 재요.'],
-      ['□ 가장 나은 이웃', 'h가 가장 작은(가장 좋아 보이는) 이웃 하나를 골라요.'],
-      ['◇ 더 나은가?', '그 이웃이 지금보다 낫지 않으면 멈춰요 — 되돌아가지 않아 지역 최적에 갇힐 수 있어요.'],
-      ['↩ 되돌이 화살표', '더 나으면 그리로 옮겨 다시 반복해요. 한 걸음씩 "언덕"을 오르는 셈이에요.'],
+      ['시작', '탐색 목록(OPEN) 없이 "지금 상태" 하나만 들고 출발해요. 국소 탐색이라서요.', 'start'],
+      ['◇ 목표인가?', '지금 상태가 목표면 바로 끝내려고 먼저 확인해요.', 'checkGoal'],
+      ['□ 이웃의 h 재기', '멀리 안 보고 바로 옆 이웃만 만들어 각자의 h(남은 거리 어림값)를 재요.', 'evaluate'],
+      ['□ 가장 나은 이웃', 'h가 가장 작은(가장 좋아 보이는) 이웃 하나를 골라요.', 'choose'],
+      ['◇ 더 나은가?', '그 이웃이 지금보다 낫지 않으면 멈춰요 — 되돌아가지 않아 지역 최적에 갇힐 수 있어요.', 'checkBetter'],
+      ['↩ 되돌이 화살표', '더 나으면 그리로 옮겨 다시 반복해요. 한 걸음씩 "언덕"을 오르는 셈이에요.', 'move'],
     ];
   }
   const take = structure === 'stack' ? '맨 위에서'
     : structure === 'priority' ? '평가값이 가장 작은 것을'
     : '맨 앞에서';
   return [
-    ['시작 (둥근 끝)', 'OPEN에 시작 노드를 넣고 CLOSED는 빈 채로 출발해요. 둥근 끝 도형은 "시작·끝"을 뜻해요.'],
-    ['◇ OPEN이 비었는가?', '더 볼 노드가 없으면 실패로 끝내야 하니, 반복을 돌기 전에 이걸 먼저 확인해요. 마름모는 "판단"이에요.'],
-    ['□ 노드 꺼내기 (pop)', `OPEN에서 ${take} 노드를 하나 꺼내요. 어느 쪽을 꺼내느냐가 알고리즘(BFS·DFS·A*)을 정해요.`],
-    ['◇ 목표인가?', '꺼낸 노드가 목표면 더 펼칠 필요 없이 바로 끝내려고, 꺼낸 직후에 확인해요.'],
-    ['□ CLOSED에 넣고 확장', '목표가 아니면 "봤다"고 표시(CLOSED)한 뒤 자식을 만들어요. 표시해 둬야 같은 배치를 또 안 봐요.'],
-    ['□ 자식을 OPEN에 넣기', '새로 만든 자식을 다음에 볼 후보로 OPEN에 쌓아요.'],
-    ['↩ 되돌이 화살표', '다시 "OPEN이 비었는가?"로 올라가 반복해요. 한 번에 노드 하나씩 펼치니 목표를 찾을 때까지 되풀이가 필요해요.'],
+    ['시작 (둥근 끝)', 'OPEN에 시작 노드를 넣고 CLOSED는 빈 채로 출발해요. 둥근 끝 도형은 "시작·끝"을 뜻해요.', 'start'],
+    ['◇ OPEN이 비었는가?', '더 볼 노드가 없으면 실패로 끝내야 하니, 반복을 돌기 전에 이걸 먼저 확인해요. 마름모는 "판단"이에요.', 'checkEmpty'],
+    ['□ 노드 꺼내기 (pop)', `OPEN에서 ${take} 노드를 하나 꺼내요. 어느 쪽을 꺼내느냐가 알고리즘(BFS·DFS·A*)을 정해요.`, 'pop'],
+    ['◇ 목표인가?', '꺼낸 노드가 목표면 더 펼칠 필요 없이 바로 끝내려고, 꺼낸 직후에 확인해요.', 'checkGoal'],
+    ['□ CLOSED에 넣고 확장', '목표가 아니면 "봤다"고 표시(CLOSED)한 뒤 자식을 만들어요. 표시해 둬야 같은 배치를 또 안 봐요.', 'expand'],
+    ['□ 자식을 OPEN에 넣기', '새로 만든 자식을 다음에 볼 후보로 OPEN에 쌓아요.', 'push'],
+    ['↩ 되돌이 화살표', '다시 "OPEN이 비었는가?"로 올라가 반복해요. 한 번에 노드 하나씩 펼치니 목표를 찾을 때까지 되풀이가 필요해요.', 'loop'],
   ];
 }
