@@ -4,13 +4,14 @@
  * 보여 준다. 학생이 "지금 여기 → 목표 저기"를 한눈에 견줄 수 있다.
  */
 import { el, fill } from './dom.js';
-import { GOAL, PRESETS } from '../app/config.js';
+import { GOAL, PRESETS, ALGORITHMS } from '../app/config.js';
 import { findById } from '../app/state.js';
 import { createAnimatedBoard } from './animatedBoard.js';
 import { currentStep } from '../app/lesson.js';
 import { expand, isGoal } from '../core/puzzle.js';
 import { findExercise } from '../app/exercises.js';
 import { miniBoard } from './miniBoard.js';
+import { renderTree } from './treeView.js';
 
 /** 작은 정적 판 하나 (목표 미리보기용) */
 export function renderBoard(state, moved = -1) {
@@ -66,6 +67,7 @@ export function mountBoardPanel(root, store, player) {
   const banner = el('div');               // 해 경로 배너 · 직접 밀기 안내
   const foot = el('div');                 // 진행 막대 또는 안내
   const extra = el('div');                // 자식 노드 미리보기(2쪽)
+  const treeArea = el('div.board-tree');  // 탐색 트리 — 아래 빈 공간에 늘 띄워 진행 위치를 보인다
 
   // 목표 판(정적) — 언제나 오른쪽에 보인다
   const goalCell = el('div.board-cell', {},
@@ -82,6 +84,7 @@ export function mountBoardPanel(root, store, player) {
         foot),
     ),
     extra,
+    treeArea,
   );
 
   fill(root, el('div.panel__head', {}, el('span.panel__title', {}, '퍼즐 판'), hint), body);
@@ -138,6 +141,17 @@ export function mountBoardPanel(root, store, player) {
       show.children ? childrenStrip(showState, kidsOpts)  // 2·3쪽: 이웃/확장이 무슨 뜻인지
       : show.codemap ? codeMap(state.exerciseId)          // 12쪽(빈칸 채우기): 코드가 퍼즐의 어디인지
       : null);
+
+    // 판 아래 빈 공간에 탐색 트리를 늘 띄운다 — 지금 어디까지 진행됐는지 학생이 실시간으로 본다.
+    if (show.tree) {
+      const algo = findById(ALGORITHMS, state.algorithmId);
+      fill(treeArea,
+        el('div.board-tree__cap', {},
+          el('strong', {}, '탐색 트리'), ' — 번호 = 확장 순서 (지금 어디까지 왔는지)'),
+        renderTree(v, algo.evalTag, algo.structure));
+    } else {
+      fill(treeArea, null);
+    }
   }
 
   /** 코드 한 줄 ↔ 8-퍼즐에서 하는 일 (빈칸 채우기 쪽) */

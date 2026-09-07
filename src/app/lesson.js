@@ -37,7 +37,7 @@ export const BASICS = [
     goal: '탐색이 다루는 상태 하나하나를 "노드(node)"라고 해요. 노드를 하나 골라 거기서 만들 수 있는 다음 배치를 모두 만드는 일이 "확장"이에요. 컴퓨터는 한 번에 노드 하나씩만 확장해 조금씩 넓혀 가기 때문에, 이 "확장"이 탐색의 기본 동작이 돼요.',
     todo: '⏭ 한 단계를 눌러 노드를 한 번 확장해 보세요. 아래 "자식 노드" 띠에 다음 배치가 만들어져요. 빈칸 위치에 따라 자식이 2·3·4개로 달라지는 것도 세어 보세요.',
     layout: 'board', stage: 'pseudo', algo: 'bfs',
-    show: { board: true, action: true, controls: true, children: true },
+    show: { board: true, action: true, controls: true, children: true, tree: true },
   },
   {
     id: 'open',
@@ -45,7 +45,7 @@ export const BASICS = [
     goal: '확장할 차례를 기다리는 노드를 모아 두는 곳이 OPEN 리스트예요. 다음에 무엇을 확장할지 기억해 두지 않으면 탐색을 이어 갈 수 없기 때문에, 만든 자식은 OPEN에 넣고(push) 확장할 때 꺼내요(pop).',
     todo: '한 단계씩 누르면서 OPEN이 자식이 생길 때 늘고(push), 하나 꺼낼 때 주는(pop) 것을 보세요. (CLOSED는 다음 쪽에서 배워요.)',
     layout: 'board-data', stage: 'pseudo', algo: 'bfs',
-    show: { board: true, action: true, controls: true, open: true, slim: true },
+    show: { board: true, action: true, controls: true, open: true, tree: true, slim: true },
   },
   {
     id: 'closed',
@@ -53,7 +53,7 @@ export const BASICS = [
     goal: '확장을 마친 노드는 CLOSED로 옮겨 "이미 봤다"고 표시해요. 이렇게 표시해 두지 않으면 같은 배치를 끝없이 다시 확장해 제자리를 맴돌기 때문이에요(무한 반복 방지·낭비 방지).',
     todo: '한 단계씩 누르면서, OPEN에서 꺼낸 노드가 CLOSED 상자로 옮겨져 쌓이는 것을 보세요. 방금 옮겨진 노드는 주황색이에요.',
     layout: 'board-data', stage: 'pseudo', algo: 'bfs',
-    show: { board: true, action: true, controls: true, open: true, closed: true, slim: true },
+    show: { board: true, action: true, controls: true, open: true, closed: true, tree: true, slim: true },
   },
   {
     id: 'flow',
@@ -61,7 +61,7 @@ export const BASICS = [
     goal: '지금까지 눈으로 본 절차를 그림으로 적은 것이 순서도예요. 판단(◇)과 처리(□)와 되돌이 화살표가 왜 이 자리에 있는지 알면, 어떤 탐색이든 순서도만 보고 흐름을 읽을 수 있어요. 모든 탐색이 이 뼈대를 함께 씁니다.',
     todo: '한 단계씩 누르면 지금 실행 중인 도형이 강조돼요. 아래 "왜 이 모양인가" 설명과 맞춰 보며, 판단 두 개(비었나?·목표인가?)와 되돌이 화살표의 뜻을 확인하세요.',
     layout: 'code-board', stage: 'pseudo', algo: 'bfs',
-    show: { code: true, flowwhy: true, board: true, controls: true },
+    show: { code: true, flowwhy: true, board: true, controls: true, tree: true },
   },
   {
     id: 'heuristic',
@@ -115,23 +115,23 @@ const ALGO_PAGE_META = [
   {
     id: 'pseudo', badge: '②', name: '의사코드 읽기',
     goal: '이 알고리즘을 말과 코드 중간쯤으로 적은 것이 의사코드예요. 각 줄이 무슨 일을 하고 왜 필요한지 한 줄씩 읽어 두면, 다음 쪽에서 코드가 어떻게 움직이는지 이해할 수 있어요.',
-    todo: '한 단계씩 누르면 지금 실행 중인 줄이 강조돼요. 오른쪽 설명으로 그 줄이 하는 일을 확인하고, 특히 "꺼내는 줄"이 이 알고리즘의 성격을 정한다는 점에 주목하세요.',
+    todo: '한 단계씩 누르면 실행 중인 줄이 강조되고, 오른쪽 아래 탐색 트리에서 지금 어디까지 왔는지 보여요. 특히 "꺼내는 줄"이 이 알고리즘의 성격을 정한다는 점에 주목하세요.',
     layout: 'code-board',
-    show: { code: true, coderead: true, board: true, controls: true },
+    show: { code: true, coderead: true, board: true, action: true, controls: true, tree: true },
   },
   {
     id: 'trace', badge: '③', name: '줄별 동작을 이미지로',
-    goal: '의사코드 한 줄이 실제로 무엇을 바꾸는지 이미지로 봐요. 한 단계 밟을 때마다 지금 실행 중인 줄과, 그 줄이 바꾸는 퍼즐 판·OPEN·CLOSED가 함께 움직여요. "코드 한 줄 = 화면의 어떤 변화"를 눈으로 잇는 쪽이에요.',
-    todo: '⏭ 한 단계씩 천천히 눌러 보세요. 왼쪽 줄이 강조되는 순간, 오른쪽에서 무엇이 움직이는지(타일이 밀리고, 노드가 관에서 빠지고, CLOSED에 쌓이고) 짝지어 확인하세요.',
-    layout: 'code-board-data',
-    show: { code: true, coderead: true, board: true, action: true, controls: true, open: true, closed: true, slim: true },
+    goal: '의사코드 한 줄이 실제로 무엇을 바꾸는지 이미지로 봐요. 한 단계 밟을 때마다 실행 중인 줄과, 그 줄이 바꾸는 퍼즐 판·탐색 트리(노드 색·확장 순서)가 함께 움직여요. "코드 한 줄 = 화면의 어떤 변화"를 눈으로 잇는 쪽이에요.',
+    todo: '⏭ 한 단계씩 천천히 눌러 보세요. 왼쪽 줄이 강조되는 순간, 트리에서 지금 노드(주황)가 완료(회색)로 바뀌고 새 자식(초록)이 붙는 것을 짝지어 확인하세요.',
+    layout: 'code-board',
+    show: { code: true, coderead: true, board: true, action: true, controls: true, tree: true },
   },
   {
     id: 'python', badge: '④', name: '의사코드 ↔ 파이썬',
-    goal: '의사코드 한 줄이 어떤 파이썬 코드가 되는지 나란히 맞춰 봐요. 파이썬을 몰라도 괜찮아요 — 한 단계 밟으면 양쪽에서 같은 줄이 켜지고, 그 줄이 판·OPEN을 어떻게 바꾸는지 함께 움직여요. 성격을 정하는 핵심 한 줄만 바꿔 차이도 관찰해요.',
-    todo: '한 단계씩 밟으며 의사코드↔파이썬이 같은 일을 하는 걸 확인하세요. 아래 드롭다운으로 "핵심 한 줄"을 바꾸면 결과가 어떻게 달라지는지 보세요.',
-    layout: 'code-board-data',
-    show: { code: true, pymap: true, board: true, action: true, controls: true, open: true, slim: true },
+    goal: '의사코드 한 줄이 어떤 파이썬 코드가 되는지 나란히 맞춰 봐요. 파이썬을 몰라도 괜찮아요 — 한 단계 밟으면 양쪽에서 같은 줄이 켜지고, 그 줄이 판·탐색 트리를 어떻게 바꾸는지 함께 움직여요. 성격을 정하는 핵심 한 줄만 바꿔 차이도 관찰해요.',
+    todo: '한 단계씩 밟으며 의사코드↔파이썬이 같은 일을 하는 걸 확인하고, 아래 트리로 진행 위치를 보세요. 드롭다운으로 "핵심 한 줄"을 바꾸면 결과가 어떻게 달라지는지도 보세요.',
+    layout: 'code-board',
+    show: { code: true, pymap: true, board: true, action: true, controls: true, tree: true },
   },
 ];
 

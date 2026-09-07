@@ -944,6 +944,19 @@ details.advanced[open] > summary { color: var(--text); font-weight: 600; }
 /* ============================================================
    탐색 트리 (요구사항 4.1 ④)
    ============================================================ */
+/* 퍼즐 판 아래에 늘 떠 있는 탐색 트리 — 지금 진행 위치를 학생이 계속 보게 한다 */
+.panel--board .panel__body { display: flex; flex-direction: column; }
+.board-tree {
+  margin-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-2);
+  display: flex; flex-direction: column;
+  flex: 1 1 auto; min-height: 190px;
+}
+.board-tree:empty { display: none; border: 0; margin: 0; padding: 0; }
+.board-tree__cap { font-size: var(--fs-sm); color: var(--text-muted); margin-bottom: var(--sp-1); flex: 0 0 auto; }
+.board-tree .tree-wrap { flex: 1 1 auto; }
+
 .tree-wrap {
   width: 100%;
   height: 100%;
