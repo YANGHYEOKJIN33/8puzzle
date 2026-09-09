@@ -74,8 +74,9 @@
   gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
   grid-template-columns: minmax(300px, 0.7fr) minmax(540px, 1.7fr);
-  /* 자료구조 패널이 눌려서 사라지지 않도록 최소 높이를 확보한다 (요구사항 4.2.5) */
-  grid-template-rows: minmax(160px, auto) minmax(300px, 1.8fr);
+  /* 자료구조 패널이 눌려서 사라지지 않도록 최소 높이를 확보한다 (요구사항 4.2.5).
+     rem이라 화면이 작으면 함께 줄어 스크롤 없이 담긴다. */
+  grid-template-rows: minmax(9.5rem, auto) minmax(17rem, 1.8fr);
   grid-template-areas:
     "code board"
     "code data";
@@ -134,6 +135,19 @@
   .topbar__title { font-size: var(--fs-md); }
 }
 
+/* --- 낮은(짧은) 화면 다듬기 — 15" 노트북 등에서 위아래 막대가 본문 높이를 덜 먹게.
+   가로 넓이는 충분해도 세로가 짧은 노트북(예: 1366×768)에서 핵심이 한 화면에 들어오게 한다. --- */
+@media (min-width: 901px) and (max-height: 860px) {
+  .topbar { padding-top: var(--sp-1); padding-bottom: var(--sp-1); gap: var(--sp-1); }
+  .topbar__title small { display: none; }   /* 부제(자료구조→…→파이썬)는 접는다 */
+  .workspace { padding-top: var(--sp-2); padding-bottom: var(--sp-2); gap: var(--sp-2); }
+}
+@media (min-width: 901px) and (max-height: 740px) {
+  .topbar__title { font-size: var(--fs-md); }
+  .lesson__todo { font-size: var(--fs-xs); }   /* 보조 안내는 더 작게 */
+  .controlbar { padding-top: 2px; padding-bottom: 2px; }
+}
+
 /* 휴리스틱 선택기 (7단계) */
 .heuristic-pick { display: inline-flex; align-items: center; gap: var(--sp-2); }
 
@@ -164,7 +178,9 @@
 
 .workspace[data-layout="board-data"] {
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(170px, auto) minmax(200px, 1fr);
+  /* 판+트리가 트리 높이만큼 무한정 커져 아래 OPEN/CLOSED를 밀어내지 않도록 위 칸도 비율로 묶는다.
+     이 쪽의 주제는 OPEN·CLOSED이므로 아래 칸에 높이를 더 준다. 트리는 제 안에서 스크롤한다(.tree-scroll). */
+  grid-template-rows: minmax(7.5rem, 0.72fr) minmax(13rem, 1.7fr);
   grid-template-areas: "board" "data";
 }
 .workspace[data-layout="board-data"] .panel--code { display: none; }
@@ -251,14 +267,17 @@
 .workspace[data-layout="code-board-data"] {
   grid-template-columns: minmax(360px, 1.15fr) minmax(300px, 1fr);
   /* 판은 탭으로 접혀 짧아졌으니 아래 자료구조(OPEN→CLOSED 이동)에 높이를 몰아 준다 (요청 #1·#3.4) */
-  grid-template-rows: minmax(150px, 0.72fr) minmax(300px, 1.7fr);
+  grid-template-rows: minmax(8rem, 0.52fr) minmax(18rem, 2fr);
   grid-template-areas:
     "code board"
     "code data";
 }
-/* 판은 작게, 카운터는 한 줄로 — 아낀 높이는 OPEN 리스트에 준다 */
-.workspace[data-layout="code-board-data"] .board--anim { width: min(78px, 11vh, 12vw); }
-.workspace[data-layout="code-board-data"] .board--mini { width: min(62px, 9vh, 10vw); }
+/* 판은 작게, 카운터는 한 줄로 — 아낀 높이는 OPEN 리스트에 준다.
+   위 칸(0.52fr)에 판+목표+고르기가 잘리지 않게 판을 더 작게 잡는다. */
+.workspace[data-layout="code-board-data"] .board--anim { width: min(64px, 8.5vh, 11vw); }
+.workspace[data-layout="code-board-data"] .board--mini { width: min(52px, 7vh, 9vw); }
+.workspace[data-layout="code-board-data"] .panel--board .panel__body { overflow: auto; }
+.workspace[data-layout="code-board-data"] .board-duo { gap: var(--sp-2); }
 .workspace[data-layout="code-board-data"] .panel--data .counter {
   display: flex; align-items: baseline; justify-content: center;
   gap: var(--sp-2); padding: 2px var(--sp-2);
@@ -282,10 +301,10 @@
 .workspace[data-layout="code-board-data"] .closed-box .pipe__note { display: none; }
 .workspace[data-layout="code-board-data"] .hold { margin: 0; gap: 0; }
 .workspace[data-layout="code-board-data"] .hold__cap { font-size: var(--fs-xs); }
-.workspace[data-layout="code-board-data"] .hold-slot { min-height: 34px; padding: var(--sp-1); }
-.workspace[data-layout="code-board-data"] .hold-item .mini { width: 34px; height: 34px; }
+.workspace[data-layout="code-board-data"] .hold-slot { min-height: 30px; padding: var(--sp-1); }
+.workspace[data-layout="code-board-data"] .hold-item .mini { width: 32px; height: 32px; }
 .workspace[data-layout="code-board-data"] .hold__arrow { font-size: 10px; }
-.workspace[data-layout="code-board-data"] .closed-box__body { min-height: 40px; padding: var(--sp-1) var(--sp-2); }
+.workspace[data-layout="code-board-data"] .closed-box__body { min-height: 34px; padding: var(--sp-1) var(--sp-2); }
 .workspace[data-layout="code-board-data"] .closed-item .mini { width: 34px; height: 34px; }
 .workspace[data-layout="code-board-data"] .ds-section { gap: 2px; }
 .workspace[data-layout="code-board-data"] .panel--data .panel__body { gap: var(--sp-1); }
