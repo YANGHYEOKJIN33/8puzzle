@@ -42,12 +42,13 @@
   --fs-lg: calc(1.15rem * var(--scale));
   --fs-xl: calc(1.5rem  * var(--scale));
 
-  /* --- 간격 · 모서리 --- */
-  --sp-1: 4px;
-  --sp-2: 8px;
-  --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 24px;
+  /* --- 간격 · 모서리 ---
+     간격도 rem으로 두어 뿌리 글꼴(화면 크기)에 맞춰 함께 줄고 늘어나게 한다. */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
   --radius:    10px;
   --radius-sm: 6px;
 
